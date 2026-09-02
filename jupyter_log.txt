@@ -1,0 +1,38 @@
+[I 2026-07-15 16:32:38.222 ServerApp] Extension package jupyter_server_terminals took 0.8691s to import
+[I 2026-07-15 16:32:38.571 ServerApp] jupyter_lsp | extension was successfully linked.
+[I 2026-07-15 16:32:38.576 ServerApp] jupyter_server_terminals | extension was successfully linked.
+[I 2026-07-15 16:32:38.581 ServerApp] jupyterlab | extension was successfully linked.
+[I 2026-07-15 16:32:38.585 ServerApp] notebook | extension was successfully linked.
+[I 2026-07-15 16:32:38.594 ServerApp] Writing Jupyter server cookie secret to C:\Users\Personal\AppData\Roaming\jupyter\runtime\jupyter_cookie_secret
+[I 2026-07-15 16:32:39.074 ServerApp] notebook_shim | extension was successfully linked.
+[I 2026-07-15 16:32:39.116 ServerApp] notebook_shim | extension was successfully loaded.
+[I 2026-07-15 16:32:39.118 ServerApp] jupyter_lsp | extension was successfully loaded.
+[I 2026-07-15 16:32:39.120 ServerApp] jupyter_server_terminals | extension was successfully loaded.
+[I 2026-07-15 16:32:39.126 LabApp] JupyterLab extension loaded from C:\Users\Personal\AppData\Local\Programs\Python\Python311\Lib\site-packages\jupyterlab
+[I 2026-07-15 16:32:39.126 LabApp] JupyterLab application directory is C:\Users\Personal\AppData\Local\Programs\Python\Python311\share\jupyter\lab
+[I 2026-07-15 16:32:39.127 LabApp] Extension Manager is 'pypi'.
+[I 2026-07-15 16:32:39.361 ServerApp] jupyterlab | extension was successfully loaded.
+[I 2026-07-15 16:32:39.369 ServerApp] notebook | extension was successfully loaded.
+[I 2026-07-15 16:32:39.371 ServerApp] Serving notebooks from local directory: D:\xampp\htdocs\web-uniminuto\NRC-94103-Fundamentos_IA\Semana_2\Actividad_semana_2
+[I 2026-07-15 16:32:39.371 ServerApp] Jupyter Server 2.20.0 is running at:
+[I 2026-07-15 16:32:39.371 ServerApp] http://localhost:8888/tree?token=0567814a3fb6493695210a980b8faae0ca17a054b6e1a07c
+[I 2026-07-15 16:32:39.371 ServerApp]     http://127.0.0.1:8888/tree?token=0567814a3fb6493695210a980b8faae0ca17a054b6e1a07c
+[I 2026-07-15 16:32:39.371 ServerApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[C 2026-07-15 16:32:39.434 ServerApp] 
+    
+    To access the server, open this file in a browser:
+        file:///C:/Users/Personal/AppData/Roaming/jupyter/runtime/jpserver-5584-open.html
+    Or copy and paste one of these URLs:
+        http://localhost:8888/tree?token=0567814a3fb6493695210a980b8faae0ca17a054b6e1a07c
+        http://127.0.0.1:8888/tree?token=0567814a3fb6493695210a980b8faae0ca17a054b6e1a07c
+[I 2026-07-15 16:32:40.379 ServerApp] Skipped non-installed server(s): basedpyright, bash-language-server, dockerfile-language-server-nodejs, javascript-typescript-langserver, jedi-language-server, julia-language-server, pyrefly, pyright, python-language-server, python-lsp-server, r-languageserver, sql-language-server, texlab, typescript-language-server, unified-language-server, vscode-css-languageserver-bin, vscode-html-languageserver-bin, vscode-json-languageserver-bin, yaml-language-server
+[I 2026-07-15 16:32:51.526 ServerApp] Writing notebook-signing key to C:\Users\Personal\AppData\Local\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\jupyter\notebook_secret
+[W 2026-07-15 16:32:51.528 ServerApp] Notebook EIARV011_A2_analisis.ipynb is not trusted
+[I 2026-07-15 16:32:51.979 ServerApp] Kernel started: 4ceb48c1-3b34-42c1-a3d3-da1fd8ec8976
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+[I 2026-07-15 16:32:53.333 ServerApp] Adapting from protocol version 5.3 (kernel 4ceb48c1-3b34-42c1-a3d3-da1fd8ec8976) to 5.4 (client).
+[I 2026-07-15 16:32:53.334 ServerApp] Connecting to kernel 4ceb48c1-3b34-42c1-a3d3-da1fd8ec8976.
+[W 2026-07-15 16:32:53.356 ServerApp] The websocket_ping_timeout (90000) cannot be longer than the websocket_ping_interval (30000).
+    Setting websocket_ping_timeout=30000
+[I 2026-07-15 16:33:35.714 ServerApp] 302 GET / (@::1) 1.00ms
+[I 2026-07-15 16:33:35.736 JupyterNotebookApp] 302 GET /tree? (@::1) 2.00ms
