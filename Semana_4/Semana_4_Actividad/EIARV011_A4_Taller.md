@@ -17,7 +17,7 @@ Fundamentos para IA
 
 A partir de la revisión de los recursos básicos y de los demás recursos de la semana, resuelva el taller denominado [**anexo**](EIARV011_A4_Anexo.md) mismo que podrá descargar desde la plataforma. 
 
-**Recurso interactivo de apoyo (opcional):** antes de empezar, exploren el [**recurso interactivo de la Semana 4**](../../Aplicacion_interactiva/Semana_4/index.html) — cuatro módulos cortos donde pueden experimentar en el navegador con vectorización, estadísticos, correlación/prueba t y Matplotlib vs. Seaborn, usando el mismo *dataset* del taller. No reemplaza el desarrollo del taller, pero ayuda a entender los conceptos antes de aplicarlos en el *Notebook*.
+**Recurso interactivo de apoyo (opcional):** antes de empezar, exploren el [**recurso interactivo de la Semana 4**](../../Aplicacion_interactiva_profesor/Semana_4/index.html) — cuatro módulos cortos donde pueden experimentar en el navegador con vectorización, estadísticos, correlación/prueba t y Matplotlib vs. Seaborn, usando el mismo *dataset* del taller. No reemplaza el desarrollo del taller, pero ayuda a entender los conceptos antes de aplicarlos en el *Notebook*.
 
 **1.** Realice una lectura previa del documento y proceda a desarrollarlo en un *Notebook* (**Google Colab**, **Jupyter** o **Anaconda**), dejando evidencia del código y las salidas (tablas y gráficas). Adicionalmente, elabore un documento en Word aplicando los conceptos abordados en la bibliografía y teniendo en cuenta el procedimiento que se menciona a continuación: 
 
