@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Condicionales, bucles y funciones — Semana 1</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-border: #26314a;
+    --text: #e7ecf7;
+    --text-dim: #9aa7c2;
+    --accent: #5eb1ff;
+    --accent-2: #ffb75e;
+    --good: #5edc9a;
+    --bad: #ff8577;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header { padding: 32px 20px 16px; max-width: 1100px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 78ch; }
+  main { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+
+  .slider-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; max-width: 420px; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  .slider-value { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--accent-2); }
+  .gauge-wrap { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; margin-top: 10px; }
+  svg { flex-shrink: 0; max-width: 100%; height: auto; }
+  .verdict-badge { font-size: 20px; font-weight: 700; padding: 10px 20px; border-radius: 999px; border: 2px solid; display: inline-block; }
+  .verdict-badge.excelente { color: var(--good); border-color: var(--good); }
+  .verdict-badge.aceptable { color: var(--accent-2); border-color: var(--accent-2); }
+  .verdict-badge.insuficiente { color: var(--bad); border-color: var(--bad); }
+
+  select {
+    background: #0a0e17; color: var(--text); border: 1px solid var(--panel-border);
+    border-radius: 8px; padding: 8px 12px; font-size: 14px; font-family: Consolas, Menlo, monospace;
+  }
+  .match-result { margin-top: 12px; font-family: Consolas, Menlo, monospace; font-size: 14px; background: #0a0e17; border: 1px solid var(--panel-border); border-radius: 8px; padding: 10px 14px; color: var(--good); }
+
+  .trace-table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 14px; font-family: Consolas, Menlo, monospace; }
+  .trace-table th, .trace-table td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--panel-border); }
+  .trace-table th { color: var(--text-dim); text-transform: uppercase; font-size: 11px; letter-spacing: 0.03em; font-family: -apple-system, sans-serif; }
+  .trace-table tr.current { background: rgba(94, 177, 255, 0.1); }
+  .trace-table tr.best td.modelo { color: var(--good); font-weight: 700; }
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+  button.primary {
+    background: #0f1420; color: var(--text); border: 1px solid var(--panel-border);
+    border-radius: 8px; padding: 8px 12px; font-size: 13px; cursor: pointer;
+  }
+  button.primary:hover { border-color: var(--accent); color: var(--accent); }
+  button.primary:disabled { opacity: 0.4; cursor: default; }
+  .summary-line { margin-top: 12px; font-family: Consolas, Menlo, monospace; font-size: 13.5px; color: var(--text-dim); }
+  .summary-line b { color: var(--good); }
+
+  pre.code {
+    background: #0a0e17; border: 1px solid var(--panel-border); border-radius: 8px;
+    padding: 10px 12px; font-size: 12.5px; overflow-x: auto; color: #c9d4ea; margin: 10px 0 0;
+  }
+  pre.code .fn { color: var(--good); }
+  .panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-top: 10px; }
+  .panel { border: 1px solid var(--panel-border); border-radius: 10px; padding: 14px 16px; }
+  .panel .panel-title { font-weight: 700; margin-bottom: 6px; }
+  .call-row { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
+  .call-row code { background: #0a0e17; border: 1px solid var(--panel-border); border-radius: 6px; padding: 6px 10px; }
+  .call-result { color: var(--good); font-weight: 700; }
+
+  .code-wrap { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 18px; }
+  .code-card { flex: 1; min-width: 260px; }
+  .code-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: 8px; }
+  pre {
+    background: #0b111c; border: 1px solid var(--panel-border); border-radius: 10px;
+    padding: 14px 16px; font-size: 13px; overflow-x: auto; margin: 0;
+  }
+  pre.trace-code { border-left: 3px solid var(--accent); }
+  pre.fn-code { border-left: 3px solid var(--good); }
+  code { font-family: "SF Mono", Consolas, Menlo, monospace; }
+
+  .learn { background: rgba(94, 220, 154, 0.08); border: 1px solid rgba(94, 220, 154, 0.35); border-radius: 10px; padding: 12px 16px; font-size: 14px; color: var(--text-dim); margin-top: 16px; }
+  .learn strong { color: var(--good); }
+  footer { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">← Recurso interactivo Semana 1</a>
+  <div class="kicker">Módulo 3 · Control de flujo y funciones</div>
+  <h1>Condicionales, bucles y funciones</h1>
+  <p>
+    Clasifica un experimento con un slider (Ejercicio 7), elige un optimizador y observa
+    cómo <code>match/case</code> decide qué imprimir, y recorre paso a paso el bucle que
+    calcula el promedio y encuentra el mejor modelo (Ejercicios 8 y 9).
+  </p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>Clasificar un experimento</h2>
+    <p class="subtitle">Mueve el slider de accuracy y observa cómo el <code>if/elif/else</code> del Ejercicio 7 decide el veredicto.</p>
+    <div class="slider-row">
+      <label for="acc-slider">Accuracy — <span class="slider-value" id="acc-slider-value">0.80</span></label>
+      <input type="range" id="acc-slider" min="0" max="1" step="0.01" value="0.80">
+    </div>
+    <div class="gauge-wrap">
+      <svg id="gauge" width="260" height="100" viewBox="0 0 260 100"></svg>
+      <div>
+        <div class="verdict-badge" id="verdict-badge">Aceptable</div>
+        <pre class="code" id="verdict-code" style="margin-top: 14px;"></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><code>match/case</code>: elegir un optimizador</h2>
+    <p class="subtitle">Selecciona un optimizador y observa qué rama del <code>match</code> del Ejercicio 7 se ejecuta.</p>
+    <select id="opt-select">
+      <option value="adam">adam</option>
+      <option value="sgd" selected>sgd</option>
+      <option value="rms">rms</option>
+      <option value="lbfgs">lbfgs</option>
+    </select>
+    <div class="match-result" id="match-result"></div>
+  </section>
+
+  <section class="card">
+    <h2>Recorrer un bucle paso a paso</h2>
+    <p class="subtitle">El mismo <code>for</code> del Ejercicio 8: acumula la suma de accuracy y va guardando el mejor modelo visto hasta el momento.</p>
+    <table class="trace-table">
+      <thead>
+        <tr><th>#</th><th>Modelo</th><th>Accuracy</th><th>suma_accuracy</th><th>mejor_modelo</th></tr>
+      </thead>
+      <tbody id="trace-body"></tbody>
+    </table>
+    <div class="controls">
+      <button class="primary" id="btn-trace-next">Siguiente iteración ▶</button>
+      <button class="primary" id="btn-trace-reset">Reiniciar</button>
+    </div>
+    <div class="summary-line" id="trace-summary">Promedio de accuracy: <b>—</b> · Mejor modelo: <b>—</b></div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="trace-code"><code id="trace-code"></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Encapsular en funciones</h2>
+    <p class="subtitle">La lógica de clasificar (Ejercicio 7) y promediar (Ejercicio 8) se repite — el Ejercicio 9 la encapsula en funciones reutilizables. Prueba llamarlas con distintos valores.</p>
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-title">clasificar_experimento(accuracy)</div>
+        <pre class="code"><span class="fn">def</span> clasificar_experimento(accuracy):
+    if accuracy &gt;= 0.9:
+        return "Excelente"
+    elif accuracy &gt;= 0.75:
+        return "Aceptable"
+    else:
+        return "Insuficiente"</pre>
+        <div class="call-row">
+          <code>clasificar_experimento(</code>
+          <input type="number" id="fn-input" min="0" max="1" step="0.01" value="0.91" style="width: 70px; background:#0a0e17; color: var(--text); border: 1px solid var(--panel-border); border-radius: 6px; padding: 6px;">
+          <code>)</code> → <span class="call-result" id="fn-result">Excelente</span>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">promedio_accuracy(lista_experimentos)</div>
+        <pre class="code"><span class="fn">def</span> promedio_accuracy(lista_experimentos):
+    suma = sum(exp["accuracy"] for exp in lista_experimentos)
+    return suma / len(lista_experimentos)</pre>
+        <div class="call-row">
+          Sobre los 3 experimentos del bucle → <span class="call-result">0.853</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="fn-code"><code id="fn-code"></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <div class="learn">
+    <strong>Diferencia clave:</strong> una función que solo hace <code>print</code> (como en el Ejercicio 7) no
+    permite reutilizar el resultado en otra expresión; por eso <code>clasificar_experimento</code> usa
+    <code>return</code> — así su resultado se puede incrustar directamente en un f-string o pasar a otra función.
+  </div>
+
+</main>
+
+<footer>
+  Recurso complementario al material de la <a href="../../Semana_1/semana_1_estudiante.md">Semana 1</a>, no lo reemplaza.
+</footer>
+
+<script>
+// ---------- Clasificador con gauge ----------
+const accSlider = document.getElementById("acc-slider");
+const svgG = d3.select("#gauge");
+const gG = svgG.append("g").attr("transform", "translate(130,90)");
+const arcBg = d3.arc().innerRadius(70).outerRadius(90).startAngle(-Math.PI / 2).endAngle(Math.PI / 2);
+gG.append("path").attr("d", arcBg).attr("fill", "#1c2438");
+const needle = gG.append("line").attr("x1", 0).attr("y1", 0).attr("stroke", "var(--text)").attr("stroke-width", 3).attr("stroke-linecap", "round");
+const needleHub = gG.append("circle").attr("r", 5).attr("fill", "var(--text)");
+
+function clasificar(accuracy) {
+  if (accuracy >= 0.9) return "Excelente";
+  if (accuracy >= 0.75) return "Aceptable";
+  return "Insuficiente";
+}
+
+function updateGauge() {
+  const acc = parseFloat(accSlider.value);
+  document.getElementById("acc-slider-value").textContent = acc.toFixed(2);
+  const angle = -Math.PI / 2 + acc * Math.PI;
+  const x2 = 80 * Math.cos(angle - Math.PI / 2);
+  const y2 = 80 * Math.sin(angle - Math.PI / 2);
+  needle.attr("x2", x2).attr("y2", y2);
+
+  const veredicto = clasificar(acc);
+  const badge = document.getElementById("verdict-badge");
+  badge.textContent = veredicto;
+  badge.className = "verdict-badge " + veredicto.toLowerCase();
+  needle.attr("stroke", veredicto === "Excelente" ? "#5edc9a" : veredicto === "Aceptable" ? "#ffb75e" : "#ff8577");
+
+  const code = document.getElementById("verdict-code");
+  code.innerHTML = `if accuracy &gt;= 0.9:
+    print("Excelente")
+elif accuracy &gt;= 0.75:
+    print("Aceptable")
+else:
+    print("Insuficiente")
+
+<span class="fn"># accuracy = ${acc.toFixed(2)} → "${veredicto}"</span>`;
+}
+accSlider.addEventListener("input", updateGauge);
+updateGauge();
+
+// ---------- match/case ----------
+const OPT_MAP = {
+  adam: "Adaptive Moment Estimation",
+  sgd: "Stochastic Gradient Descent",
+  rms: "Root Mean Square Propagation",
+};
+function updateMatch() {
+  const val = document.getElementById("opt-select").value;
+  const out = OPT_MAP[val] || "Desconocido";
+  const caseName = OPT_MAP[val] ? `case "${val}":` : "case _:";
+  document.getElementById("match-result").innerHTML = `match optimizador:  # optimizador = "${val}"\n    ...\n    ${caseName}\n        print("${out}")\n\n<span style="color: var(--accent-2)">→ ${out}</span>`;
+}
+document.getElementById("opt-select").addEventListener("change", updateMatch);
+updateMatch();
+
+// ---------- Trace del bucle ----------
+const EXPERIMENTOS = [
+  { modelo: "RandomForest", accuracy: 0.87 },
+  { modelo: "SVM", accuracy: 0.91 },
+  { modelo: "KNN", accuracy: 0.78 },
+];
+let traceStep = 0;
+let sumaAccuracy = 0;
+let mejorModelo = null;
+let mejorAccuracy = 0;
+
+function renderTrace() {
+  const tbody = document.getElementById("trace-body");
+  tbody.innerHTML = "";
+  sumaAccuracy = 0;
+  mejorModelo = null;
+  mejorAccuracy = 0;
+
+  for (let i = 0; i < traceStep; i++) {
+    const exp = EXPERIMENTOS[i];
+    sumaAccuracy += exp.accuracy;
+    if (exp.accuracy > mejorAccuracy) {
+      mejorAccuracy = exp.accuracy;
+      mejorModelo = exp.modelo;
+    }
+    const tr = document.createElement("tr");
+    if (i === traceStep - 1) tr.classList.add("current");
+    if (exp.modelo === mejorModelo) tr.classList.add("best");
+    tr.innerHTML = `<td>${i + 1}</td><td class="modelo">${exp.modelo}</td><td>${exp.accuracy.toFixed(2)}</td><td>${sumaAccuracy.toFixed(2)}</td><td>${mejorModelo}</td>`;
+    tbody.appendChild(tr);
+  }
+
+  const summary = document.getElementById("trace-summary");
+  if (traceStep === 0) {
+    summary.innerHTML = "Promedio de accuracy: <b>—</b> · Mejor modelo: <b>—</b>";
+  } else if (traceStep < EXPERIMENTOS.length) {
+    summary.innerHTML = `Suma parcial: <b>${sumaAccuracy.toFixed(2)}</b> · Mejor modelo hasta ahora: <b>${mejorModelo} (${mejorAccuracy.toFixed(2)})</b>`;
+  } else {
+    const promedio = sumaAccuracy / EXPERIMENTOS.length;
+    summary.innerHTML = `Promedio de accuracy: <b>${promedio.toFixed(3)}</b> · Mejor modelo: <b>${mejorModelo} (${mejorAccuracy.toFixed(2)})</b>`;
+  }
+  document.getElementById("btn-trace-next").disabled = traceStep >= EXPERIMENTOS.length;
+  document.getElementById("trace-code").textContent = buildTraceCode(traceStep, sumaAccuracy, mejorModelo, mejorAccuracy);
+}
+
+function buildTraceCode(step, suma, mejor, mejorAcc) {
+  const total = EXPERIMENTOS.length;
+  const base = `suma_accuracy = 0
+mejor_modelo = None
+mejor_accuracy = 0
+
+for exp in experimentos:
+    suma_accuracy += exp["accuracy"]
+    if exp["accuracy"] > mejor_accuracy:
+        mejor_accuracy = exp["accuracy"]
+        mejor_modelo = exp["modelo"]`;
+  if (step === 0) {
+    return base + `\n\n# aún sin ejecutar (0/${total} iteraciones)`;
+  }
+  if (step < total) {
+    return base + `\n\n# tras ${step}/${total} iteraciones: suma_accuracy = ${suma.toFixed(2)}, mejor_modelo = '${mejor}'`;
+  }
+  const promedio = suma / total;
+  return base + `\n\npromedio_accuracy = suma_accuracy / len(experimentos)  # ${promedio.toFixed(3)}
+# mejor_modelo = '${mejor}' (${mejorAcc.toFixed(2)})`;
+}
+
+document.getElementById("btn-trace-next").addEventListener("click", () => {
+  if (traceStep < EXPERIMENTOS.length) {
+    traceStep++;
+    renderTrace();
+  }
+});
+document.getElementById("btn-trace-reset").addEventListener("click", () => {
+  traceStep = 0;
+  renderTrace();
+});
+renderTrace();
+
+// ---------- Función interactiva ----------
+function updateFnCode() {
+  const raw = document.getElementById("fn-input").value;
+  const val = parseFloat(raw);
+  const code = document.getElementById("fn-code");
+  if (isNaN(val)) {
+    code.textContent = `clasificar_experimento(${raw})  # entrada inválida`;
+  } else {
+    code.textContent = `clasificar_experimento(${val})  # → "${clasificar(val)}"`;
+  }
+}
+document.getElementById("fn-input").addEventListener("input", (e) => {
+  const val = parseFloat(e.target.value);
+  document.getElementById("fn-result").textContent = isNaN(val) ? "—" : clasificar(val);
+  updateFnCode();
+});
+updateFnCode();
+</script>
+
+</body>
+</html>

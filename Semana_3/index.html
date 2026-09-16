@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recurso interactivo — Semana 3 | Fundamentos para IA</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-border: #26314a;
+    --panel-hover: #1c2438;
+    --text: #e7ecf7;
+    --text-dim: #9aa7c2;
+    --accent: #5eb1ff;
+    --accent-2: #ffb75e;
+    --good: #5edc9a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header {
+    padding: 48px 20px 20px;
+    max-width: 1040px;
+    margin: 0 auto;
+  }
+  header .kicker {
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  header h1 { margin: 8px 0 12px; font-size: clamp(26px, 5vw, 40px); }
+  header p { color: var(--text-dim); max-width: 72ch; font-size: 15px; }
+  header p a { color: var(--accent); }
+  .back-link {
+    display: inline-block;
+    margin-bottom: 14px;
+    color: var(--text-dim);
+    font-size: 13px;
+    text-decoration: none;
+  }
+  .back-link:hover { color: var(--accent); }
+  main { max-width: 1040px; margin: 0 auto; padding: 12px 20px 40px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 18px;
+  }
+  a.card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 20px 22px 22px;
+    text-decoration: none;
+    color: var(--text);
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  }
+  a.card:hover {
+    background: var(--panel-hover);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .badge {
+    align-self: flex-start;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+  }
+  .badge.sklearn { color: #6fe3d6; border-color: #1f4a45; }
+  .badge.tensorflow { color: #ffa94d; border-color: #4a3316; }
+  .badge.pytorch { color: #ff8577; border-color: #4a2020; }
+  .badge.mixed { color: #b39ddb; border-color: #3a2f52; }
+  a.card h2 { margin: 0; font-size: 18px; }
+  a.card .desc { color: var(--text-dim); font-size: 14px; }
+  a.card .learn { color: var(--accent-2); font-size: 13px; margin-top: auto; padding-top: 6px; }
+  .journey {
+    margin-top: 28px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  footer {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="../index.html">← Volver al índice del curso</a>
+  <div class="kicker">Fundamentos para IA · Semana 3</div>
+  <h1>Frameworks para Inteligencia Artificial: scikit-learn, TensorFlow y PyTorch</h1>
+  <p>
+    Cuatro recursos cortos e interactivos para comparar los tres frameworks del
+    <a href="../../Semana_3/Semana_3_Taller_frameworks/Semana_taller_01.md">taller de la semana</a>
+    sobre el mismo problema y los mismos criterios técnicos del
+    <a href="../../Semana_3/Semana_3_Foro/EIARV011_F3_Foro.md">foro de discusión</a>
+    (preprocesamiento, GPU/rendimiento, facilidad de entrenamiento, interpretabilidad,
+    comunidad/documentación e integración para despliegue). Cambia sliders, haz clic en
+    los gráficos y observa cómo responde cada framework — cada módulo se puede explorar
+    de forma independiente.
+  </p>
+</header>
+
+<main>
+  <div class="grid">
+
+    <a class="card" href="entrenamiento_tres_estilos.html">
+      <span class="badge mixed">Módulo 1 · Los tres frameworks</span>
+      <h2>Un mismo problema, tres estilos de entrenamiento</h2>
+      <p class="desc">Resuelve <code>y = 2x</code> con solución cerrada (scikit-learn), un <code>fit()</code> de una línea (Keras) y un bucle manual paso a paso (PyTorch), con la curva de pérdida y el código real de cada uno.</p>
+      <p class="learn">Aprenderás: cómo cambia el nivel de abstracción — y de control — entre los tres frameworks.</p>
+    </a>
+
+    <a class="card" href="knn_interactivo.html">
+      <span class="badge sklearn">Módulo 2 · Scikit-learn</span>
+      <h2>Clasificar viendo por qué: KNN interactivo</h2>
+      <p class="desc">Suelta un punto nuevo en el plano, ajusta k y observa cuáles vecinos deciden su clase — igual que <code>KNeighborsClassifier</code> sobre Iris.</p>
+      <p class="learn">Aprenderás: por qué scikit-learn es fácil de interpretar en modelos clásicos como KNN.</p>
+    </a>
+
+    <a class="card" href="radar_frameworks.html">
+      <span class="badge mixed">Módulo 3 · Comparación</span>
+      <h2>Radar de criterios: ¿qué framework conviene?</h2>
+      <p class="desc">Compara los tres frameworks en los 6 criterios técnicos del foro y filtra por escenario de aplicación para ver cuál se ajusta mejor.</p>
+      <p class="learn">Aprenderás: a elegir un framework según el tipo de problema, no según cuál "es mejor" en general.</p>
+    </a>
+
+    <a class="card" href="lineas_codigo_control.html">
+      <span class="badge mixed">Módulo 4 · Reto integrador</span>
+      <h2>Líneas de código y nivel de control</h2>
+      <p class="desc">El mismo modelo <code>y = 2x</code> lado a lado en los tres frameworks, y la tabla comparativa del reto integrador con respuesta sugerida para revelar en clase.</p>
+      <p class="learn">Aprenderás: por qué más líneas de código no es lo mismo que "peor" — es más control.</p>
+    </a>
+
+  </div>
+
+  <div class="journey">
+    <strong>Sugerencia de recorrido:</strong> los módulos siguen el orden del taller — el mismo problema resuelto con los tres frameworks, luego un modelo de clasificación interpretable con scikit-learn, después los criterios técnicos del foro y, al final, el cierre con líneas de código y nivel de control. Pero cada uno funciona solo, así que puedes explorarlos en cualquier orden.
+  </div>
+</main>
+
+<footer>
+  Recurso complementario al <a href="../../Semana_3/Semana_3_Taller_frameworks/Semana_taller_01.md">taller de Semana 3</a>
+  y al <a href="../../Semana_3/Semana_3_Foro/EIARV011_F3_Foro.md">foro de discusión</a>, no los reemplaza.
+  Basado en el mismo problema (<code>y = 2x</code>) resuelto con scikit-learn, TensorFlow/Keras y PyTorch.
+</footer>
+
+</body>
+</html>

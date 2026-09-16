@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qué gráfico usar | Semana 5</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="data.js"></script>
+<style>
+  :root {
+    --bg: #0f1420; --panel: #161d2e; --panel-border: #26314a; --text: #e7ecf7;
+    --text-dim: #9aa7c2; --accent: #5eb1ff; --accent-2: #ffb75e; --good: #5edc9a; --bad: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.5; }
+  header { padding: 32px 20px 16px; max-width: 980px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 70ch; }
+  main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  select { background: #0f1420; color: var(--text); border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 10px; font-size: 14px; min-width: 190px; }
+  .why { margin-top: 4px; margin-bottom: 14px; padding: 12px 14px; border-radius: 10px; background: #101826; border: 1px solid var(--panel-border); font-size: 14px; color: var(--text-dim); }
+  .why strong { color: var(--text); }
+  .viz-wrap { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-top: 8px; }
+  svg { flex-shrink: 0; max-width: 100%; height: auto; }
+  .axis text { fill: var(--text-dim); font-size: 11px; }
+  .axis path, .axis line { stroke: var(--panel-border); }
+  .bar { fill: var(--accent); opacity: 0.6; }
+  .box { fill: var(--accent); fill-opacity: 0.25; stroke: var(--accent); stroke-width: 1.5px; }
+  .whisker { stroke: var(--text-dim); stroke-width: 1.5px; }
+  .median-tick { stroke: var(--accent-2); stroke-width: 2.5px; }
+  .dot { fill: var(--accent); opacity: 0.35; }
+  .pie-label { fill: var(--text); font-size: 11px; text-anchor: middle; }
+  .verdict { margin-top: 10px; padding: 12px 14px; border-radius: 10px; font-size: 14px; background: #101826; border: 1px solid var(--panel-border); }
+  .verdict.bad { border-color: var(--bad); color: var(--bad); }
+  .table { display: flex; flex-direction: column; gap: 8px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 12px; padding: 10px 12px; border-radius: 8px; font-size: 13px; align-items: center; }
+  .row.head { color: var(--text-dim); text-transform: uppercase; font-size: 11px; letter-spacing: 0.04em; }
+  .row.active { background: #101826; border: 1px solid var(--accent); }
+  .row.inactive { border: 1px solid transparent; }
+  .section-subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+  .challenge { border: 1px solid var(--panel-border); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
+  .challenge:last-child { margin-bottom: 0; }
+  .challenge h3 { margin: 0 0 6px; font-size: 15px; }
+  .challenge p { margin: 0 0 10px; color: var(--text-dim); font-size: 14px; }
+  .challenge-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; }
+  button.load-btn { background: var(--accent); color: #0b1120; border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  button.load-btn:hover { opacity: 0.9; }
+  details.answer summary { cursor: pointer; color: var(--accent-2); font-size: 13px; padding-top: 8px; }
+  details.answer .answer-text { margin-top: 8px; padding: 10px 12px; border-radius: 8px; background: #101826; border: 1px solid var(--panel-border); font-size: 14px; color: var(--text-dim); max-width: 60ch; }
+  .code-wrap { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 18px; }
+  .code-card { flex: 1; min-width: 260px; }
+  .code-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: 8px; }
+  pre {
+    background: #0b111c; border: 1px solid var(--panel-border); border-radius: 10px;
+    padding: 14px 16px; font-size: 13px; overflow-x: auto; margin: 0;
+  }
+  pre.viz-code { border-left: 3px solid var(--accent); }
+  code { font-family: "SF Mono", Consolas, Menlo, monospace; }
+  footer { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">&larr; Recurso interactivo Semana 5</a>
+  <div class="kicker">Semana 5 · Módulo 2 · Visualización</div>
+  <h1>Qué gráfico usar según la pregunta</h1>
+  <p>
+    Antes de elegir un tipo de gráfico conviene hacerse una pregunta: ¿qué tipo de variable
+    quiero mostrar, y qué quiero que la persona que lo vea entienda? Elige una situación y mira
+    el gráfico recomendado renderizarse en vivo con los datos del taller. Al final, pon a prueba
+    lo aprendido con las tres preguntas del "Reto final" del taller.
+  </p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>Tabla de decisión</h2>
+    <div class="table" id="decision-table">
+      <div class="row head"><span>Lo que tengo</span><span>Gráfico recomendado</span><span>Qué permite ver</span></div>
+    </div>
+  </section>
+
+  <section class="card" id="explora-section">
+    <h2>Explora el gráfico</h2>
+    <div class="controls">
+      <div class="field">
+        <label for="situacion-select">Situación</label>
+        <select id="situacion-select"></select>
+      </div>
+      <div id="dynamic-controls" class="controls" style="margin:0;"></div>
+    </div>
+
+    <div class="why" id="why-box">—</div>
+
+    <div class="viz-wrap">
+      <svg id="viz-svg" width="600" height="400"></svg>
+    </div>
+    <div class="verdict" id="viz-verdict" style="display:none;"></div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="viz-code"><code id="viz-code"></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Reto final: pon a prueba tu elección</h2>
+    <div class="section-subtitle">
+      Las mismas tres preguntas del "Reto final" del taller. Antes de mirar la respuesta, decide
+      tú qué gráfico usarías y qué esperarías ver — luego pulsa «Cargar en el explorador» para
+      verlo con los datos reales, y «Ver respuesta del docente» para comparar tu razonamiento.
+    </div>
+
+    <div class="challenge">
+      <h3>1 · ¿La nota de escritura se distribuye de forma parecida entre hombres y mujeres?</h3>
+      <p>Variables: <code>writing score</code> (numérica) y <code>gender</code> (categórica, 2 grupos).</p>
+      <div class="challenge-actions">
+        <button class="load-btn" data-challenge="0">Cargar en el explorador ↑</button>
+        <details class="answer">
+          <summary>Ver respuesta del docente</summary>
+          <div class="answer-text">
+            El <strong>boxplot</strong> es el gráfico correcto porque compara la mediana, la dispersión y los posibles atípicos de una variable numérica (<code>writing score</code>) entre dos grupos categóricos (<code>gender</code>). La caja de <code>female</code> queda claramente más arriba que la de <code>male</code>: mediana 74 vs. 64, una diferencia de 10 puntos — en esta muestra, las estudiantes mujeres obtuvieron notas de escritura más altas. Como siempre en estadística descriptiva: confirmar si la diferencia es estadísticamente significativa requeriría una prueba de hipótesis (Módulo 4 de este recurso).
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div class="challenge">
+      <h3>2 · ¿El nivel educativo de los padres se relaciona con la nota de lectura?</h3>
+      <p>Variables: <code>reading score</code> (numérica) y <code>parental level of education</code> (categórica, 6 grupos).</p>
+      <div class="challenge-actions">
+        <button class="load-btn" data-challenge="1">Cargar en el explorador ↑</button>
+        <details class="answer">
+          <summary>Ver respuesta del docente</summary>
+          <div class="answer-text">
+            Es una variable numérica comparada entre <strong>más de 2 grupos</strong> (6 categorías), así que corresponde un <strong>gráfico de barras con el promedio por grupo</strong> (o, como alternativa igualmente válida, un boxplot con 6 cajas — pruébalo cambiando la situación de arriba). El promedio de <code>reading score</code> sube de forma bastante escalonada según el nivel educativo: desde <code>high school</code> (64.70) hasta <code>master's degree</code> (75.37).
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div class="challenge">
+      <h3>3 · ¿Existe relación entre la nota de matemáticas y la de escritura?</h3>
+      <p>Variables: <code>math score</code> y <code>writing score</code> (ambas numéricas).</p>
+      <div class="challenge-actions">
+        <button class="load-btn" data-challenge="2">Cargar en el explorador ↑</button>
+        <details class="answer">
+          <summary>Ver respuesta del docente</summary>
+          <div class="answer-text">
+            Son <strong>2 variables numéricas</strong>, así que corresponde un <strong>diagrama de dispersión</strong>, como el Ejercicio 4. La correlación es 0.803: fuerte y positiva, aunque algo menor que la de lectura-escritura (0.955), por lo que la nube de puntos se ve algo más dispersa alrededor de la diagonal.
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Módulo 2/4 del recurso interactivo de Semana 5. Dataset: <code>StudentsPerformance.csv</code>
+  (mismo del <a href="../../Semana_5/02_Taller_01_visualizacion_de_datos/Taller_01_Visualizacion_de_datos.md">taller de visualización</a>),
+  filtrado a casos completos con <code>build_data.py</code>. Las respuestas del "Reto final" provienen
+  de la <a href="../../Semana_5/02_Taller_01_visualizacion_de_datos/Taller_01_Visualizacion_de_datos_profesor.ipynb">versión docente del taller</a>.
+  Complementa el taller, no lo reemplaza.
+</footer>
+
+<script>
+const NUMERIC_VARS = { mathScore: "Nota de matemáticas", readingScore: "Nota de lectura", writingScore: "Nota de escritura" };
+const CATEGORICAL_VARS = {
+  gender: "Género", ethnicity: "Grupo étnico", parentEducation: "Nivel educativo de los padres",
+  lunch: "Tipo de almuerzo", testPrep: "Curso de preparación",
+};
+
+const COL_NAMES = {
+  mathScore: "math score", readingScore: "reading score", writingScore: "writing score",
+  gender: "gender", ethnicity: "race/ethnicity", parentEducation: "parental level of education",
+  lunch: "lunch", testPrep: "test preparation course",
+};
+
+const SITUATIONS = [
+  { key: "bar", tengo: "1 variable de categorías", quiero: "Cuántos casos hay de cada categoría", grafico: "Gráfico de barras",
+    why: "Cuando una columna tiene <strong>palabras</strong> (categorías), lo primero que se hace es contar cuántas veces aparece cada una. Esa tabla de conteos se grafica de forma natural con una barra por categoría." },
+  { key: "hist", tengo: "1 variable numérica", quiero: "Cómo se distribuyen los valores (forma, dónde se concentran)", grafico: "Histograma",
+    why: "Un histograma agrupa los valores numéricos en cajones (bins) de rangos iguales y cuenta cuántos datos caen en cada uno, para ver la forma de la distribución de un vistazo." },
+  { key: "boxplot", tengo: "1 variable numérica, comparada entre grupos", quiero: "Diferencias de mediana, dispersión y atípicos entre grupos", grafico: "Diagrama de caja (boxplot)",
+    why: "El boxplot dibuja, para cada grupo, una caja entre Q1 y Q3, una línea en la mediana y puntos para los atípicos — la mejor forma de comparar varios grupos numéricos a la vez." },
+  { key: "scatter", tengo: "2 variables numéricas", quiero: "Si existe una relación o patrón conjunto entre ambas", grafico: "Diagrama de dispersión (scatter)",
+    why: "Cada punto ubica a un estudiante según sus dos variables: su posición horizontal es una, la vertical la otra. Si los puntos suben en diagonal, hay una relación." },
+  { key: "pie", tengo: "1 variable de categorías, como parte de un total", quiero: "Qué proporción (%) representa cada categoría del total", grafico: "Gráfico de pastel (pie)",
+    why: "El pastel muestra qué porcentaje del total representa cada categoría. Funciona bien con pocas categorías (2 a 5); con más, las porciones se parecen entre sí y se vuelve difícil de leer." },
+];
+
+const situacionSelect = document.getElementById("situacion-select");
+const dynamicControls = document.getElementById("dynamic-controls");
+const whyBox = document.getElementById("why-box");
+const verdictBox = document.getElementById("viz-verdict");
+const svg = d3.select("#viz-svg");
+const W = 600, H = 400;
+const margin = { top: 20, right: 30, bottom: 60, left: 60 };
+const innerW = W - margin.left - margin.right;
+const innerH = H - margin.top - margin.bottom;
+
+SITUATIONS.forEach(s => {
+  const opt = document.createElement("option");
+  opt.value = s.key;
+  opt.textContent = `${s.tengo} → ${s.grafico}`;
+  situacionSelect.appendChild(opt);
+});
+
+function renderTable() {
+  const table = document.getElementById("decision-table");
+  table.querySelectorAll(".row:not(.head)").forEach(r => r.remove());
+  SITUATIONS.forEach(s => {
+    const row = document.createElement("div");
+    row.className = "row inactive";
+    row.dataset.key = s.key;
+    row.innerHTML = `<span>${s.tengo}</span><span><strong>${s.grafico}</strong></span><span>${s.quiero}</span>`;
+    table.appendChild(row);
+  });
+}
+renderTable();
+
+function markActiveRow(key) {
+  document.querySelectorAll("#decision-table .row").forEach(r => {
+    if (r.classList.contains("head")) return;
+    r.className = "row " + (r.dataset.key === key ? "active" : "inactive");
+  });
+}
+
+function field(id, labelText, options, selected) {
+  const wrap = document.createElement("div");
+  wrap.className = "field";
+  const label = document.createElement("label");
+  label.setAttribute("for", id);
+  label.textContent = labelText;
+  const sel = document.createElement("select");
+  sel.id = id;
+  Object.entries(options).forEach(([k, v]) => {
+    const opt = document.createElement("option");
+    opt.value = k; opt.textContent = v;
+    if (k === selected) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  wrap.appendChild(label); wrap.appendChild(sel);
+  return { wrap, sel };
+}
+
+function clearSvg() { svg.selectAll("*").remove(); }
+
+function drawAxes(g, x, y, xLabel, yLabel, xIsBand) {
+  const xAxisG = g.append("g").attr("class", "axis").attr("transform", `translate(0,${innerH})`)
+    .call(xIsBand ? d3.axisBottom(x) : d3.axisBottom(x).ticks(6));
+  if (xIsBand) xAxisG.selectAll("text").attr("transform", "rotate(-20)").style("text-anchor", "end");
+  g.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(6));
+  svg.append("text").attr("class", "axis").attr("text-anchor", "middle")
+    .attr("x", margin.left + innerW / 2).attr("y", H - 8)
+    .style("fill", "var(--text-dim)").style("font-size", "12px").text(xLabel);
+  svg.append("text").attr("class", "axis").attr("text-anchor", "middle")
+    .attr("transform", `translate(16, ${margin.top + innerH / 2}) rotate(-90)`)
+    .style("fill", "var(--text-dim)").style("font-size", "12px").text(yLabel);
+}
+
+function renderBar(varKey) {
+  clearSvg();
+  const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+  const counts = d3.rollup(STUDENTS_DATA, v => v.length, d => d[varKey]);
+  const data = Array.from(counts, ([k, v]) => ({ k, v })).sort((a, b) => d3.ascending(a.k, b.k));
+  const x = d3.scaleBand().domain(data.map(d => d.k)).range([0, innerW]).padding(0.3);
+  const y = d3.scaleLinear().domain([0, d3.max(data, d => d.v)]).nice().range([innerH, 0]);
+  drawAxes(g, x, y, CATEGORICAL_VARS[varKey], "Número de estudiantes", true);
+  g.selectAll("rect.bar").data(data).join("rect").attr("class", "bar")
+    .attr("x", d => x(d.k)).attr("width", x.bandwidth())
+    .attr("y", d => y(d.v)).attr("height", d => innerH - y(d.v));
+  verdictBox.style.display = "block"; verdictBox.className = "verdict";
+  verdictBox.textContent = `La categoría más frecuente es "${data.reduce((a, b) => a.v > b.v ? a : b).k}".`;
+  document.getElementById("viz-code").textContent =
+`df["${COL_NAMES[varKey]}"].value_counts().plot(kind="bar")`;
+}
+
+function renderBarMeans(catKey, numKey) {
+  clearSvg();
+  const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+  const groups = d3.rollup(STUDENTS_DATA, v => d3.mean(v, d => d[numKey]), d => d[catKey]);
+  const data = Array.from(groups, ([k, v]) => ({ k, v })).sort((a, b) => d3.ascending(a.k, b.k));
+  const x = d3.scaleBand().domain(data.map(d => d.k)).range([0, innerW]).padding(0.3);
+  const y = d3.scaleLinear().domain([0, 100]).range([innerH, 0]);
+  drawAxes(g, x, y, CATEGORICAL_VARS[catKey], `Promedio de ${NUMERIC_VARS[numKey]}`, true);
+  g.selectAll("rect.bar").data(data).join("rect").attr("class", "bar")
+    .attr("x", d => x(d.k)).attr("width", x.bandwidth())
+    .attr("y", d => y(d.v)).attr("height", d => innerH - y(d.v));
+  const maxRow = data.reduce((a, b) => a.v > b.v ? a : b);
+  const minRow = data.reduce((a, b) => a.v < b.v ? a : b);
+  verdictBox.style.display = "block"; verdictBox.className = "verdict";
+  verdictBox.textContent = `El promedio más alto es el de "${maxRow.k}" (${maxRow.v.toFixed(2)}); el más bajo, el de "${minRow.k}" (${minRow.v.toFixed(2)}).`;
+  document.getElementById("viz-code").textContent =
+`df.groupby("${COL_NAMES[catKey]}")["${COL_NAMES[numKey]}"].mean().plot(kind="bar")`;
+}
+
+function renderHist(varKey) {
+  clearSvg();
+  const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+  const values = STUDENTS_DATA.map(d => d[varKey]);
+  const x = d3.scaleLinear().domain([0, 100]).range([0, innerW]);
+  const bins = d3.bin().domain(x.domain()).thresholds(20)(values);
+  const y = d3.scaleLinear().domain([0, d3.max(bins, b => b.length)]).nice().range([innerH, 0]);
+  drawAxes(g, x, y, NUMERIC_VARS[varKey], "Número de estudiantes", false);
+  g.selectAll("rect.bar").data(bins).join("rect").attr("class", "bar")
+    .attr("x", d => x(d.x0) + 1).attr("width", d => Math.max(0, x(d.x1) - x(d.x0) - 1))
+    .attr("y", d => y(d.length)).attr("height", d => innerH - y(d.length));
+  verdictBox.style.display = "block"; verdictBox.className = "verdict";
+  verdictBox.textContent = `Cada barra agrupa un rango de 5 puntos de ${NUMERIC_VARS[varKey]}. La forma revela dónde se concentran las notas.`;
+  document.getElementById("viz-code").textContent =
+`plt.hist(df["${COL_NAMES[varKey]}"], bins=20)
+plt.show()`;
+}
+
+function renderBoxplot(numKey, groupKey) {
+  clearSvg();
+  const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+  const groups = d3.groups(STUDENTS_DATA, d => d[groupKey]).sort((a, b) => d3.ascending(a[0], b[0]));
+  const x = d3.scaleBand().domain(groups.map(d => d[0])).range([0, innerW]).padding(0.3);
+  const y = d3.scaleLinear().domain([0, 100]).range([innerH, 0]);
+  drawAxes(g, x, y, CATEGORICAL_VARS[groupKey], NUMERIC_VARS[numKey], true);
+
+  let widest = null;
+  groups.forEach(([gk, rows]) => {
+    const vals = rows.map(d => d[numKey]).sort((a, b) => a - b);
+    const q1 = d3.quantile(vals, 0.25), q2 = d3.quantile(vals, 0.5), q3 = d3.quantile(vals, 0.75);
+    const iqr = q3 - q1;
+    const lo = Math.max(vals[0], q1 - 1.5 * iqr), hi = Math.min(vals[vals.length - 1], q3 + 1.5 * iqr);
+    const cx = x(gk) + x.bandwidth() / 2, bw = x.bandwidth() * 0.6;
+    g.append("line").attr("class", "whisker").attr("x1", cx).attr("x2", cx).attr("y1", y(lo)).attr("y2", y(q1));
+    g.append("line").attr("class", "whisker").attr("x1", cx).attr("x2", cx).attr("y1", y(q3)).attr("y2", y(hi));
+    g.append("rect").attr("class", "box").attr("x", cx - bw / 2).attr("width", bw)
+      .attr("y", y(q3)).attr("height", Math.max(1, y(q1) - y(q3)));
+    g.append("line").attr("class", "median-tick").attr("x1", cx - bw / 2).attr("x2", cx + bw / 2).attr("y1", y(q2)).attr("y2", y(q2));
+    if (!widest || q2 > widest.q2) widest = { gk, q2 };
+  });
+  verdictBox.style.display = "block"; verdictBox.className = "verdict";
+  verdictBox.textContent = `El grupo con la mediana más alta de ${NUMERIC_VARS[numKey]} es "${widest.gk}".`;
+  document.getElementById("viz-code").textContent =
+`import seaborn as sns
+
+sns.boxplot(data=df, x="${COL_NAMES[groupKey]}", y="${COL_NAMES[numKey]}")`;
+}
+
+function renderScatter(xKey, yKey) {
+  clearSvg();
+  const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+  const x = d3.scaleLinear().domain([0, 100]).range([0, innerW]);
+  const y = d3.scaleLinear().domain([0, 100]).range([innerH, 0]);
+  drawAxes(g, x, y, NUMERIC_VARS[xKey], NUMERIC_VARS[yKey], false);
+  g.selectAll("circle.dot").data(STUDENTS_DATA).join("circle").attr("class", "dot")
+    .attr("r", 2.6).attr("cx", d => x(d[xKey])).attr("cy", d => y(d[yKey]));
+
+  const xs = STUDENTS_DATA.map(d => d[xKey]), ys = STUDENTS_DATA.map(d => d[yKey]);
+  const mx = d3.mean(xs), my = d3.mean(ys);
+  let num = 0, dx2 = 0, dy2 = 0;
+  for (let i = 0; i < xs.length; i++) { const dx = xs[i] - mx, dy = ys[i] - my; num += dx * dy; dx2 += dx * dx; dy2 += dy * dy; }
+  const r = num / Math.sqrt(dx2 * dy2);
+  verdictBox.style.display = "block"; verdictBox.className = "verdict";
+  verdictBox.textContent = `Correlación de Pearson r = ${r.toFixed(3)} entre ${NUMERIC_VARS[xKey]} y ${NUMERIC_VARS[yKey]}.`;
+  document.getElementById("viz-code").textContent =
+`df.plot.scatter(x="${COL_NAMES[xKey]}", y="${COL_NAMES[yKey]}")`;
+}
+
+function renderPie(varKey) {
+  clearSvg();
+  const g = svg.append("g").attr("transform", `translate(${W / 2},${margin.top + innerH / 2})`);
+  const counts = d3.rollup(STUDENTS_DATA, v => v.length, d => d[varKey]);
+  const data = Array.from(counts, ([k, v]) => ({ k, v })).sort((a, b) => d3.ascending(a.k, b.k));
+  const radius = Math.min(innerW, innerH) / 2 - 10;
+  const color = d3.scaleOrdinal(d3.schemeTableau10 || d3.schemeCategory10).domain(data.map(d => d.k));
+  const pie = d3.pie().value(d => d.v).sort(null);
+  const arc = d3.arc().innerRadius(0).outerRadius(radius);
+  const arcs = pie(data);
+  g.selectAll("path").data(arcs).join("path").attr("d", arc)
+    .attr("fill", d => color(d.data.k)).attr("stroke", "var(--bg)").attr("stroke-width", 1.5);
+  const total = d3.sum(data, d => d.v);
+  g.selectAll("text.pie-label").data(arcs).join("text").attr("class", "pie-label")
+    .attr("transform", d => `translate(${arc.centroid(d)})`)
+    .text(d => `${(100 * d.data.v / total).toFixed(0)}%`);
+
+  const legend = svg.append("g").attr("transform", `translate(20, ${H - 40})`);
+  legend.selectAll("text.legend-item").data(data).join("text").attr("class", "pie-label")
+    .attr("x", 0).attr("y", (d, i) => i * 14)
+    .attr("text-anchor", "start").style("fill", "var(--text-dim)").style("font-size", "11px")
+    .text(d => `${d.k}: ${(100 * d.v / total).toFixed(1)}%`);
+
+  verdictBox.style.display = "block";
+  if (data.length > 5) {
+    verdictBox.className = "verdict bad";
+    verdictBox.textContent = `${data.length} categorías: el pastel se vuelve difícil de leer — con más de 5 porciones conviene usar un gráfico de barras en su lugar.`;
+  } else {
+    verdictBox.className = "verdict";
+    verdictBox.textContent = `${data.length} categorías: un buen caso de uso para el gráfico de pastel.`;
+  }
+  document.getElementById("viz-code").textContent =
+`df["${COL_NAMES[varKey]}"].value_counts().plot(kind="pie", autopct="%1.0f%%")`;
+}
+
+function renderDynamicControls() {
+  dynamicControls.innerHTML = "";
+  const key = situacionSelect.value;
+  markActiveRow(key);
+  const s = SITUATIONS.find(s => s.key === key);
+  whyBox.innerHTML = `<strong>${s.grafico}:</strong> ${s.why}`;
+
+  if (key === "bar") {
+    const { wrap: modeWrap, sel: modeSel } = field("bar-mode-select", "Qué mostrar",
+      { conteo: "Conteo de categorías", promedio: "Promedio de una variable numérica" }, "conteo");
+    dynamicControls.appendChild(modeWrap);
+
+    const catField = field("cat-select", "Variable categórica", CATEGORICAL_VARS, "testPrep");
+    dynamicControls.appendChild(catField.wrap);
+    catField.sel.addEventListener("change", update);
+
+    const numField = field("num-select", "Variable numérica (promedio)", NUMERIC_VARS, "mathScore");
+    numField.wrap.style.display = "none";
+    dynamicControls.appendChild(numField.wrap);
+    numField.sel.addEventListener("change", update);
+
+    modeSel.addEventListener("change", () => {
+      numField.wrap.style.display = modeSel.value === "promedio" ? "flex" : "none";
+      update();
+    });
+  } else if (key === "pie") {
+    const { wrap, sel } = field("cat-select", "Variable categórica", CATEGORICAL_VARS, "lunch");
+    dynamicControls.appendChild(wrap);
+    sel.addEventListener("change", update);
+  } else if (key === "hist") {
+    const { wrap, sel } = field("num-select", "Variable numérica", NUMERIC_VARS, "mathScore");
+    dynamicControls.appendChild(wrap);
+    sel.addEventListener("change", update);
+  } else if (key === "boxplot") {
+    const f1 = field("num-select", "Variable numérica", NUMERIC_VARS, "mathScore");
+    const f2 = field("group-select", "Agrupar por", CATEGORICAL_VARS, "testPrep");
+    dynamicControls.appendChild(f1.wrap); dynamicControls.appendChild(f2.wrap);
+    f1.sel.addEventListener("change", update); f2.sel.addEventListener("change", update);
+  } else if (key === "scatter") {
+    const f1 = field("x-select", "Variable X", NUMERIC_VARS, "readingScore");
+    const f2 = field("y-select", "Variable Y", NUMERIC_VARS, "writingScore");
+    dynamicControls.appendChild(f1.wrap); dynamicControls.appendChild(f2.wrap);
+    f1.sel.addEventListener("change", update); f2.sel.addEventListener("change", update);
+  }
+  update();
+}
+
+function update() {
+  const key = situacionSelect.value;
+  if (key === "bar") {
+    const mode = document.getElementById("bar-mode-select").value;
+    if (mode === "promedio") renderBarMeans(document.getElementById("cat-select").value, document.getElementById("num-select").value);
+    else renderBar(document.getElementById("cat-select").value);
+  }
+  else if (key === "hist") renderHist(document.getElementById("num-select").value);
+  else if (key === "boxplot") renderBoxplot(document.getElementById("num-select").value, document.getElementById("group-select").value);
+  else if (key === "scatter") renderScatter(document.getElementById("x-select").value, document.getElementById("y-select").value);
+  else if (key === "pie") renderPie(document.getElementById("cat-select").value);
+}
+
+situacionSelect.addEventListener("change", renderDynamicControls);
+renderDynamicControls();
+
+// ---------- Reto final: carga preajustada de cada pregunta ----------
+const CHALLENGES = [
+  { situacion: "boxplot", numKey: "writingScore", groupKey: "gender" },
+  { situacion: "bar", catKey: "parentEducation", numKey: "readingScore" },
+  { situacion: "scatter", xKey: "mathScore", yKey: "writingScore" },
+];
+
+function loadChallenge(idx) {
+  const c = CHALLENGES[idx];
+  situacionSelect.value = c.situacion;
+  renderDynamicControls();
+  if (c.situacion === "boxplot") {
+    document.getElementById("num-select").value = c.numKey;
+    document.getElementById("group-select").value = c.groupKey;
+  } else if (c.situacion === "bar") {
+    const modeSel = document.getElementById("bar-mode-select");
+    modeSel.value = "promedio";
+    modeSel.dispatchEvent(new Event("change"));
+    document.getElementById("cat-select").value = c.catKey;
+    document.getElementById("num-select").value = c.numKey;
+  } else if (c.situacion === "scatter") {
+    document.getElementById("x-select").value = c.xKey;
+    document.getElementById("y-select").value = c.yKey;
+  }
+  update();
+  document.getElementById("explora-section").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+document.querySelectorAll(".load-btn").forEach(btn => {
+  btn.addEventListener("click", () => loadChallenge(+btn.dataset.challenge));
+});
+</script>
+
+</body>
+</html>

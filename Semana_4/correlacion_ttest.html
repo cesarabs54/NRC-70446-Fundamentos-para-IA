@@ -54,7 +54,7 @@
   }
   header p {
     color: var(--text-dim);
-    max-width: 70ch;
+    max-width: 1040px;
   }
   main {
     max-width: 980px;
@@ -145,6 +145,16 @@
     font-size: 13px;
     color: var(--accent-2);
   }
+  .code-wrap { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 18px; }
+  .code-card { flex: 1; min-width: 260px; }
+  .code-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: 8px; }
+  pre {
+    background: #0b111c; border: 1px solid var(--panel-border); border-radius: 10px;
+    padding: 14px 16px; font-size: 13px; overflow-x: auto; margin: 0;
+  }
+  pre.corr-code { border-left: 3px solid var(--good); }
+  pre.tt-code { border-left: 3px solid var(--accent); }
+  code { font-family: "SF Mono", Consolas, Menlo, monospace; }
   .dot { fill: var(--accent); opacity: 0.35; }
   .dot.show { fill: var(--accent-2); }
   .trend { stroke: var(--good); stroke-width: 2px; }
@@ -210,6 +220,13 @@
         <div class="learn">Aprenderás: cómo leer la fuerza y dirección de una correlación, y por qué correlación no implica causalidad.</div>
       </div>
     </div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="corr-code"><code id="corr-code"></code></pre>
+      </div>
+    </div>
   </section>
 
   <section class="card" id="ttest-section">
@@ -238,13 +255,20 @@
         <div class="learn">Aprenderás: a interpretar un p-valor frente a α = 0.05 y a distinguir diferencia estadísticamente significativa de diferencia grande.</div>
       </div>
     </div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="tt-code"><code id="tt-code"></code></pre>
+      </div>
+    </div>
   </section>
 
 </main>
 
 <footer>
   Módulo 3/4 del recurso interactivo de Semana 4. Dataset: <code>titles.csv</code>
-  (mismo del <a href="https://github.com/cesarabs54/NRC-70446-Fundamentos-para-IA/blob/master/Semana_4/Semana_4_Actividad/EIARV011_A4_Taller.md">taller de la semana</a>), filtrado a casos
+  (mismo del <a href="../../Semana_4/Semana_4_Actividad/EIARV011_A4_Taller.md">taller de la semana</a>), filtrado a casos
   completos con <code>build_data.py</code>. Complementa el taller, no lo reemplaza.
 </footer>
 
@@ -382,6 +406,14 @@ function drawCorr() {
   const verdict = document.getElementById("corr-verdict");
   verdict.textContent = `Correlación ${strength} y ${dir} entre ${VAR_LABELS[xKey]} y ${VAR_LABELS[yKey]}.`;
   verdict.className = "verdict " + (isStrong ? "good" : "");
+
+  document.getElementById("corr-code").textContent =
+`from scipy import stats
+
+x = df["${xKey}"]
+y = df["${yKey}"]
+
+r, p_valor = stats.pearsonr(x, y)`;
 }
 
 corrX.addEventListener("change", drawCorr);
@@ -469,6 +501,14 @@ function drawTTest() {
     ? `p < 0.05 → la diferencia entre MOVIE y SHOW en ${VAR_LABELS[key]} es estadísticamente significativa.`
     : `p ≥ 0.05 → no hay evidencia suficiente de diferencia entre MOVIE y SHOW en ${VAR_LABELS[key]}.`;
   verdict.className = "verdict " + (significant ? "good" : "bad");
+
+  document.getElementById("tt-code").textContent =
+`from scipy import stats
+
+movies = df.loc[df["type"] == "MOVIE", "${key}"]
+shows = df.loc[df["type"] == "SHOW", "${key}"]
+
+t, p_valor = stats.ttest_ind(movies, shows, equal_var=False)`;
 }
 
 ttestVar.addEventListener("change", drawTTest);

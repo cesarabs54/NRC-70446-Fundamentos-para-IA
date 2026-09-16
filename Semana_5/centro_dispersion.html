@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Centro y dispersión | Semana 5</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="data.js"></script>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-border: #26314a;
+    --text: #e7ecf7;
+    --text-dim: #9aa7c2;
+    --accent: #5eb1ff;
+    --accent-2: #ffb75e;
+    --good: #5edc9a;
+    --bad: #ff6b6b;
+    --grid: #26314a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header { padding: 32px 20px 16px; max-width: 980px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 70ch; }
+  main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  select { background: #0f1420; color: var(--text); border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 10px; font-size: 14px; min-width: 170px; }
+  .viz-wrap { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-top: 14px; }
+  svg { flex-shrink: 0; max-width: 100%; height: auto; }
+  .axis text { fill: var(--text-dim); font-size: 11px; }
+  .axis path, .axis line { stroke: var(--panel-border); }
+  .bar { fill: var(--accent); opacity: 0.55; }
+  .marker-line { stroke-width: 2px; }
+  .marker-mean { stroke: var(--good); }
+  .marker-median { stroke: var(--accent-2); }
+  .marker-mode { stroke: #ff6b9d; stroke-dasharray: 4 3; }
+  .legend { font-size: 12px; color: var(--text-dim); display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 4px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch-line { width: 16px; height: 2px; display: inline-block; }
+  .stats { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 10px; }
+  .stat-row { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--panel-border); padding-bottom: 6px; font-size: 14px; }
+  .stat-row span:first-child { color: var(--text-dim); }
+  .stat-row span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .verdict { margin-top: 6px; padding: 12px 14px; border-radius: 10px; font-size: 14px; background: #101826; border: 1px solid var(--panel-border); }
+  .verdict.bad { border-color: var(--bad); color: var(--bad); }
+  .learn { margin-top: 18px; font-size: 13px; color: var(--accent-2); }
+  .box { fill: var(--accent); fill-opacity: 0.25; stroke: var(--accent); stroke-width: 1.5px; }
+  .whisker { stroke: var(--text-dim); stroke-width: 1.5px; }
+  .median-tick { stroke: var(--accent-2); stroke-width: 2.5px; }
+  .outlier { fill: var(--bad); opacity: 0.8; }
+  .code-wrap { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 18px; }
+  .code-card { flex: 1; min-width: 260px; }
+  .code-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: 8px; }
+  pre {
+    background: #0b111c; border: 1px solid var(--panel-border); border-radius: 10px;
+    padding: 14px 16px; font-size: 13px; overflow-x: auto; margin: 0;
+  }
+  pre.stats-code { border-left: 3px solid var(--good); }
+  pre.box-code { border-left: 3px solid var(--accent-2); }
+  code { font-family: "SF Mono", Consolas, Menlo, monospace; }
+  footer { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">&larr; Recurso interactivo Semana 5</a>
+  <div class="kicker">Semana 5 · Módulo 1 · Estadística descriptiva</div>
+  <h1>Media, mediana, moda y dispersión</h1>
+  <p>
+    El "dato típico" (media, mediana, moda) no basta para describir una variable: dos grupos
+    pueden tener el mismo promedio y ser muy distintos en qué tan parejos son sus datos.
+    Cambia la variable y el filtro por grupo para ver cómo cambian ambas caras del análisis:
+    dónde se concentran los datos y qué tan dispersos están.
+  </p>
+</header>
+
+<main>
+
+  <section class="card" id="stats-section">
+    <h2>Histograma con media, mediana y moda</h2>
+    <div class="subtitle">
+      Cuando media y mediana quedan casi pegadas, la distribución es aproximadamente simétrica;
+      cuando se separan, hay asimetría — normalmente por un grupo de valores extremos que
+      "jala" la media hacia un lado.
+    </div>
+
+    <div class="controls">
+      <div class="field">
+        <label for="var-select">Variable</label>
+        <select id="var-select"></select>
+      </div>
+      <div class="field">
+        <label for="group-select">Filtrar por curso de preparación</label>
+        <select id="group-select">
+          <option value="ALL">Todos</option>
+          <option value="none">Sin curso (none)</option>
+          <option value="completed">Con curso (completed)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span><span class="swatch-line" style="background:var(--good)"></span> Media</span>
+      <span><span class="swatch-line" style="background:var(--accent-2)"></span> Mediana</span>
+      <span><span class="swatch-line" style="background:#ff6b9d"></span> Moda</span>
+    </div>
+
+    <div class="viz-wrap">
+      <svg id="hist-svg" width="560" height="320"></svg>
+      <div class="stats">
+        <div class="stat-row"><span>n (registros filtrados)</span><span id="stat-n">—</span></div>
+        <div class="stat-row"><span>Media</span><span id="stat-mean">—</span></div>
+        <div class="stat-row"><span>Mediana</span><span id="stat-median">—</span></div>
+        <div class="stat-row"><span>Moda</span><span id="stat-mode">—</span></div>
+        <div id="stat-verdict" class="verdict">—</div>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="stats-code"><code id="stats-code"></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="box-section">
+    <h2>Diagrama de caja: cuartiles, IQR y valores atípicos</h2>
+    <div class="subtitle">
+      La caja va de Q1 a Q3 (el 50 % central de los datos); la línea es la mediana; los puntos
+      rojos son los valores que quedan fuera de <code>Q1 − 1.5×IQR</code> y
+      <code>Q3 + 1.5×IQR</code>, el criterio estándar para detectar atípicos.
+    </div>
+
+    <div class="viz-wrap">
+      <svg id="box-svg" width="560" height="160"></svg>
+      <div class="stats">
+        <div class="stat-row"><span>Rango</span><span id="stat-range">—</span></div>
+        <div class="stat-row"><span>Desv. estándar (s)</span><span id="stat-std">—</span></div>
+        <div class="stat-row"><span>Q1 / Q2 / Q3</span><span id="stat-quartiles">—</span></div>
+        <div class="stat-row"><span>IQR</span><span id="stat-iqr">—</span></div>
+        <div class="stat-row"><span>Límites (1.5×IQR)</span><span id="stat-limits">—</span></div>
+        <div class="stat-row"><span>Valores atípicos</span><span id="stat-outliers">—</span></div>
+        <div class="learn">Aprenderás: cuándo media y mediana se separan, y cómo el IQR marca qué notas son atípicas.</div>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="box-code"><code id="box-code"></code></pre>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Módulo 1/4 del recurso interactivo de Semana 5. Dataset: <code>StudentsPerformance.csv</code>
+  (mismo de la <a href="../../Semana_5/01_%20Estadistica_basica/01_Estadistica_Basica.md">guía de estadística básica</a>),
+  filtrado a casos completos con <code>build_data.py</code>. Complementa la guía, no la reemplaza.
+</footer>
+
+<script>
+const VAR_LABELS = { mathScore: "Nota de matemáticas", readingScore: "Nota de lectura", writingScore: "Nota de escritura" };
+const NUMERIC_VARS = ["mathScore", "readingScore", "writingScore"];
+const COL_NAMES = { mathScore: "math score", readingScore: "reading score", writingScore: "writing score" };
+
+function buildLoadLine(key) {
+  const g = groupSelect.value;
+  return g === "ALL"
+    ? `valores = df["${COL_NAMES[key]}"]`
+    : `valores = df.loc[df["test preparation course"] == "${g}", "${COL_NAMES[key]}"]`;
+}
+
+function buildStatsSnippet(key) {
+  return `${buildLoadLine(key)}
+
+media = valores.mean()
+mediana = valores.median()
+moda = valores.mode()[0]`;
+}
+
+function buildBoxSnippet(key) {
+  return `${buildLoadLine(key)}
+
+desviacion = valores.std()
+q1 = valores.quantile(0.25)
+q3 = valores.quantile(0.75)
+iqr = q3 - q1
+lim_inf, lim_sup = q1 - 1.5 * iqr, q3 + 1.5 * iqr
+atipicos = valores[(valores < lim_inf) | (valores > lim_sup)]`;
+}
+
+function populateSelect(sel, keys, labelFn, selected) {
+  sel.innerHTML = "";
+  keys.forEach(k => {
+    const opt = document.createElement("option");
+    opt.value = k;
+    opt.textContent = labelFn(k);
+    if (k === selected) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function mean(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+function median(sorted) {
+  const n = sorted.length, mid = Math.floor(n / 2);
+  return n % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+}
+function mode(arr) {
+  const counts = new Map();
+  let best = arr[0], bestCount = 0;
+  arr.forEach(v => {
+    const c = (counts.get(v) || 0) + 1;
+    counts.set(v, c);
+    if (c > bestCount) { bestCount = c; best = v; }
+  });
+  return best;
+}
+function std(arr, m) {
+  const v = arr.reduce((a, b) => a + (b - m) ** 2, 0) / (arr.length - 1);
+  return Math.sqrt(v);
+}
+// Posición de cuartil k(n+1)/4 con interpolación lineal (igual a pandas .quantile()).
+function quantile(sorted, q) {
+  const n = sorted.length;
+  const pos = q * (n - 1);
+  const lo = Math.floor(pos), hi = Math.ceil(pos);
+  if (lo === hi) return sorted[lo];
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo);
+}
+
+const varSelect = document.getElementById("var-select");
+const groupSelect = document.getElementById("group-select");
+populateSelect(varSelect, NUMERIC_VARS, k => VAR_LABELS[k], "mathScore");
+
+// ---------- Histograma ----------
+const histSvg = d3.select("#hist-svg");
+const hMargin = { top: 16, right: 16, bottom: 44, left: 56 };
+const hW = 560 - hMargin.left - hMargin.right;
+const hH = 320 - hMargin.top - hMargin.bottom;
+const hG = histSvg.append("g").attr("transform", `translate(${hMargin.left},${hMargin.top})`);
+const hXAxisG = hG.append("g").attr("class", "axis").attr("transform", `translate(0,${hH})`);
+const hYAxisG = hG.append("g").attr("class", "axis");
+const hXLabel = histSvg.append("text").attr("class", "axis").attr("text-anchor", "middle")
+  .attr("x", hMargin.left + hW / 2).attr("y", 316).style("fill", "var(--text-dim)").style("font-size", "12px");
+
+// ---------- Boxplot horizontal ----------
+const boxSvg = d3.select("#box-svg");
+const bMargin = { top: 20, right: 30, bottom: 34, left: 30 };
+const bW = 560 - bMargin.left - bMargin.right;
+const bH = 160 - bMargin.top - bMargin.bottom;
+const bG = boxSvg.append("g").attr("transform", `translate(${bMargin.left},${bMargin.top})`);
+const bXAxisG = bG.append("g").attr("class", "axis").attr("transform", `translate(0,${bH})`);
+const boxCy = bH / 2;
+const boxHalf = 24;
+
+function getFilteredValues(key) {
+  const g = groupSelect.value;
+  let rows = STUDENTS_DATA;
+  if (g !== "ALL") rows = rows.filter(d => d.testPrep === g);
+  return rows.map(d => d[key]);
+}
+
+function render() {
+  const key = varSelect.value;
+  const values = getFilteredValues(key);
+  const sorted = [...values].sort((a, b) => a - b);
+
+  const m = mean(values);
+  const med = median(sorted);
+  const mo = mode(values);
+  const s = std(values, m);
+  const lo = sorted[0], hi = sorted[sorted.length - 1];
+  const q1 = quantile(sorted, 0.25), q2 = quantile(sorted, 0.5), q3 = quantile(sorted, 0.75);
+  const iqr = q3 - q1;
+  const lowerLimit = q1 - 1.5 * iqr, upperLimit = q3 + 1.5 * iqr;
+  const outliers = sorted.filter(v => v < lowerLimit || v > upperLimit);
+
+  // Histograma
+  const x = d3.scaleLinear().domain([0, 100]).range([0, hW]);
+  const bins = d3.bin().domain(x.domain()).thresholds(20)(values);
+  const y = d3.scaleLinear().domain([0, d3.max(bins, b => b.length)]).nice().range([hH, 0]);
+
+  hXAxisG.transition().duration(250).call(d3.axisBottom(x).ticks(6));
+  hYAxisG.transition().duration(250).call(d3.axisLeft(y).ticks(5));
+  hXLabel.text(VAR_LABELS[key]);
+
+  const bars = hG.selectAll("rect.bar").data(bins);
+  bars.join(
+    enter => enter.append("rect").attr("class", "bar")
+      .attr("x", d => x(d.x0) + 1).attr("width", d => Math.max(0, x(d.x1) - x(d.x0) - 1))
+      .attr("y", d => y(d.length)).attr("height", d => hH - y(d.length)),
+    update => update.transition().duration(250)
+      .attr("x", d => x(d.x0) + 1).attr("width", d => Math.max(0, x(d.x1) - x(d.x0) - 1))
+      .attr("y", d => y(d.length)).attr("height", d => hH - y(d.length))
+  );
+
+  const markers = [
+    { key: "mean", value: m, cls: "marker-mean" },
+    { key: "median", value: med, cls: "marker-median" },
+    { key: "mode", value: mo, cls: "marker-mode" },
+  ];
+  const lines = hG.selectAll("line.marker-line").data(markers, d => d.key);
+  lines.join(
+    enter => enter.append("line").attr("class", d => "marker-line " + d.cls)
+      .attr("x1", d => x(d.value)).attr("x2", d => x(d.value)).attr("y1", 0).attr("y2", hH),
+    update => update.transition().duration(250)
+      .attr("x1", d => x(d.value)).attr("x2", d => x(d.value)).attr("y1", 0).attr("y2", hH)
+  );
+
+  document.getElementById("stat-n").textContent = values.length;
+  document.getElementById("stat-mean").textContent = m.toFixed(2);
+  document.getElementById("stat-median").textContent = med.toFixed(2);
+  document.getElementById("stat-mode").textContent = mo;
+  document.getElementById("stats-code").textContent = buildStatsSnippet(key);
+
+  const skewGap = Math.abs(m - med) / (s || 1);
+  const verdict = document.getElementById("stat-verdict");
+  if (skewGap > 0.15) {
+    verdict.textContent = `Media y mediana difieren notablemente (${m.toFixed(2)} vs ${med.toFixed(2)}): la distribución de ${VAR_LABELS[key]} es asimétrica.`;
+    verdict.className = "verdict bad";
+  } else {
+    verdict.textContent = `Media y mediana son similares (${m.toFixed(2)} vs ${med.toFixed(2)}): la distribución de ${VAR_LABELS[key]} es aproximadamente simétrica.`;
+    verdict.className = "verdict";
+  }
+
+  // Boxplot
+  const bx = d3.scaleLinear().domain([0, 100]).range([0, bW]);
+  bXAxisG.transition().duration(250).call(d3.axisBottom(bx).ticks(6));
+
+  const whiskerLo = Math.max(lo, lowerLimit <= lo ? lo : sorted.find(v => v >= lowerLimit));
+  const whiskerHi = Math.min(hi, upperLimit >= hi ? hi : [...sorted].reverse().find(v => v <= upperLimit));
+
+  const whiskerData = [
+    { x1: whiskerLo, x2: q1 },
+    { x1: q3, x2: whiskerHi },
+  ];
+  const wSel = bG.selectAll("line.whisker").data(whiskerData);
+  wSel.join(
+    enter => enter.append("line").attr("class", "whisker")
+      .attr("x1", d => bx(d.x1)).attr("x2", d => bx(d.x2)).attr("y1", boxCy).attr("y2", boxCy),
+    update => update.transition().duration(250)
+      .attr("x1", d => bx(d.x1)).attr("x2", d => bx(d.x2)).attr("y1", boxCy).attr("y2", boxCy)
+  );
+
+  const boxRect = bG.selectAll("rect.box").data([{ q1, q3 }]);
+  boxRect.join(
+    enter => enter.append("rect").attr("class", "box")
+      .attr("x", d => bx(d.q1)).attr("width", d => bx(d.q3) - bx(d.q1))
+      .attr("y", boxCy - boxHalf / 2).attr("height", boxHalf),
+    update => update.transition().duration(250)
+      .attr("x", d => bx(d.q1)).attr("width", d => bx(d.q3) - bx(d.q1))
+      .attr("y", boxCy - boxHalf / 2).attr("height", boxHalf)
+  );
+
+  const medTick = bG.selectAll("line.median-tick").data([q2]);
+  medTick.join(
+    enter => enter.append("line").attr("class", "median-tick")
+      .attr("x1", d => bx(d)).attr("x2", d => bx(d)).attr("y1", boxCy - boxHalf / 2).attr("y2", boxCy + boxHalf / 2),
+    update => update.transition().duration(250)
+      .attr("x1", d => bx(d)).attr("x2", d => bx(d)).attr("y1", boxCy - boxHalf / 2).attr("y2", boxCy + boxHalf / 2)
+  );
+
+  const outDots = bG.selectAll("circle.outlier").data(outliers);
+  outDots.join(
+    enter => enter.append("circle").attr("class", "outlier")
+      .attr("cx", d => bx(d)).attr("cy", boxCy).attr("r", 3.5),
+    update => update.transition().duration(250).attr("cx", d => bx(d)).attr("cy", boxCy),
+    exit => exit.remove()
+  );
+
+  document.getElementById("stat-range").textContent = `${(hi - lo).toFixed(0)} (${lo} – ${hi})`;
+  document.getElementById("stat-std").textContent = s.toFixed(2);
+  document.getElementById("stat-quartiles").textContent = `${q1.toFixed(1)} / ${q2.toFixed(1)} / ${q3.toFixed(1)}`;
+  document.getElementById("stat-iqr").textContent = iqr.toFixed(2);
+  document.getElementById("stat-limits").textContent = `[${lowerLimit.toFixed(1)}, ${upperLimit.toFixed(1)}]`;
+  document.getElementById("stat-outliers").textContent = `${outliers.length} (${outliers.join(", ") || "ninguno"})`;
+  document.getElementById("box-code").textContent = buildBoxSnippet(key);
+}
+
+varSelect.addEventListener("change", render);
+groupSelect.addEventListener("change", render);
+render();
+</script>
+
+</body>
+</html>

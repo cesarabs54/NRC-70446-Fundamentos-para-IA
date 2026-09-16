@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calidad de datos — Semana 2 | Fundamentos para IA</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="data.js"></script>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-border: #26314a;
+    --text: #e7ecf7;
+    --text-dim: #9aa7c2;
+    --accent: #5eb1ff;
+    --accent-2: #ffb75e;
+    --good: #5edc9a;
+    --bad: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header { padding: 32px 20px 16px; max-width: 980px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 70ch; }
+  header code, main code { color: var(--accent-2); }
+  main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--panel-border); }
+  th { color: var(--text-dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+  td.n { font-variant-numeric: tabular-nums; text-align: right; }
+  .verdict { margin-top: 14px; padding: 12px 14px; border-radius: 10px; font-size: 14px; background: #101826; border: 1px solid var(--panel-border); }
+  .verdict.ok { color: var(--good); }
+  .verdict.warn { color: var(--bad); }
+  .controls { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  select { background: #0f1420; color: var(--text); border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 10px; font-size: 14px; min-width: 170px; }
+  .field.slider { min-width: 220px; }
+  input[type="range"] { width: 220px; accent-color: var(--accent); }
+  .slider-value { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--accent-2); }
+  .viz-wrap { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-top: 14px; }
+  svg { flex-shrink: 0; max-width: 100%; height: auto; }
+  .axis text { fill: var(--text-dim); font-size: 11px; }
+  .axis path, .axis line { stroke: var(--panel-border); }
+  .box-rect { fill: var(--accent); fill-opacity: 0.25; stroke: var(--accent); }
+  .whisker { stroke: var(--text-dim); stroke-width: 1.5px; }
+  .median-line { stroke: var(--accent-2); stroke-width: 2px; }
+  .outlier-pt { fill: var(--bad); fill-opacity: 0.8; }
+  .stats { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 10px; }
+  .stat-row { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--panel-border); padding-bottom: 6px; font-size: 14px; }
+  .stat-row span:first-child { color: var(--text-dim); }
+  .stat-row span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; }
+  pre { background: #0a0e17; border: 1px solid var(--panel-border); border-radius: 10px; padding: 14px 16px; font-size: 13px; overflow-x: auto; color: #d6deef; }
+  .code-wrap { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 18px; }
+  .code-card { flex: 1; min-width: 260px; }
+  .code-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: 8px; }
+  pre.iqr-code { border-left: 3px solid var(--accent); }
+  code { font-family: "SF Mono", Consolas, Menlo, monospace; }
+  .learn { margin-top: 18px; font-size: 13px; color: var(--accent-2); }
+  footer { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">&larr; Recurso interactivo Semana 2</a>
+  <div class="kicker">Semana 2 · Módulo 2 · Calidad de datos</div>
+  <h1>¿El dataset está limpio?</h1>
+  <p>
+    Antes de sacar conclusiones hay que verificar tres cosas: valores nulos, registros
+    duplicados y valores atípicos. En este dataset el resultado es "limpio", pero el
+    diagnóstico se hace siempre — no porque se espere encontrar problemas, sino porque
+    no puedes saberlo sin comprobarlo con <code>isnull()</code>, <code>duplicated()</code>
+    y una regla de atípicos como el rango intercuartílico (IQR).
+  </p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>Valores nulos por columna — <code>df.isnull().sum()</code></h2>
+    <div class="subtitle">Cuenta cuántos valores faltantes hay en cada columna.</div>
+    <table>
+      <thead><tr><th>Columna</th><th style="text-align:right">Nulos</th><th style="text-align:right">% del total</th></tr></thead>
+      <tbody id="nulls-body"></tbody>
+    </table>
+    <div id="nulls-verdict" class="verdict ok"></div>
+  </section>
+
+  <section class="card">
+    <h2>Registros duplicados — <code>df.duplicated().sum()</code></h2>
+    <div class="subtitle">Cuenta filas que son copia exacta de otra fila anterior.</div>
+    <div id="dup-verdict" class="verdict ok"></div>
+  </section>
+
+  <section class="card">
+    <h2>Valores atípicos — regla del rango intercuartílico (IQR)</h2>
+    <div class="subtitle">
+      Un valor se considera atípico si cae fuera de
+      <code>[Q1 − k·IQR, Q3 + k·IQR]</code>, con <code>IQR = Q3 − Q1</code>.
+      El valor habitual de <code>k</code> es 1.5; muévelo para ver cómo cambia el diagnóstico.
+    </div>
+
+    <div class="controls">
+      <div class="field">
+        <label for="var-select">Variable numérica</label>
+        <select id="var-select">
+          <option value="mathScore">math score</option>
+          <option value="readingScore">reading score</option>
+          <option value="writingScore">writing score</option>
+        </select>
+      </div>
+      <div class="field slider">
+        <label for="k-slider">k (multiplicador de IQR) — <span class="slider-value" id="k-value">1.5</span></label>
+        <input type="range" id="k-slider" min="0.5" max="3" value="1.5" step="0.1">
+      </div>
+    </div>
+
+    <div class="viz-wrap">
+      <svg id="box-svg" width="560" height="200"></svg>
+      <div class="stats">
+        <div class="stat-row"><span>Q1 (percentil 25)</span><span id="stat-q1">—</span></div>
+        <div class="stat-row"><span>Mediana (Q2)</span><span id="stat-median">—</span></div>
+        <div class="stat-row"><span>Q3 (percentil 75)</span><span id="stat-q3">—</span></div>
+        <div class="stat-row"><span>IQR = Q3 − Q1</span><span id="stat-iqr">—</span></div>
+        <div class="stat-row"><span>Límite inferior</span><span id="stat-lo">—</span></div>
+        <div class="stat-row"><span>Límite superior</span><span id="stat-hi">—</span></div>
+        <div class="stat-row"><span>Atípicos detectados</span><span id="stat-outliers">—</span></div>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="iqr-code"><code id="iqr-code"></code></pre>
+      </div>
+    </div>
+    <div class="learn">Aprenderás: que "atípico" depende de una regla y un umbral que tú eliges, no es un hecho absoluto — por eso se reporta junto con el criterio usado.</div>
+  </section>
+
+  <section class="card">
+    <h2>El código equivalente en pandas</h2>
+    <pre><code>df.isnull().sum()          # nulos por columna
+df.duplicated().sum()      # filas duplicadas
+
+q1 = df["math score"].quantile(0.25)
+q3 = df["math score"].quantile(0.75)
+iqr = q3 - q1
+lo, hi = q1 - 1.5 * iqr, q3 + 1.5 * iqr
+atipicos = df[(df["math score"] < lo) | (df["math score"] > hi)]</code></pre>
+  </section>
+
+</main>
+
+<footer>
+  Módulo 2/4 del recurso interactivo de Semana 2. Dataset: <code>StudentsPerformance.csv</code>
+  (mismo del <a href="../../Semana_2/Semana_2_Actividad/EIARV011_A2.md">estudio de caso de la semana</a>). Complementa la actividad, no la reemplaza.
+</footer>
+
+<script>
+const COLUMNS = ["gender", "group", "parentalEducation", "lunch", "testPrep", "mathScore", "readingScore", "writingScore"];
+const LABELS = {
+  gender: "gender", group: "race/ethnicity", parentalEducation: "parental level of education",
+  lunch: "lunch", testPrep: "test preparation course",
+  mathScore: "math score", readingScore: "reading score", writingScore: "writing score",
+};
+
+const total = STUDENTS_DATA.length;
+const nullsBody = document.getElementById("nulls-body");
+let totalNulls = 0;
+COLUMNS.forEach(key => {
+  const nulls = STUDENTS_DATA.filter(d => d[key] === null || d[key] === undefined || d[key] === "").length;
+  totalNulls += nulls;
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td>${LABELS[key]}</td><td class="n">${nulls}</td><td class="n">${(nulls / total * 100).toFixed(1)}%</td>`;
+  nullsBody.appendChild(tr);
+});
+const nullsVerdict = document.getElementById("nulls-verdict");
+if (totalNulls === 0) {
+  nullsVerdict.className = "verdict ok";
+  nullsVerdict.textContent = `Sin valores nulos en ninguna de las ${COLUMNS.length} columnas (${total} filas revisadas). Aun así, esta verificación debe hacerse siempre.`;
+} else {
+  nullsVerdict.className = "verdict warn";
+  nullsVerdict.textContent = `Se encontraron ${totalNulls} valores nulos en total.`;
+}
+
+const seen = new Set();
+let dupCount = 0;
+STUDENTS_DATA.forEach(d => {
+  const key = COLUMNS.map(c => d[c]).join("|");
+  if (seen.has(key)) dupCount++;
+  else seen.add(key);
+});
+const dupVerdict = document.getElementById("dup-verdict");
+if (dupCount === 0) {
+  dupVerdict.className = "verdict ok";
+  dupVerdict.textContent = `0 filas duplicadas de ${total}. Cada estudiante del dataset aparece una sola vez.`;
+} else {
+  dupVerdict.className = "verdict warn";
+  dupVerdict.textContent = `${dupCount} filas duplicadas encontradas.`;
+}
+
+const varSelect = document.getElementById("var-select");
+const kSlider = document.getElementById("k-slider");
+const kValue = document.getElementById("k-value");
+
+const svg = d3.select("#box-svg");
+const margin = { top: 20, right: 20, bottom: 30, left: 20 };
+const W = 560 - margin.left - margin.right;
+const H = 200 - margin.top - margin.bottom;
+const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+const xAxisG = g.append("g").attr("class", "axis").attr("transform", `translate(0,${H})`);
+const midY = H / 2;
+const boxHeight = 50;
+
+function quantile(sorted, q) {
+  const pos = (sorted.length - 1) * q;
+  const base = Math.floor(pos);
+  const rest = pos - base;
+  return sorted[base + 1] !== undefined ? sorted[base] + rest * (sorted[base + 1] - sorted[base]) : sorted[base];
+}
+
+function render() {
+  const key = varSelect.value;
+  const k = +kSlider.value;
+  kValue.textContent = k.toFixed(1);
+
+  const values = STUDENTS_DATA.map(d => d[key]);
+  const sorted = [...values].sort((a, b) => a - b);
+  const q1 = quantile(sorted, 0.25);
+  const med = quantile(sorted, 0.5);
+  const q3 = quantile(sorted, 0.75);
+  const iqr = q3 - q1;
+  const lo = q1 - k * iqr;
+  const hi = q3 + k * iqr;
+  const outliers = values.filter(v => v < lo || v > hi);
+  const lo_min = Math.max(sorted[0], lo);
+  const hi_max = Math.min(sorted[sorted.length - 1], hi);
+
+  const x = d3.scaleLinear().domain([sorted[0] - 5, sorted[sorted.length - 1] + 5]).nice().range([0, W]);
+  xAxisG.transition().duration(200).call(d3.axisBottom(x).ticks(8));
+
+  const boxSel = g.selectAll("rect.box-rect").data([{ q1, q3 }]);
+  boxSel.join(
+    enter => enter.append("rect").attr("class", "box-rect")
+      .attr("x", d => x(d.q1)).attr("width", d => x(d.q3) - x(d.q1))
+      .attr("y", midY - boxHeight / 2).attr("height", boxHeight),
+    update => update.transition().duration(200)
+      .attr("x", d => x(d.q1)).attr("width", d => x(d.q3) - x(d.q1))
+  );
+
+  const whiskerData = [
+    { x1: lo_min, x2: q1 },
+    { x1: q3, x2: hi_max },
+  ];
+  const whiskerSel = g.selectAll("line.whisker").data(whiskerData);
+  whiskerSel.join(
+    enter => enter.append("line").attr("class", "whisker")
+      .attr("x1", d => x(d.x1)).attr("x2", d => x(d.x2))
+      .attr("y1", midY).attr("y2", midY),
+    update => update.transition().duration(200)
+      .attr("x1", d => x(d.x1)).attr("x2", d => x(d.x2))
+      .attr("y1", midY).attr("y2", midY)
+  );
+
+  const medSel = g.selectAll("line.median-line").data([med]);
+  medSel.join(
+    enter => enter.append("line").attr("class", "median-line")
+      .attr("x1", d => x(d)).attr("x2", d => x(d))
+      .attr("y1", midY - boxHeight / 2).attr("y2", midY + boxHeight / 2),
+    update => update.transition().duration(200)
+      .attr("x1", d => x(d)).attr("x2", d => x(d))
+  );
+
+  const ptSel = g.selectAll("circle.outlier-pt").data(outliers);
+  ptSel.join(
+    enter => enter.append("circle").attr("class", "outlier-pt")
+      .attr("cx", d => x(d)).attr("cy", midY).attr("r", 4),
+    update => update.transition().duration(200).attr("cx", d => x(d)),
+    exit => exit.remove()
+  );
+
+  document.getElementById("stat-q1").textContent = q1.toFixed(2);
+  document.getElementById("stat-median").textContent = med.toFixed(2);
+  document.getElementById("stat-q3").textContent = q3.toFixed(2);
+  document.getElementById("stat-iqr").textContent = iqr.toFixed(2);
+  document.getElementById("stat-lo").textContent = lo.toFixed(2);
+  document.getElementById("stat-hi").textContent = hi.toFixed(2);
+  document.getElementById("stat-outliers").textContent = `${outliers.length} (${(outliers.length / total * 100).toFixed(1)}%)`;
+
+  const label = LABELS[key];
+  const kStr = k.toFixed(1);
+  document.getElementById("iqr-code").textContent =
+`q1 = df["${label}"].quantile(0.25)
+q3 = df["${label}"].quantile(0.75)
+iqr = q3 - q1
+lo, hi = q1 - ${kStr} * iqr, q3 + ${kStr} * iqr
+atipicos = df[(df["${label}"] < lo) | (df["${label}"] > hi)]`;
+}
+
+varSelect.addEventListener("change", render);
+kSlider.addEventListener("input", render);
+render();
+</script>
+
+</body>
+</html>

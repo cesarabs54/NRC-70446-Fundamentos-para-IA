@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caso guiado: del curso de preparación a la conclusión | Semana 6</title>
+<style>
+  :root {
+    --bg: #0f1420; --panel: #161d2e; --panel-border: #26314a; --text: #e7ecf7;
+    --text-dim: #9aa7c2; --accent: #5eb1ff; --accent-2: #ffb75e; --good: #5edc9a; --bad: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; }
+  header { padding: 32px 20px 16px; max-width: 900px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 70ch; }
+  main { max-width: 900px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 14px; }
+  .step { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; overflow: hidden; }
+  .step summary { cursor: pointer; padding: 16px 20px; font-size: 15px; font-weight: 600; list-style: none; display: flex; align-items: center; gap: 12px; }
+  .step summary::-webkit-details-marker { display: none; }
+  .step summary .num { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; background: #101826; border: 1px solid var(--panel-border); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--accent); }
+  .step summary::after { content: "+"; margin-left: auto; color: var(--text-dim); font-size: 18px; }
+  .step[open] summary::after { content: "−"; }
+  .step .body { padding: 0 20px 20px 58px; color: var(--text-dim); font-size: 14px; }
+  .step .body p { margin: 8px 0; }
+  .step .body strong { color: var(--text); }
+  .hyp { background: #101826; border: 1px solid var(--panel-border); border-radius: 10px; padding: 10px 14px; margin: 10px 0; font-size: 13px; }
+  table.mini { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+  table.mini th, table.mini td { padding: 6px 8px; border-bottom: 1px dashed var(--panel-border); text-align: left; }
+  table.mini th { color: var(--text-dim); font-weight: 600; font-size: 11px; text-transform: uppercase; }
+  .badge-inline { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; margin-left: 4px; }
+  .badge-inline.ok { color: var(--good); border: 1px solid #1f4a35; }
+  .badge-inline.no { color: var(--bad); border: 1px solid #4a1f1f; }
+  .cta { display: inline-block; margin-top: 6px; color: var(--accent); font-size: 13px; text-decoration: none; }
+  .cta:hover { text-decoration: underline; }
+  .conclusion { background: var(--panel); border: 1px solid var(--accent); border-radius: 14px; padding: 20px 24px; }
+  .conclusion h2 { margin-top: 0; font-size: 18px; }
+  .practice { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px 24px; }
+  .practice h2 { margin-top: 0; font-size: 18px; }
+  .practice ul { color: var(--text-dim); font-size: 14px; padding-left: 20px; }
+  .practice a { color: var(--accent-2); }
+  .code-section { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px 24px; }
+  .code-section h2 { margin-top: 0; font-size: 18px; }
+  .code-section .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 4px; }
+  details.code-toggle { margin-top: 14px; border: 1px solid var(--panel-border); border-radius: 10px; background: #0b0f18; }
+  details.code-toggle summary { cursor: pointer; padding: 10px 14px; font-size: 13px; color: var(--accent); list-style: none; user-select: none; }
+  details.code-toggle summary::-webkit-details-marker { display: none; }
+  details.code-toggle summary::before { content: "▸ "; }
+  details.code-toggle[open] summary::before { content: "▾ "; }
+  details.code-toggle .code-wrap { position: relative; }
+  details.code-toggle pre { margin: 0; padding: 4px 16px 16px; overflow-x: auto; }
+  details.code-toggle code { font-family: "Consolas", "Menlo", monospace; font-size: 12.5px; color: #c9d6f0; white-space: pre; }
+  .copy-btn { position: absolute; top: 4px; right: 14px; background: var(--panel); border: 1px solid var(--panel-border); color: var(--text-dim); font-size: 11px; padding: 3px 8px; border-radius: 6px; cursor: pointer; }
+  .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+  footer { max-width: 900px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">&larr; Recurso interactivo Semana 6</a>
+  <div class="kicker">Semana 6 · Módulo 4 · Recorrido guiado</div>
+  <h1>Del curso de preparación a la conclusión sobre H0</h1>
+  <p>
+    Este módulo narra, paso a paso, el caso documentado en <code>EIARV011_A6_Notebook.ipynb</code>:
+    ¿el curso de preparación está asociado con un mejor puntaje de matemáticas? Los números son
+    los que arrojó el notebook con <code>scipy.stats</code>; los enlaces "Ver en vivo" abren los
+    Módulos 1 a 3 con esta misma combinación para que reproduzcas cada cálculo tú mismo en el
+    navegador.
+  </p>
+</header>
+
+<main>
+
+  <details class="step" open>
+    <summary><span class="num">0</span> Pregunta y muestra</summary>
+    <div class="body">
+      <p><strong>Pregunta investigable:</strong> ¿existe una diferencia estadísticamente significativa en el puntaje de matemáticas entre los estudiantes que completaron el curso de preparación y los que no?</p>
+      <div class="hyp">
+        <div><strong>H0:</strong> μ<sub>completed</sub> = μ<sub>none</sub> (el curso no cambia el promedio).</div>
+        <div><strong>H1:</strong> μ<sub>completed</sub> ≠ μ<sub>none</sub> (el curso sí cambia el promedio).</div>
+      </div>
+      <p>Muestra completa, sin exclusiones: <strong>1000</strong> estudiantes → <strong>642</strong> en el grupo <code>none</code> y <strong>358</strong> en <code>completed</code>. No es un experimento aleatorizado: quién toma el curso lo decide cada estudiante, no una asignación al azar.</p>
+      <a class="cta" href="muestra_y_descriptiva.html">Ver el tamaño de los grupos en vivo →</a>
+    </div>
+  </details>
+
+  <details class="step">
+    <summary><span class="num">1</span> Estadística descriptiva</summary>
+    <div class="body">
+      <table class="mini">
+        <tr><th>Grupo</th><th>n</th><th>Media</th></tr>
+        <tr><td>none</td><td>642</td><td>64.08</td></tr>
+        <tr><td>completed</td><td>358</td><td>69.70</td></tr>
+      </table>
+      <p>Diferencia observada: <strong>≈5.6 puntos</strong> a favor de <code>completed</code>. El histograma de matemáticas es razonablemente simétrico; el <em>boxplot</em> muestra la caja de <code>completed</code> por encima de la de <code>none</code>, con dispersión similar entre ambos.</p>
+      <a class="cta" href="muestra_y_descriptiva.html">Ver histograma y boxplot en vivo →</a>
+    </div>
+  </details>
+
+  <details class="step">
+    <summary><span class="num">2</span> Validación de supuestos</summary>
+    <div class="body">
+      <table class="mini">
+        <tr><th>Prueba</th><th>Grupo</th><th>p-value</th><th>Decisión</th></tr>
+        <tr><td>Shapiro-Wilk (normalidad)</td><td>none</td><td>&lt; 0.05</td><td><span class="badge-inline no">Se rechaza normalidad</span></td></tr>
+        <tr><td>Shapiro-Wilk (normalidad)</td><td>completed</td><td>≥ 0.05</td><td><span class="badge-inline ok">No se rechaza</span></td></tr>
+        <tr><td>Levene (homogeneidad)</td><td>ambos</td><td>0.934</td><td><span class="badge-inline ok">Varianzas homogéneas</span></td></tr>
+      </table>
+      <p>Como la normalidad no se cumple en los <strong>dos</strong> grupos a la vez, en sentido estricto corresponde una prueba no paramétrica. El Módulo 2 usa Jarque-Bera (en vez de Shapiro-Wilk, que no es viable calcular en JavaScript en el navegador) como proxy — con estos mismos datos suele coincidir en la conclusión.</p>
+      <a class="cta" href="supuestos_normalidad_varianza.html">Ver normalidad y Levene en vivo →</a>
+    </div>
+  </details>
+
+  <details class="step">
+    <summary><span class="num">3</span> Selección y ejecución de la prueba</summary>
+    <div class="body">
+      <p><strong>Decisión del notebook:</strong> dado que la normalidad falla en un grupo, se usa <strong>Mann-Whitney U</strong> como prueba principal (no paramétrica); y como el tamaño de muestra es grande (n=1000) y las varianzas sí son homogéneas, se reporta la <strong>prueba t de Student</strong> como verificación de robustez.</p>
+      <table class="mini">
+        <tr><th>Prueba</th><th>Estadístico</th><th>p-value</th><th>Decisión (α = 0.05)</th></tr>
+        <tr><td>Mann-Whitney U</td><td>91424.0</td><td>8.02e-08</td><td><span class="badge-inline ok">Se rechaza H0</span></td></tr>
+        <tr><td>t de Student</td><td>t = −5.7046 (df=998)</td><td>1.54e-08</td><td><span class="badge-inline ok">Se rechaza H0</span></td></tr>
+      </table>
+      <p>Las dos pruebas coinciden: el <em>p-value</em> es muchísimo menor que α = 0.05.</p>
+      <a class="cta" href="eleccion_prueba.html">Ejecutar las tres pruebas en vivo →</a>
+    </div>
+  </details>
+
+  <details class="step">
+    <summary><span class="num">4</span> Interpretación y conclusión</summary>
+    <div class="body">
+      <p>Existe evidencia estadísticamente significativa de que el puntaje de matemáticas difiere entre quienes completaron el curso de preparación (69.70) y quienes no (64.08), una diferencia de ≈5.6 puntos.</p>
+      <p><strong>Límite importante:</strong> al ser datos observacionales (no un experimento aleatorizado), esta asociación no permite afirmar causalidad. Podría haber variables de confusión no registradas — por ejemplo, la motivación del estudiante o el apoyo familiar — que expliquen parte de la diferencia.</p>
+    </div>
+  </details>
+
+  <div class="code-section">
+    <h2>Código Python completo de este caso</h2>
+    <div class="subtitle">
+      El recorrido de los pasos 0 a 4, de principio a fin, tal como se ejecuta en
+      <code>EIARV011_A6_Notebook.ipynb</code>.
+    </div>
+    <details class="code-toggle">
+      <summary>Ver código Python equivalente</summary>
+      <div class="code-wrap">
+        <button class="copy-btn" data-target="code-full">Copiar</button>
+        <pre><code id="code-full"></code></pre>
+      </div>
+    </details>
+  </div>
+
+  <div class="conclusion">
+    <h2>Por qué este orden importa</h2>
+    <p>
+      Cada paso responde una pregunta distinta y depende del anterior: la descripción muestra
+      <em>qué</em> se observa, los supuestos determinan <em>qué herramienta</em> es válida usar,
+      la prueba dice <em>si</em> la diferencia es estadísticamente significativa, y la
+      interpretación dice <em>qué tanto</em> confiar en esa conclusión dado cómo se recolectaron
+      los datos. Saltarse la validación de supuestos —por ejemplo, aplicar la prueba t sin revisar
+      normalidad— puede llevar a confiar en un resultado que no era la herramienta adecuada para
+      esos datos.
+    </p>
+  </div>
+
+  <div class="practice">
+    <h2>Practica con otra combinación</h2>
+    <p>El mismo flujo funciona para cualquier otra pareja de variables del <em>dataset</em>. Por ejemplo:</p>
+    <ul>
+      <li><strong>Género → nota de matemáticas:</strong> ¿el promedio de hombres y mujeres difiere? Ábrelo en el <a href="eleccion_prueba.html">Módulo 3</a> y compara con tu intuición antes de ver el resultado.</li>
+      <li><strong>Tipo de almuerzo → nota de escritura:</strong> ¿el almuerzo <code>standard</code> vs <code>free/reduced</code> está asociado con la nota de escritura? Revisa primero los supuestos en el <a href="supuestos_normalidad_varianza.html">Módulo 2</a>.</li>
+      <li><strong>Nivel educativo de los padres → nota de matemáticas (6 grupos):</strong> aquí ya no aplica la prueba t — el <a href="eleccion_prueba.html">Módulo 3</a> calcula ANOVA y Kruskal-Wallis para comparar los 6 grupos a la vez.</li>
+    </ul>
+    <p>En todos los casos, sigue el mismo camino: describe (Módulo 1) → valida supuestos (Módulo 2) → elige y ejecuta la prueba (Módulo 3) → interpreta el p-value frente a α = 0.05, sin perder de vista que asociación no es lo mismo que causalidad. Para ir un paso más allá y preguntarte si tu muestra alcanzaba para detectar el efecto que encontraste, sigue al <a href="tamano_muestra.html">Módulo 5</a>.</p>
+  </div>
+
+</main>
+
+<footer>
+  Módulo 4/5 del recurso interactivo de Semana 6. Los números de este recorrido son los que
+  reporta <code>EIARV011_A6_Notebook.ipynb</code> (carpeta
+  <code>Semana_6_Actividad_solucion_profesor</code>) con <code>scipy.stats</code>; complementa el
+  notebook, no lo reemplaza.
+</footer>
+
+<script>
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".copy-btn");
+  if (!btn) return;
+  const code = document.getElementById(btn.dataset.target);
+  navigator.clipboard.writeText(code.textContent).then(() => {
+    const original = btn.textContent;
+    btn.textContent = "¡Copiado!";
+    setTimeout(() => { btn.textContent = original; }, 1200);
+  }).catch(() => {});
+});
+
+document.getElementById("code-full").textContent =
+`from scipy import stats
+
+completed = df.loc[df["test preparation course"] == "completed", "math score"]
+none_ = df.loc[df["test preparation course"] == "none", "math score"]
+
+# 1. Estadística descriptiva
+df.groupby("test preparation course")["math score"].describe()
+# none:      n=642, media=64.08
+# completed: n=358, media=69.70
+
+# 2. Validación de supuestos
+stats.shapiro(none_)             # p < 0.05  -> se rechaza normalidad
+stats.shapiro(completed)         # p >= 0.05 -> no se rechaza normalidad
+stats.levene(none_, completed)   # p = 0.934 -> varianzas homogéneas
+
+# 3. Selección y ejecución de la prueba
+# La normalidad falla en "none": se usa Mann-Whitney U como prueba principal
+u_stat, p_mw = stats.mannwhitneyu(none_, completed, alternative="two-sided")
+# U = 91424.0, p = 8.02e-08 -> se rechaza H0
+
+# Se reporta la t de Student como verificación de robustez (n grande, varianzas homogéneas)
+t_stat, p_t = stats.ttest_ind(none_, completed, equal_var=True)
+# t = -5.7046, df = 998, p = 1.54e-08 -> se rechaza H0
+
+# 4. Conclusión: ambas pruebas coinciden (p << 0.05); la asociación es
+# estadísticamente significativa, pero al ser datos observacionales no implica causalidad.`;
+</script>
+
+</body>
+</html>

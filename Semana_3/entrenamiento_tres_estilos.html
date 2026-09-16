@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Un mismo problema, tres frameworks — Semana 3</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-border: #26314a;
+    --text: #e7ecf7;
+    --text-dim: #9aa7c2;
+    --accent: #5eb1ff;
+    --accent-2: #ffb75e;
+    --good: #5edc9a;
+    --grid: #26314a;
+    --sklearn: #6fe3d6;
+    --tensorflow: #ffa94d;
+    --pytorch: #ff8577;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header { padding: 32px 20px 16px; max-width: 1100px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 78ch; }
+  main { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+  .panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+  .panel { border: 1px solid var(--panel-border); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .panel-title { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .dot.sklearn { background: var(--sklearn); }
+  .dot.tensorflow { background: var(--tensorflow); }
+  .dot.pytorch { background: var(--pytorch); }
+  pre.code {
+    background: #0a0e17;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    overflow-x: auto;
+    color: #c9d4ea;
+    margin: 0;
+  }
+  .controls-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  button {
+    background: #0f1420;
+    color: var(--text);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  input[type="range"] { width: 160px; accent-color: var(--accent); }
+  .slider-value { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--accent-2); }
+  .stats { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+  .stat-row { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px dashed var(--panel-border); padding: 3px 0; }
+  .stat-row .k { color: var(--text-dim); }
+  .stat-row .v { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .log {
+    font-size: 11px;
+    color: var(--text-dim);
+    max-height: 70px;
+    overflow-y: auto;
+    background: #0a0e17;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-family: "SFMono-Regular", Consolas, monospace;
+  }
+  .viz-wrap { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-top: 14px; }
+  svg { flex-shrink: 0; max-width: 100%; height: auto; }
+  .axis text { fill: var(--text-dim); font-size: 11px; }
+  .axis path, .axis line { stroke: var(--panel-border); }
+  .legend { font-size: 12px; color: var(--text-dim); display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 4px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .swatch { width: 12px; height: 3px; display: inline-block; }
+  .code-wrap { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 18px; }
+  .code-card { flex: 1; min-width: 260px; }
+  .code-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: 8px; }
+  pre {
+    background: #0b111c; border: 1px solid var(--panel-border); border-radius: 10px;
+    padding: 14px 16px; font-size: 13px; overflow-x: auto; margin: 0;
+  }
+  pre.sklearn-result-code { border-left: 3px solid var(--sklearn); }
+  pre.keras-result-code { border-left: 3px solid var(--tensorflow); }
+  pre.pytorch-result-code { border-left: 3px solid var(--pytorch); }
+  code { font-family: "SF Mono", Consolas, Menlo, monospace; }
+  .learn { background: rgba(94, 220, 154, 0.08); border: 1px solid rgba(94, 220, 154, 0.35); border-radius: 10px; padding: 12px 16px; font-size: 14px; color: var(--text-dim); }
+  .learn strong { color: var(--good); }
+  footer { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">← Recurso interactivo Semana 3</a>
+  <div class="kicker">Módulo 1 · scikit-learn · TensorFlow/Keras · PyTorch</div>
+  <h1>Un mismo problema, tres estilos de entrenamiento</h1>
+  <p>
+    Los tres frameworks resuelven exactamente el mismo problema del taller —una neurona que
+    aprende <code>y = 2x</code> a partir de los puntos <code>(1,2) (2,4) (3,6) (4,8)</code>—
+    pero cada uno te obliga a escribir (y a controlar) una cantidad distinta de código.
+    Entrena cada panel y observa la curva de pérdida (MSE) resultante.
+  </p>
+</header>
+
+<main>
+  <section class="card">
+    <h2>Los tres estilos</h2>
+    <p class="subtitle">Mismo dataset, mismo modelo lineal <code>w·x + b</code>. Entrena cada panel de forma independiente.</p>
+
+    <div class="panels">
+
+      <div class="panel">
+        <div class="panel-title"><span class="dot sklearn"></span>Scikit-learn — solución cerrada</div>
+        <pre class="code">from sklearn.linear_model import LinearRegression
+
+modelo = LinearRegression()
+modelo.fit(X, y)
+print(modelo.predict([[5]]))</pre>
+        <div class="controls-row">
+          <button id="btn-sklearn">Ajustar (fit)</button>
+          <button id="btn-sklearn-reset">Reiniciar</button>
+        </div>
+        <div class="stats">
+          <div class="stat-row"><span class="k">Pasos necesarios</span><span class="v">1</span></div>
+          <div class="stat-row"><span class="k">w, b encontrados</span><span class="v" id="sklearn-wb">—</span></div>
+          <div class="stat-row"><span class="k">MSE final</span><span class="v" id="sklearn-mse">—</span></div>
+          <div class="stat-row"><span class="k">Predicción X = 5</span><span class="v" id="sklearn-pred">—</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span class="dot tensorflow"></span>TensorFlow/Keras — <code>fit()</code> de una línea</div>
+        <pre class="code">modelo = tf.keras.Sequential([
+  tf.keras.layers.Input(shape=(1,)),
+  tf.keras.layers.Dense(1)
+])
+modelo.compile(optimizer="sgd", loss="mse")
+modelo.fit(X, y, epochs=200)</pre>
+        <div class="controls-row">
+          <div class="field">
+            <label for="keras-epochs">Épocas a entrenar <span class="slider-value" id="keras-epochs-value">50</span></label>
+            <input type="range" id="keras-epochs" min="1" max="200" value="50">
+          </div>
+        </div>
+        <div class="controls-row">
+          <button id="btn-keras">Entrenar</button>
+          <button id="btn-keras-reset">Reiniciar</button>
+        </div>
+        <div class="stats">
+          <div class="stat-row"><span class="k">Época actual</span><span class="v" id="keras-epoch">0</span></div>
+          <div class="stat-row"><span class="k">w, b actuales</span><span class="v" id="keras-wb">0.000, 0.000</span></div>
+          <div class="stat-row"><span class="k">MSE actual</span><span class="v" id="keras-mse">—</span></div>
+          <div class="stat-row"><span class="k">Predicción X = 5</span><span class="v" id="keras-pred">—</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span class="dot pytorch"></span>PyTorch — bucle manual, paso a paso</div>
+        <pre class="code">modelo = nn.Linear(1, 1)
+opt = torch.optim.SGD(modelo.parameters(), lr=0.01)
+perdida = nn.MSELoss()
+
+for _ in range(200):
+    opt.zero_grad()
+    error = perdida(modelo(X), y)
+    error.backward()
+    opt.step()</pre>
+        <div class="controls-row">
+          <button id="btn-pytorch-step">Avanzar un paso</button>
+          <button id="btn-pytorch-run">Entrenar 200 pasos</button>
+          <button id="btn-pytorch-reset">Reiniciar</button>
+        </div>
+        <div class="stats">
+          <div class="stat-row"><span class="k">Paso actual</span><span class="v" id="pytorch-step">0</span></div>
+          <div class="stat-row"><span class="k">w, b actuales</span><span class="v" id="pytorch-wb">0.000, 0.000</span></div>
+          <div class="stat-row"><span class="k">MSE actual</span><span class="v" id="pytorch-mse">—</span></div>
+          <div class="stat-row"><span class="k">Predicción X = 5</span><span class="v" id="pytorch-pred">—</span></div>
+        </div>
+        <div class="log" id="pytorch-log"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Curva de pérdida (MSE)</h2>
+    <p class="subtitle">Scikit-learn resuelve el sistema exactamente en un paso; Keras y PyTorch descienden el gradiente época a época / paso a paso.</p>
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--sklearn)"></span>Scikit-learn (solución cerrada)</span>
+      <span><span class="swatch" style="background:var(--tensorflow)"></span>TensorFlow/Keras</span>
+      <span><span class="swatch" style="background:var(--pytorch)"></span>PyTorch</span>
+    </div>
+    <div class="viz-wrap">
+      <svg id="loss-chart" width="700" height="340" viewBox="0 0 700 340"></svg>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente — Scikit-learn</h3>
+        <pre class="sklearn-result-code"><code id="sklearn-result-code"></code></pre>
+      </div>
+      <div class="code-card">
+        <h3>Código equivalente — TensorFlow/Keras</h3>
+        <pre class="keras-result-code"><code id="keras-result-code"></code></pre>
+      </div>
+      <div class="code-card">
+        <h3>Código equivalente — PyTorch</h3>
+        <pre class="pytorch-result-code"><code id="pytorch-result-code"></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <div class="learn">
+    <strong>Pregunta de reflexión (taller, Parte 3):</strong> en Keras todo el entrenamiento ocurre dentro de una sola línea
+    (<code>model.fit(...)</code>); en PyTorch tuviste que escribir cada paso (<code>zero_grad</code>, <code>backward</code>,
+    <code>step</code>). ¿Qué ventaja y qué desventaja le ves a esta diferencia? Nota cómo scikit-learn ni siquiera necesita
+    épocas: para una regresión lineal simple, existe una solución matemática exacta.
+  </div>
+</main>
+
+<footer>
+  Recurso complementario al <a href="../../Semana_3/Semana_3_Taller_frameworks/Semana_taller_01.md">taller de Semana 3</a>, no lo reemplaza.
+</footer>
+
+<script>
+const X = [1, 2, 3, 4];
+const Y = [2, 4, 6, 8];
+const N = X.length;
+const LR = 0.01;
+const X_QUERY = 5;
+
+function predict(w, b, x) { return w * x + b; }
+
+function mse(w, b) {
+  let s = 0;
+  for (let i = 0; i < N; i++) { const e = predict(w, b, X[i]) - Y[i]; s += e * e; }
+  return s / N;
+}
+
+function gradientStep(w, b) {
+  let gw = 0, gb = 0;
+  for (let i = 0; i < N; i++) {
+    const e = predict(w, b, X[i]) - Y[i];
+    gw += e * X[i];
+    gb += e;
+  }
+  gw = (2 / N) * gw;
+  gb = (2 / N) * gb;
+  return [w - LR * gw, b - LR * gb];
+}
+
+const INITIAL_LOSS = mse(0, 0);
+
+// ---- Chart setup ----
+const margin = { top: 10, right: 16, bottom: 34, left: 46 };
+const width = 700 - margin.left - margin.right;
+const height = 340 - margin.top - margin.bottom;
+const svg = d3.select("#loss-chart");
+const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+const xScale = d3.scaleLinear().domain([0, 200]).range([0, width]);
+const yScale = d3.scaleLinear().domain([0, INITIAL_LOSS]).nice().range([height, 0]);
+
+g.append("g").attr("class", "axis").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale).ticks(8));
+g.append("g").attr("class", "axis").call(d3.axisLeft(yScale).ticks(6));
+
+g.append("text").attr("x", width / 2).attr("y", height + 32).attr("text-anchor", "middle")
+  .attr("fill", "var(--text-dim)").attr("font-size", 12).text("Época / paso");
+g.append("text").attr("transform", `translate(-36,${height / 2}) rotate(-90)`).attr("text-anchor", "middle")
+  .attr("fill", "var(--text-dim)").attr("font-size", 12).text("MSE");
+
+const line = d3.line().x(d => xScale(d.step)).y(d => yScale(d.loss));
+
+const sklearnLinePath = g.append("path").attr("fill", "none").attr("stroke", "var(--sklearn)").attr("stroke-width", 2).attr("stroke-dasharray", "6 4");
+const pytorchLinePath = g.append("path").attr("fill", "none").attr("stroke", "var(--pytorch)").attr("stroke-width", 2);
+const kerasLinePath = g.append("path").attr("fill", "none").attr("stroke", "var(--tensorflow)").attr("stroke-width", 3).attr("stroke-dasharray", "1 5");
+
+let kerasHistory = [];
+let pytorchHistory = [];
+
+function redrawKeras() { kerasLinePath.attr("d", line(kerasHistory)); }
+function redrawPytorch() { pytorchLinePath.attr("d", line(pytorchHistory)); }
+function drawSklearn(loss) {
+  sklearnLinePath.attr("d", line([{ step: 0, loss }, { step: 200, loss }]));
+}
+
+// ---- Scikit-learn panel: closed-form least squares ----
+function closedForm() {
+  const meanX = d3.mean(X), meanY = d3.mean(Y);
+  let num = 0, den = 0;
+  for (let i = 0; i < N; i++) { num += (X[i] - meanX) * (Y[i] - meanY); den += (X[i] - meanX) ** 2; }
+  const w = num / den;
+  const b = meanY - w * meanX;
+  return [w, b];
+}
+
+function sklearnSnippet(result) {
+  const fitted = result
+    ? `\n\n# modelo.coef_ = [${result.w.toFixed(3)}], modelo.intercept_ = ${result.b.toFixed(3)}\nmodelo.predict([[5]])  # → array([${result.pred.toFixed(3)}])`
+    : "\n\nmodelo.predict([[5]])  # pulsa «Ajustar (fit)»";
+  return `from sklearn.linear_model import LinearRegression
+
+X = [[1], [2], [3], [4]]
+y = [2, 4, 6, 8]
+
+modelo = LinearRegression()
+modelo.fit(X, y)${fitted}`;
+}
+
+function resetSklearn() {
+  d3.select("#sklearn-wb").text("—");
+  d3.select("#sklearn-mse").text("—");
+  d3.select("#sklearn-pred").text("—");
+  sklearnLinePath.attr("d", null);
+  document.getElementById("sklearn-result-code").textContent = sklearnSnippet(null);
+}
+
+d3.select("#btn-sklearn").on("click", () => {
+  const [w, b] = closedForm();
+  const loss = mse(w, b);
+  const pred = predict(w, b, X_QUERY);
+  d3.select("#sklearn-wb").text(`${w.toFixed(3)}, ${b.toFixed(3)}`);
+  d3.select("#sklearn-mse").text(loss.toExponential(2));
+  d3.select("#sklearn-pred").text(pred.toFixed(3));
+  drawSklearn(loss);
+  document.getElementById("sklearn-result-code").textContent = sklearnSnippet({ w, b, pred });
+});
+d3.select("#btn-sklearn-reset").on("click", resetSklearn);
+
+// ---- Keras panel: fit(epochs) all at once ----
+const epochsSlider = d3.select("#keras-epochs");
+
+function kerasSnippet(epochs, result) {
+  const trained = result
+    ? `\n\n# tras ${epochs} épocas: w ≈ ${result.w.toFixed(3)}, b ≈ ${result.b.toFixed(3)}\nmodelo.predict([[5]])  # → array([[${result.pred.toFixed(3)}]])`
+    : "\n\nmodelo.predict([[5]])  # pulsa «Entrenar»";
+  return `modelo = tf.keras.Sequential([
+    tf.keras.layers.Input(shape=(1,)),
+    tf.keras.layers.Dense(1)
+])
+modelo.compile(optimizer="sgd", loss="mse")
+modelo.fit(X, y, epochs=${epochs})${trained}`;
+}
+
+function resetKeras() {
+  kerasHistory = [];
+  redrawKeras();
+  d3.select("#keras-epoch").text("0");
+  d3.select("#keras-wb").text("0.000, 0.000");
+  d3.select("#keras-mse").text("—");
+  d3.select("#keras-pred").text("—");
+  document.getElementById("keras-result-code").textContent = kerasSnippet(+epochsSlider.node().value, null);
+}
+
+d3.select("#btn-keras").on("click", () => {
+  const epochs = +epochsSlider.node().value;
+  let w = 0, b = 0;
+  kerasHistory = [{ step: 0, loss: mse(0, 0) }];
+  for (let e = 1; e <= epochs; e++) {
+    [w, b] = gradientStep(w, b);
+    kerasHistory.push({ step: e, loss: mse(w, b) });
+  }
+  redrawKeras();
+  const pred = predict(w, b, X_QUERY);
+  d3.select("#keras-epoch").text(epochs);
+  d3.select("#keras-wb").text(`${w.toFixed(3)}, ${b.toFixed(3)}`);
+  d3.select("#keras-mse").text(mse(w, b).toExponential(2));
+  d3.select("#keras-pred").text(pred.toFixed(3));
+  document.getElementById("keras-result-code").textContent = kerasSnippet(epochs, { w, b, pred });
+});
+d3.select("#btn-keras-reset").on("click", resetKeras);
+epochsSlider.on("input", function () {
+  d3.select("#keras-epochs-value").text(this.value);
+  document.getElementById("keras-result-code").textContent = kerasSnippet(+this.value, null);
+});
+
+// ---- PyTorch panel: manual step-by-step loop ----
+let pW = 0, pB = 0, pStep = 0;
+const MAX_STEPS = 200;
+
+function logLine(text) {
+  const log = document.getElementById("pytorch-log");
+  const line = document.createElement("div");
+  line.textContent = text;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+function pytorchSnippet(steps, result) {
+  const trained = steps > 0
+    ? `\n\n# tras ${steps} pasos: w ≈ ${result.w.toFixed(3)}, b ≈ ${result.b.toFixed(3)}\nmodelo(torch.tensor([[5.0]]))  # → tensor([[${result.pred.toFixed(3)}]])`
+    : "\n\nmodelo(torch.tensor([[5.0]]))  # pulsa «Avanzar un paso» o «Entrenar 200 pasos»";
+  return `modelo = nn.Linear(1, 1)
+opt = torch.optim.SGD(modelo.parameters(), lr=0.01)
+perdida = nn.MSELoss()
+
+for _ in range(${steps}):
+    opt.zero_grad()
+    error = perdida(modelo(X), y)
+    error.backward()
+    opt.step()${trained}`;
+}
+
+function updatePytorchStats() {
+  const pred = predict(pW, pB, X_QUERY);
+  d3.select("#pytorch-step").text(pStep);
+  d3.select("#pytorch-wb").text(`${pW.toFixed(3)}, ${pB.toFixed(3)}`);
+  d3.select("#pytorch-mse").text(mse(pW, pB).toExponential(2));
+  d3.select("#pytorch-pred").text(pred.toFixed(3));
+  d3.select("#btn-pytorch-step").property("disabled", pStep >= MAX_STEPS);
+  d3.select("#btn-pytorch-run").property("disabled", pStep >= MAX_STEPS);
+  document.getElementById("pytorch-result-code").textContent = pytorchSnippet(pStep, { w: pW, b: pB, pred });
+}
+
+function resetPytorch() {
+  pW = 0; pB = 0; pStep = 0;
+  pytorchHistory = [{ step: 0, loss: mse(0, 0) }];
+  redrawPytorch();
+  updatePytorchStats();
+  document.getElementById("pytorch-log").innerHTML = "";
+}
+
+function pytorchStep() {
+  if (pStep >= MAX_STEPS) return;
+  const lossBefore = mse(pW, pB);
+  [pW, pB] = gradientStep(pW, pB);
+  pStep++;
+  pytorchHistory.push({ step: pStep, loss: mse(pW, pB) });
+  logLine(`paso ${pStep}: zero_grad() → loss=${lossBefore.toExponential(2)} → backward() → step()`);
+  redrawPytorch();
+  updatePytorchStats();
+}
+
+d3.select("#btn-pytorch-step").on("click", pytorchStep);
+d3.select("#btn-pytorch-run").on("click", () => { while (pStep < MAX_STEPS) pytorchStep(); });
+d3.select("#btn-pytorch-reset").on("click", resetPytorch);
+
+resetSklearn();
+resetKeras();
+resetPytorch();
+</script>
+
+</body>
+</html>

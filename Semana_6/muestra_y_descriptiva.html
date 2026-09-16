@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Muestra y estadística descriptiva | Semana 6</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="data.js"></script>
+<style>
+  :root {
+    --bg: #0f1420; --panel: #161d2e; --panel-border: #26314a; --text: #e7ecf7;
+    --text-dim: #9aa7c2; --accent: #5eb1ff; --accent-2: #ffb75e; --good: #5edc9a; --bad: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.5; }
+  header { padding: 32px 20px 16px; max-width: 980px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 70ch; }
+  main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  select { background: #0f1420; color: var(--text); border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 10px; font-size: 14px; min-width: 190px; }
+  .viz-wrap { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-top: 14px; }
+  svg { flex-shrink: 0; max-width: 100%; height: auto; }
+  .axis text { fill: var(--text-dim); font-size: 11px; }
+  .axis path, .axis line { stroke: var(--panel-border); }
+  .bar { opacity: 0.6; }
+  .bar.g0 { fill: var(--accent); }
+  .bar.g1 { fill: var(--accent-2); }
+  .bar.g2 { fill: #ff6b9d; }
+  .bar.g3 { fill: var(--good); }
+  .bar.g4 { fill: #b39ddb; }
+  .bar.g5 { fill: #ffcf8a; }
+  .legend { font-size: 12px; color: var(--text-dim); display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 4px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .stats { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 10px; }
+  table.desc { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.desc th, table.desc td { padding: 6px 8px; border-bottom: 1px dashed var(--panel-border); text-align: right; }
+  table.desc th:first-child, table.desc td:first-child { text-align: left; color: var(--text-dim); }
+  table.desc th { color: var(--text-dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .verdict { margin-top: 6px; padding: 12px 14px; border-radius: 10px; font-size: 14px; background: #101826; border: 1px solid var(--panel-border); }
+  .box { fill-opacity: 0.25; stroke-width: 1.5px; }
+  .box.g0 { fill: var(--accent); stroke: var(--accent); }
+  .box.g1 { fill: var(--accent-2); stroke: var(--accent-2); }
+  .box.g2 { fill: #ff6b9d; stroke: #ff6b9d; }
+  .box.g3 { fill: var(--good); stroke: var(--good); }
+  .box.g4 { fill: #b39ddb; stroke: #b39ddb; }
+  .box.g5 { fill: #ffcf8a; stroke: #ffcf8a; }
+  .whisker { stroke: var(--text-dim); stroke-width: 1.5px; }
+  .median-tick { stroke: var(--text); stroke-width: 2.5px; }
+  .outlier { fill: var(--bad); opacity: 0.8; }
+  details.code-toggle { margin-top: 14px; border: 1px solid var(--panel-border); border-radius: 10px; background: #0b0f18; }
+  details.code-toggle summary { cursor: pointer; padding: 10px 14px; font-size: 13px; color: var(--accent); list-style: none; user-select: none; }
+  details.code-toggle summary::-webkit-details-marker { display: none; }
+  details.code-toggle summary::before { content: "▸ "; }
+  details.code-toggle[open] summary::before { content: "▾ "; }
+  details.code-toggle .code-wrap { position: relative; }
+  details.code-toggle pre { margin: 0; padding: 4px 16px 16px; overflow-x: auto; }
+  details.code-toggle code { font-family: "Consolas", "Menlo", monospace; font-size: 12.5px; color: #c9d6f0; white-space: pre; }
+  .copy-btn { position: absolute; top: 4px; right: 14px; background: var(--panel); border: 1px solid var(--panel-border); color: var(--text-dim); font-size: 11px; padding: 3px 8px; border-radius: 6px; cursor: pointer; }
+  .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+  footer { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">&larr; Recurso interactivo Semana 6</a>
+  <div class="kicker">Semana 6 · Módulo 1 · Muestra y estadística descriptiva</div>
+  <h1>Antes de comparar grupos, conócelos</h1>
+  <p>
+    El notebook docente compara el puntaje de matemáticas entre quienes tomaron el curso de
+    preparación y quienes no. Antes de aplicar cualquier prueba, hay que describir la muestra:
+    ¿cuántos hay en cada grupo?, ¿cómo se ve la distribución de cada uno? Elige la variable de
+    agrupación y el puntaje para explorar cualquier combinación del <em>dataset</em>.
+  </p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>1 · Tamaño de la muestra y de los grupos</h2>
+    <div class="subtitle">
+      No se excluye ningún registro: <code>StudentsPerformance.csv</code> no tiene valores nulos
+      ni filas duplicadas, así que se usan los 1000 casos completos.
+    </div>
+    <div class="controls">
+      <div class="field">
+        <label for="group-select">Variable de agrupación</label>
+        <select id="group-select"></select>
+      </div>
+      <div class="field">
+        <label for="score-select">Puntaje</label>
+        <select id="score-select"></select>
+      </div>
+    </div>
+    <div class="viz-wrap">
+      <svg id="n-svg" width="360" height="220" viewBox="0 0 360 220" preserveAspectRatio="xMinYMin meet"></svg>
+      <div class="stats">
+        <div id="n-table-wrap"></div>
+      </div>
+    </div>
+    <details class="code-toggle">
+      <summary>Ver código Python equivalente</summary>
+      <div class="code-wrap">
+        <button class="copy-btn" data-target="code-n">Copiar</button>
+        <pre><code id="code-n"></code></pre>
+      </div>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>2 · Distribución por grupo: histograma</h2>
+    <div class="subtitle">
+      Cada color es un grupo. Compara dónde se concentran los puntajes y qué tan dispersos están.
+    </div>
+    <div id="hist-legend" class="legend"></div>
+    <div class="viz-wrap">
+      <svg id="hist-svg" width="620" height="300" viewBox="0 0 620 300" preserveAspectRatio="xMinYMin meet"></svg>
+    </div>
+    <details class="code-toggle">
+      <summary>Ver código Python equivalente</summary>
+      <div class="code-wrap">
+        <button class="copy-btn" data-target="code-hist">Copiar</button>
+        <pre><code id="code-hist"></code></pre>
+      </div>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>3 · Estadística descriptiva y diagrama de caja</h2>
+    <div class="subtitle">
+      Equivalente interactivo de <code>df.groupby(grupo)[puntaje].describe()</code> y del
+      <em>boxplot</em> del notebook (Secciones 4 y 5).
+    </div>
+    <div class="viz-wrap">
+      <svg id="box-svg" width="360" height="300" viewBox="0 0 360 300" preserveAspectRatio="xMinYMin meet"></svg>
+      <div class="stats">
+        <div id="desc-table-wrap"></div>
+        <div class="verdict" id="desc-verdict">—</div>
+      </div>
+    </div>
+    <details class="code-toggle">
+      <summary>Ver código Python equivalente</summary>
+      <div class="code-wrap">
+        <button class="copy-btn" data-target="code-box">Copiar</button>
+        <pre><code id="code-box"></code></pre>
+      </div>
+    </details>
+  </section>
+
+</main>
+
+<footer>
+  Módulo 1/5 del recurso interactivo de Semana 6. Dataset: <code>StudentsPerformance.csv</code>
+  (mismo del notebook docente <code>EIARV011_A6_Notebook.ipynb</code>), filtrado a casos
+  completos con <code>build_data.py</code>. Complementa el notebook, no lo reemplaza.
+</footer>
+
+<script>
+const SCORE_VARS = { mathScore: "Nota de matemáticas", readingScore: "Nota de lectura", writingScore: "Nota de escritura" };
+const GROUP_VARS = {
+  testPrep: "Curso de preparación (none / completed)",
+  gender: "Género (female / male)",
+  lunch: "Tipo de almuerzo (standard / free-reduced)",
+  ethnicity: "Grupo étnico (5 grupos)",
+  parentEducation: "Nivel educativo de los padres (6 grupos)",
+};
+// Nombres de columna originales del CSV, para generar el código Python equivalente.
+const COL_NAMES = {
+  testPrep: "test preparation course", gender: "gender", lunch: "lunch",
+  ethnicity: "race/ethnicity", parentEducation: "parental level of education",
+  mathScore: "math score", readingScore: "reading score", writingScore: "writing score",
+};
+
+function setCode(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".copy-btn");
+  if (!btn) return;
+  const code = document.getElementById(btn.dataset.target);
+  navigator.clipboard.writeText(code.textContent).then(() => {
+    const original = btn.textContent;
+    btn.textContent = "¡Copiado!";
+    setTimeout(() => { btn.textContent = original; }, 1200);
+  }).catch(() => {});
+});
+
+function mean(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+function variance(arr, m) { return arr.reduce((a, b) => a + (b - m) ** 2, 0) / (arr.length - 1); }
+function std(arr, m) { return Math.sqrt(variance(arr, m)); }
+function quantile(sorted, q) {
+  const n = sorted.length;
+  const pos = q * (n - 1);
+  const lo = Math.floor(pos), hi = Math.ceil(pos);
+  if (lo === hi) return sorted[lo];
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo);
+}
+
+function populateSelect(sel, options, selected) {
+  sel.innerHTML = "";
+  Object.entries(options).forEach(([k, v]) => {
+    const opt = document.createElement("option");
+    opt.value = k; opt.textContent = v;
+    if (k === selected) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+const groupSelect = document.getElementById("group-select");
+const scoreSelect = document.getElementById("score-select");
+populateSelect(groupSelect, GROUP_VARS, "testPrep");
+populateSelect(scoreSelect, SCORE_VARS, "mathScore");
+
+// ---------- Tamaño de muestra (barras) ----------
+const nSvg = d3.select("#n-svg");
+const nMargin = { top: 16, right: 16, bottom: 60, left: 46 };
+const nW = 360 - nMargin.left - nMargin.right;
+const nH = 220 - nMargin.top - nMargin.bottom;
+const nG = nSvg.append("g").attr("transform", `translate(${nMargin.left},${nMargin.top})`);
+const nXAxisG = nG.append("g").attr("class", "axis").attr("transform", `translate(0,${nH})`);
+const nYAxisG = nG.append("g").attr("class", "axis");
+
+// ---------- Histograma superpuesto ----------
+const histSvg = d3.select("#hist-svg");
+const hMargin = { top: 16, right: 16, bottom: 44, left: 50 };
+const hW = 620 - hMargin.left - hMargin.right;
+const hH = 300 - hMargin.top - hMargin.bottom;
+const hG = histSvg.append("g").attr("transform", `translate(${hMargin.left},${hMargin.top})`);
+const hXAxisG = hG.append("g").attr("class", "axis").attr("transform", `translate(0,${hH})`);
+const hYAxisG = hG.append("g").attr("class", "axis");
+const hXLabel = histSvg.append("text").attr("class", "axis").attr("text-anchor", "middle")
+  .attr("x", hMargin.left + hW / 2).attr("y", 296).style("fill", "var(--text-dim)").style("font-size", "12px");
+
+// ---------- Boxplot vertical por grupo ----------
+const boxSvg = d3.select("#box-svg");
+const bMargin = { top: 16, right: 16, bottom: 60, left: 46 };
+const bW = 360 - bMargin.left - bMargin.right;
+const bH = 300 - bMargin.top - bMargin.bottom;
+const bG = boxSvg.append("g").attr("transform", `translate(${bMargin.left},${bMargin.top})`);
+const bXAxisG = bG.append("g").attr("class", "axis").attr("transform", `translate(0,${bH})`);
+const bYAxisG = bG.append("g").attr("class", "axis");
+
+function groupsFor(groupKey, scoreKey) {
+  const groups = d3.groups(STUDENTS_DATA, d => d[groupKey]).sort((a, b) => d3.ascending(a[0], b[0]));
+  return groups.map(([label, rows]) => ({ label, values: rows.map(r => r[scoreKey]) }));
+}
+
+function renderN(groups) {
+  const total = d3.sum(groups, g => g.values.length);
+  const x = d3.scaleBand().domain(groups.map(g => g.label)).range([0, nW]).padding(0.35);
+  const y = d3.scaleLinear().domain([0, d3.max(groups, g => g.values.length)]).nice().range([nH, 0]);
+  nXAxisG.transition().duration(200).call(d3.axisBottom(x));
+  nXAxisG.selectAll(".tick text").attr("transform", "rotate(-20)").style("text-anchor", "end");
+  nYAxisG.transition().duration(200).call(d3.axisLeft(y).ticks(4));
+
+  const bars = nG.selectAll("rect.bar").data(groups, d => d.label);
+  bars.join(
+    enter => enter.append("rect").attr("class", (d, i) => `bar g${i}`)
+      .attr("x", d => x(d.label)).attr("width", x.bandwidth())
+      .attr("y", d => y(d.values.length)).attr("height", d => nH - y(d.values.length)),
+    update => update.transition().duration(200)
+      .attr("x", d => x(d.label)).attr("width", x.bandwidth())
+      .attr("y", d => y(d.values.length)).attr("height", d => nH - y(d.values.length))
+  );
+
+  const wrap = document.getElementById("n-table-wrap");
+  let html = `<table class="desc"><tr><th>Grupo</th><th>n</th><th>%</th></tr>`;
+  groups.forEach(g => {
+    html += `<tr><td>${g.label}</td><td>${g.values.length}</td><td>${(g.values.length / total * 100).toFixed(1)}%</td></tr>`;
+  });
+  html += `<tr><td><strong>Total</strong></td><td><strong>${total}</strong></td><td>100%</td></tr></table>`;
+  wrap.innerHTML = html;
+}
+
+const GROUP_COLORS = ["var(--accent)", "var(--accent-2)", "#ff6b9d", "var(--good)", "#b39ddb", "#ffcf8a"];
+
+function renderHist(groups, scoreKey) {
+  const x = d3.scaleLinear().domain([0, 100]).range([0, hW]);
+  const bins = groups.map(g => d3.bin().domain(x.domain()).thresholds(16)(g.values));
+  const maxCount = d3.max(bins, b => d3.max(b, d => d.length));
+  const y = d3.scaleLinear().domain([0, maxCount]).nice().range([hH, 0]);
+
+  hXAxisG.transition().duration(200).call(d3.axisBottom(x).ticks(6));
+  hYAxisG.transition().duration(200).call(d3.axisLeft(y).ticks(5));
+  hXLabel.text(SCORE_VARS[scoreKey]);
+
+  hG.selectAll("g.hist-group").remove();
+  groups.forEach((g, i) => {
+    const gg = hG.append("g").attr("class", "hist-group");
+    gg.selectAll("rect").data(bins[i]).join("rect").attr("class", `bar g${i}`)
+      .attr("x", d => x(d.x0) + 1).attr("width", d => Math.max(0, x(d.x1) - x(d.x0) - 1))
+      .attr("y", d => y(d.length)).attr("height", d => hH - y(d.length));
+  });
+
+  const legend = document.getElementById("hist-legend");
+  legend.innerHTML = groups.map((g, i) => `<span><span class="swatch" style="background:${GROUP_COLORS[i % 6]}"></span>${g.label} (n=${g.values.length})</span>`).join("");
+}
+
+function boxStats(values) {
+  const sorted = [...values].sort((a, b) => a - b);
+  const q1 = quantile(sorted, 0.25), q2 = quantile(sorted, 0.5), q3 = quantile(sorted, 0.75);
+  const iqr = q3 - q1;
+  const lowerLimit = q1 - 1.5 * iqr, upperLimit = q3 + 1.5 * iqr;
+  const outliers = sorted.filter(v => v < lowerLimit || v > upperLimit);
+  const whiskerLo = sorted.find(v => v >= lowerLimit) ?? sorted[0];
+  const whiskerHi = [...sorted].reverse().find(v => v <= upperLimit) ?? sorted[sorted.length - 1];
+  const m = mean(values), s = std(values, m);
+  return { q1, q2, q3, iqr, outliers, whiskerLo, whiskerHi, mean: m, std: s, min: sorted[0], max: sorted[sorted.length - 1], n: values.length };
+}
+
+function renderBox(groups) {
+  const x = d3.scaleBand().domain(groups.map(g => g.label)).range([0, bW]).padding(0.35);
+  const y = d3.scaleLinear().domain([0, 100]).range([bH, 0]);
+  bXAxisG.transition().duration(200).call(d3.axisBottom(x));
+  bXAxisG.selectAll(".tick text").attr("transform", "rotate(-20)").style("text-anchor", "end");
+  bYAxisG.transition().duration(200).call(d3.axisLeft(y).ticks(6));
+
+  bG.selectAll("g.box-group").remove();
+  const statsList = [];
+  groups.forEach((g, i) => {
+    const st = boxStats(g.values);
+    statsList.push({ label: g.label, ...st });
+    const bw = x.bandwidth();
+    const cx = x(g.label) + bw / 2;
+    const gg = bG.append("g").attr("class", "box-group");
+    gg.append("line").attr("class", "whisker").attr("x1", cx).attr("x2", cx).attr("y1", y(st.whiskerLo)).attr("y2", y(st.q1));
+    gg.append("line").attr("class", "whisker").attr("x1", cx).attr("x2", cx).attr("y1", y(st.q3)).attr("y2", y(st.whiskerHi));
+    gg.append("rect").attr("class", `box g${i}`)
+      .attr("x", x(g.label) + bw * 0.15).attr("width", bw * 0.7)
+      .attr("y", y(st.q3)).attr("height", Math.max(1, y(st.q1) - y(st.q3)));
+    gg.append("line").attr("class", "median-tick")
+      .attr("x1", x(g.label) + bw * 0.15).attr("x2", x(g.label) + bw * 0.85).attr("y1", y(st.q2)).attr("y2", y(st.q2));
+    gg.selectAll("circle.outlier").data(st.outliers).join("circle").attr("class", "outlier")
+      .attr("cx", cx).attr("cy", v => y(v)).attr("r", 3);
+  });
+  return statsList;
+}
+
+function renderDescTable(statsList, scoreKey) {
+  let html = `<table class="desc"><tr><th>Grupo</th><th>n</th><th>Media</th><th>Desv.</th><th>Mín</th><th>Máx</th></tr>`;
+  statsList.forEach(s => {
+    html += `<tr><td>${s.label}</td><td>${s.n}</td><td>${s.mean.toFixed(2)}</td><td>${s.std.toFixed(2)}</td><td>${s.min}</td><td>${s.max}</td></tr>`;
+  });
+  html += `</table>`;
+  document.getElementById("desc-table-wrap").innerHTML = html;
+
+  const verdict = document.getElementById("desc-verdict");
+  if (statsList.length === 2) {
+    const [a, b] = statsList;
+    const diff = Math.abs(a.mean - b.mean);
+    verdict.textContent = `Diferencia de medias entre "${a.label}" y "${b.label}" en ${SCORE_VARS[scoreKey]}: ${diff.toFixed(2)} puntos. Esta es solo la descripción — el Módulo 3 comprueba si esa diferencia es estadísticamente significativa.`;
+  } else {
+    const ranked = [...statsList].sort((a, b) => b.mean - a.mean);
+    verdict.textContent = `El grupo con mayor media en ${SCORE_VARS[scoreKey]} es "${ranked[0].label}" (${ranked[0].mean.toFixed(2)}); el de menor media es "${ranked[ranked.length - 1].label}" (${ranked[ranked.length - 1].mean.toFixed(2)}).`;
+  }
+}
+
+function renderCode(groupKey, scoreKey) {
+  const g = COL_NAMES[groupKey], s = COL_NAMES[scoreKey];
+
+  setCode("code-n", `df["${g}"].value_counts()
+
+# En porcentaje:
+df["${g}"].value_counts(normalize=True) * 100`);
+
+  setCode("code-hist", `sns.histplot(data=df, x="${s}", hue="${g}", kde=True)
+plt.xlabel("${s}")
+plt.ylabel("Frecuencia")
+plt.show()`);
+
+  setCode("code-box", `df.groupby("${g}")["${s}"].describe()
+
+sns.boxplot(data=df, x="${g}", y="${s}")
+plt.show()`);
+}
+
+function render() {
+  const groupKey = groupSelect.value;
+  const scoreKey = scoreSelect.value;
+  const groups = groupsFor(groupKey, scoreKey);
+  renderN(groups);
+  renderHist(groups, scoreKey);
+  const statsList = renderBox(groups);
+  renderDescTable(statsList, scoreKey);
+  renderCode(groupKey, scoreKey);
+}
+
+groupSelect.addEventListener("change", render);
+scoreSelect.addEventListener("change", render);
+render();
+</script>
+
+</body>
+</html>

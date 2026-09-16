@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cuándo usar el modelo y predecir | Semana 7</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="data.js"></script>
+<style>
+  :root {
+    --bg: #0f1420; --panel: #161d2e; --panel-border: #26314a; --text: #e7ecf7;
+    --text-dim: #9aa7c2; --accent: #5eb1ff; --accent-2: #ffb75e; --good: #5edc9a; --bad: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.5; }
+  header { padding: 32px 20px 16px; max-width: 980px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 70ch; }
+  main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  select, input[type=number] { background: #0f1420; color: var(--text); border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 10px; font-size: 14px; min-width: 160px; }
+  .equation-box { margin-top: 4px; padding: 12px 16px; border-radius: 10px; background: #101826; border: 1px solid var(--panel-border); font-size: 16px; text-align: center; font-variant-numeric: tabular-nums; }
+  .verdict { margin-top: 6px; padding: 12px 14px; border-radius: 10px; font-size: 14px; background: #101826; border: 1px solid var(--panel-border); }
+  .verdict strong { color: var(--accent-2); }
+  .warn-box { margin-top: 10px; padding: 12px 14px; border-radius: 10px; font-size: 14px; display: none; }
+  .warn-box.show { display: block; }
+  .warn-box.ok { background: rgba(94,220,154,0.12); color: var(--good); }
+  .warn-box.danger { background: rgba(255,107,107,0.14); color: var(--bad); }
+  table.desc { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.desc th, table.desc td { padding: 6px 8px; border-bottom: 1px dashed var(--panel-border); text-align: right; }
+  table.desc th:first-child, table.desc td:first-child { text-align: left; color: var(--text-dim); }
+  table.desc th { color: var(--text-dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+  table.corr { border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+  table.corr th, table.corr td { padding: 8px 12px; text-align: center; border: 1px solid var(--panel-border); }
+  table.corr th { color: var(--text-dim); font-weight: 600; font-size: 12px; }
+  table.corr td.diag { color: var(--text-dim); }
+  table.corr td.high { color: var(--bad); font-weight: 700; }
+  table.corr td.mid { color: var(--accent-2); font-weight: 600; }
+  .checklist { list-style: none; padding: 0; margin: 10px 0 0; display: flex; flex-direction: column; gap: 8px; }
+  .checklist li { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 8px; background: #101826; border: 1px solid var(--panel-border); font-size: 14px; }
+  .checklist input[type=checkbox] { margin-top: 3px; accent-color: var(--accent); width: 16px; height: 16px; flex-shrink: 0; }
+  .checklist .q { font-weight: 600; }
+  .checklist .a { color: var(--text-dim); display: block; margin-top: 2px; font-size: 13px; }
+  sup, sub { font-size: 0.7em; }
+  details.code-toggle { margin-top: 14px; border: 1px solid var(--panel-border); border-radius: 10px; background: #0b0f18; }
+  details.code-toggle summary { cursor: pointer; padding: 10px 14px; font-size: 13px; color: var(--accent); list-style: none; user-select: none; }
+  details.code-toggle summary::-webkit-details-marker { display: none; }
+  details.code-toggle summary::before { content: "▸ "; }
+  details.code-toggle[open] summary::before { content: "▾ "; }
+  details.code-toggle .code-wrap { position: relative; }
+  details.code-toggle pre { margin: 0; padding: 4px 16px 16px; overflow-x: auto; }
+  details.code-toggle code { font-family: "Consolas", "Menlo", monospace; font-size: 12.5px; color: #c9d6f0; white-space: pre; }
+  .copy-btn { position: absolute; top: 4px; right: 14px; background: var(--panel); border: 1px solid var(--panel-border); color: var(--text-dim); font-size: 11px; padding: 3px 8px; border-radius: 6px; cursor: pointer; }
+  .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+  footer { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">&larr; Recurso interactivo Semana 7</a>
+  <div class="kicker">Semana 7 · Módulo 4 · Cuándo usar el modelo y predecir</div>
+  <h1>Antes de predecir, revisa el terreno</h1>
+  <p>
+    Un modelo válido dentro de su dominio puede dar predicciones absurdas fuera de él, y predictoras
+    muy correlacionadas entre sí pueden hacer inestables sus coeficientes. Esta página cubre el marco
+    de decisión de <code>02_Cuando_utilizar_modelo_regresion_lineal.md</code>: una calculadora de
+    predicción con alerta de extrapolación, una ilustración de multicolinealidad, y el checklist rápido
+    del documento.
+  </p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>1 · Calculadora de predicción (y alerta de extrapolación)</h2>
+    <div class="subtitle">
+      Elige X e Y, escribe un valor de X, y compáralo con el rango observado de esa variable en los
+      1000 estudiantes (Sección 2.4 del documento).
+    </div>
+    <div class="controls">
+      <div class="field">
+        <label for="x-select">Variable independiente (X)</label>
+        <select id="x-select"></select>
+      </div>
+      <div class="field">
+        <label for="y-select">Variable dependiente (Y)</label>
+        <select id="y-select"></select>
+      </div>
+      <div class="field">
+        <label for="x-input">Valor de X a predecir</label>
+        <input type="number" id="x-input" value="80">
+      </div>
+    </div>
+    <div class="equation-box" id="equation-box">—</div>
+    <div class="warn-box" id="warn-box"></div>
+    <details class="code-toggle">
+      <summary>Ver código Python equivalente</summary>
+      <div class="code-wrap">
+        <button class="copy-btn" data-target="code-predict">Copiar</button>
+        <pre><code id="code-predict"></code></pre>
+      </div>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>2 · Multicolinealidad: las tres notas están muy correlacionadas</h2>
+    <div class="subtitle">
+      <code>math score</code>, <code>reading score</code> y <code>writing score</code> se mueven casi
+      juntas (Sección 2.3 del documento). Usar dos de ellas como predictoras a la vez hace que el
+      modelo no pueda distinguir bien el efecto individual de cada una.
+    </div>
+    <div id="corr-matrix-wrap"></div>
+    <div class="verdict" id="collin-verdict">—</div>
+    <details class="code-toggle">
+      <summary>Ver código Python equivalente</summary>
+      <div class="code-wrap">
+        <button class="copy-btn" data-target="code-corr">Copiar</button>
+        <pre><code id="code-corr"></code></pre>
+      </div>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>3 · Checklist rápido</h2>
+    <div class="subtitle">Antes de ajustar un modelo de regresión lineal, revisa (Sección 3 del documento):</div>
+    <ul class="checklist" id="checklist"></ul>
+  </section>
+
+</main>
+
+<footer>
+  Módulo 4/4 del recurso interactivo de Semana 7. Dataset: <code>StudentsPerformance.csv</code> (1000
+  estudiantes). Complementa <code>02_Cuando_utilizar_modelo_regresion_lineal.md</code>, no lo reemplaza.
+</footer>
+
+<script>
+const NUMERIC_VARS = {
+  mathScore: "Nota de matemáticas (math score)",
+  readingScore: "Nota de lectura (reading score)",
+  writingScore: "Nota de escritura (writing score)",
+};
+const COL_NAMES = { mathScore: "math score", readingScore: "reading score", writingScore: "writing score" };
+
+function setCode(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".copy-btn");
+  if (!btn) return;
+  const code = document.getElementById(btn.dataset.target);
+  navigator.clipboard.writeText(code.textContent).then(() => {
+    const original = btn.textContent;
+    btn.textContent = "¡Copiado!";
+    setTimeout(() => { btn.textContent = original; }, 1200);
+  }).catch(() => {});
+});
+
+function mean(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+
+function linreg(x, y) {
+  const n = x.length;
+  const xbar = mean(x), ybar = mean(y);
+  let Sxy = 0, Sxx = 0;
+  for (let i = 0; i < n; i++) { const dx = x[i] - xbar, dy = y[i] - ybar; Sxy += dx * dy; Sxx += dx * dx; }
+  const b1 = Sxy / Sxx;
+  const b0 = ybar - b1 * xbar;
+  return { n, xbar, ybar, b1, b0 };
+}
+
+function pearson(x, y) {
+  const xbar = mean(x), ybar = mean(y);
+  let sxy = 0, sxx = 0, syy = 0;
+  for (let i = 0; i < x.length; i++) {
+    const dx = x[i] - xbar, dy = y[i] - ybar;
+    sxy += dx * dy; sxx += dx * dx; syy += dy * dy;
+  }
+  return sxy / Math.sqrt(sxx * syy);
+}
+
+function populateSelect(sel, options, selected) {
+  sel.innerHTML = "";
+  Object.entries(options).forEach(([k, v]) => {
+    const opt = document.createElement("option");
+    opt.value = k; opt.textContent = v;
+    if (k === selected) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+const xSelect = document.getElementById("x-select");
+const ySelect = document.getElementById("y-select");
+const xInput = document.getElementById("x-input");
+populateSelect(xSelect, NUMERIC_VARS, "readingScore");
+function refreshYOptions(keepY) {
+  const xKey = xSelect.value;
+  const yOptions = Object.fromEntries(Object.entries(NUMERIC_VARS).filter(([k]) => k !== xKey));
+  const current = keepY && keepY !== xKey ? keepY : Object.keys(yOptions)[0];
+  populateSelect(ySelect, yOptions, current);
+}
+refreshYOptions("writingScore");
+
+function renderPrediction() {
+  const xKey = xSelect.value, yKey = ySelect.value;
+  const xVals = STUDENTS_DATA.map(d => d[xKey]);
+  const yVals = STUDENTS_DATA.map(d => d[yKey]);
+  const fit = linreg(xVals, yVals);
+  const [xMin, xMax] = d3.extent(xVals);
+
+  const xVal = parseFloat(xInput.value);
+  const warnBox = document.getElementById("warn-box");
+  const eqBox = document.getElementById("equation-box");
+
+  if (Number.isNaN(xVal)) {
+    eqBox.textContent = "Escribe un valor numérico de X.";
+    warnBox.className = "warn-box";
+    return;
+  }
+
+  const yhat = fit.b0 + fit.b1 * xVal;
+  eqBox.innerHTML = `ŷ = ${fit.b0.toFixed(4)} ${fit.b1 >= 0 ? "+" : "−"} ${Math.abs(fit.b1).toFixed(4)} · (${xVal})
+    = <strong>${yhat.toFixed(2)}</strong> (${NUMERIC_VARS[yKey]})`;
+
+  const outside = xVal < xMin || xVal > xMax;
+  warnBox.classList.add("show");
+  if (outside) {
+    warnBox.className = "warn-box show danger";
+    warnBox.innerHTML = `⚠️ Extrapolación: X = ${xVal} está <strong>fuera</strong> del rango observado de
+      ${NUMERIC_VARS[xKey]} en los datos (${xMin}–${xMax}). El modelo nunca vio ejemplos ahí, así que
+      esta predicción no tiene respaldo — puede dar resultados absurdos (Sección 2.4 del documento).`;
+  } else {
+    warnBox.className = "warn-box show ok";
+    warnBox.innerHTML = `✔ X = ${xVal} está dentro del rango observado de ${NUMERIC_VARS[xKey]}
+      (${xMin}–${xMax}): la predicción es válida dentro del dominio en el que se ajustó el modelo.`;
+  }
+
+  const xCol = COL_NAMES[xKey], yCol = COL_NAMES[yKey];
+  setCode("code-predict", `from scipy import stats
+
+x = df["${xCol}"]
+y = df["${yCol}"]
+resultado = stats.linregress(x, y)
+
+x_nuevo = ${Number.isNaN(xVal) ? 0 : xVal}
+prediccion = resultado.intercept + resultado.slope * x_nuevo
+
+x_min, x_max = x.min(), x.max()
+if x_nuevo < x_min or x_nuevo > x_max:
+    print(f"⚠ x = {x_nuevo} está fuera del rango observado ({x_min}-{x_max}): extrapolación")
+else:
+    print(f"Predicción para x={x_nuevo}: {prediccion:.2f}")`);
+}
+
+function renderCollinearity() {
+  const cols = ["mathScore", "readingScore", "writingScore"];
+  const labels = { mathScore: "math", readingScore: "reading", writingScore: "writing" };
+  const series = Object.fromEntries(cols.map(c => [c, STUDENTS_DATA.map(d => d[c])]));
+  const matrix = cols.map(a => cols.map(b => pearson(series[a], series[b])));
+
+  let html = `<table class="corr"><tr><th></th>${cols.map(c => `<th>${labels[c]}</th>`).join("")}</tr>`;
+  cols.forEach((a, i) => {
+    html += `<tr><th>${labels[a]}</th>`;
+    cols.forEach((b, j) => {
+      const v = matrix[i][j];
+      const cls = i === j ? "diag" : (v >= 0.9 ? "high" : v >= 0.7 ? "mid" : "");
+      html += `<td class="${cls}">${v.toFixed(2)}</td>`;
+    });
+    html += `</tr>`;
+  });
+  html += `</table>`;
+  document.getElementById("corr-matrix-wrap").innerHTML = html;
+
+  const rw = pearson(series.readingScore, series.writingScore);
+  document.getElementById("collin-verdict").innerHTML =
+    `<strong>reading</strong> y <strong>writing</strong> correlacionan en ${rw.toFixed(2)} — muy alto. Si
+    quisieras predecir <code>math score</code> usando ambas a la vez como predictoras, el modelo tendría
+    problemas para "repartir" el efecto entre las dos, porque son, en buena medida, la misma información
+    contada dos veces: sus coeficientes individuales se volverían inestables aunque el modelo en conjunto
+    siga prediciendo razonablemente bien. La recomendación práctica es calcular esta matriz antes de meter
+    varias predictoras juntas, y dejar solo una de cada par muy correlacionado.`;
+
+  setCode("code-corr", `# Matriz de correlación entre las tres notas
+print(df[["math score", "reading score", "writing score"]].corr())
+
+# Señal de alerta: cualquier par por encima de ~0.8-0.9 es multicolinealidad fuerte`);
+}
+
+const CHECKLIST_ITEMS = [
+  { q: "¿Lo que quiero predecir es numérico continuo?", a: "Si es una categoría, usa un modelo de clasificación en su lugar." },
+  { q: "¿Mis predictoras son mayormente numéricas?", a: "Si son categóricas, conviértelas a variables dummy antes de ajustar." },
+  { q: "¿Tengo pocas variables, y las categóricas tienen pocos niveles?", a: "Si tienes muchas, prioriza y reduce antes de ajustar." },
+  { q: "¿Ya probé el modelo simple antes de saltar a algo más complejo?", a: "Empieza simple; solo escala si el modelo simple no alcanza." },
+  { q: "¿Revisé la correlación entre mis predictoras?", a: "Si es muy alta entre dos de ellas, considera dejar solo una." },
+  { q: "¿Voy a predecir dentro del rango de datos que vio el modelo?", a: "Si no, esa predicción es una extrapolación no confiable." },
+];
+
+function renderChecklist() {
+  const ul = document.getElementById("checklist");
+  ul.innerHTML = CHECKLIST_ITEMS.map((item, i) => `
+    <li>
+      <input type="checkbox" id="chk-${i}">
+      <label for="chk-${i}"><span class="q">${i + 1}. ${item.q}</span><span class="a">${item.a}</span></label>
+    </li>`).join("");
+}
+
+xSelect.addEventListener("change", () => { refreshYOptions(ySelect.value); renderPrediction(); });
+ySelect.addEventListener("change", renderPrediction);
+xInput.addEventListener("input", renderPrediction);
+
+renderPrediction();
+renderCollinearity();
+renderChecklist();
+</script>
+
+</body>
+</html>

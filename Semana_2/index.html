@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recurso interactivo — Semana 2 | Fundamentos para IA</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-border: #26314a;
+    --panel-hover: #1c2438;
+    --text: #e7ecf7;
+    --text-dim: #9aa7c2;
+    --accent: #5eb1ff;
+    --accent-2: #ffb75e;
+    --good: #5edc9a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header {
+    padding: 48px 20px 20px;
+    max-width: 1040px;
+    margin: 0 auto;
+  }
+  header .kicker {
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  header h1 { margin: 8px 0 12px; font-size: clamp(26px, 5vw, 40px); }
+  header p { color: var(--text-dim); max-width: 72ch; font-size: 15px; }
+  header p a { color: var(--accent); }
+  .back-link {
+    display: inline-block;
+    margin-bottom: 14px;
+    color: var(--text-dim);
+    font-size: 13px;
+    text-decoration: none;
+  }
+  .back-link:hover { color: var(--accent); }
+  main { max-width: 1040px; margin: 0 auto; padding: 12px 20px 40px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 18px;
+  }
+  a.card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 20px 22px 22px;
+    text-decoration: none;
+    color: var(--text);
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  }
+  a.card:hover {
+    background: var(--panel-hover);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .badge {
+    align-self: flex-start;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+  }
+  .badge.explore { color: #7cc4ff; border-color: #2c4360; }
+  .badge.quality { color: #ff9e9e; border-color: #4a2020; }
+  .badge.cat { color: #ffcf8a; border-color: #4a3a20; }
+  .badge.num { color: #b39ddb; border-color: #3a2f52; }
+  a.card h2 { margin: 0; font-size: 18px; }
+  a.card .desc { color: var(--text-dim); font-size: 14px; }
+  a.card .learn { color: var(--accent-2); font-size: 13px; margin-top: auto; padding-top: 6px; }
+  .journey {
+    margin-top: 28px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  footer {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="../index.html">← Volver al índice del curso</a>
+  <div class="kicker">Fundamentos para IA · Semana 2</div>
+  <h1>Python para ciencia de datos</h1>
+  <p>
+    Cuatro recursos cortos e interactivos para explorar el mismo dataset del
+    <a href="../../Semana_2/Semana_2_Actividad/EIARV011_A2.md">estudio de caso de la semana</a>
+    (<code>StudentsPerformance.csv</code>, 1000 estudiantes). Cambia columnas, mueve
+    sliders y observa cómo responden las tablas y los gráficos — cada módulo se puede
+    explorar de forma independiente.
+  </p>
+</header>
+
+<main>
+  <div class="grid">
+
+    <a class="card" href="exploracion_inicial.html">
+      <span class="badge explore">Módulo 1 · Exploración</span>
+      <h2>Primera mirada al dataset</h2>
+      <p class="desc">Tamaño, columnas, tipos de dato y una tabla paginable con el equivalente de <code>head()</code>, <code>tail()</code> e <code>info()</code>.</p>
+      <p class="learn">Aprenderás: a distinguir variables categóricas de numéricas antes de analizarlas.</p>
+    </a>
+
+    <a class="card" href="calidad_datos.html">
+      <span class="badge quality">Módulo 2 · Calidad de datos</span>
+      <h2>¿El dataset está limpio?</h2>
+      <p class="desc">Nulos por columna, registros duplicados y detección de valores atípicos con un boxplot y un slider de umbral (IQR).</p>
+      <p class="learn">Aprenderás: por qué se verifica calidad de datos incluso cuando el resultado es "todo limpio".</p>
+    </a>
+
+    <a class="card" href="variables_categoricas.html">
+      <span class="badge cat">Módulo 3 · Categóricas</span>
+      <h2><code>value_counts()</code> en vivo</h2>
+      <p class="desc">Elige una variable categórica (género, grupo, educación de los padres, almuerzo, preparación) y compara conteos contra porcentajes.</p>
+      <p class="learn">Aprenderás: a leer una tabla de frecuencias y su versión normalizada.</p>
+    </a>
+
+    <a class="card" href="variables_numericas.html">
+      <span class="badge num">Módulo 4 · Numéricas y relaciones</span>
+      <h2><code>describe()</code>, distribución y relaciones</h2>
+      <p class="desc">Media, mediana, desviación y percentiles sobre los puntajes, con histograma en vivo, dispersión entre dos variables y comparación de medias por grupo.</p>
+      <p class="learn">Aprenderás: a distinguir correlación de causalidad al comparar grupos.</p>
+    </a>
+
+  </div>
+
+  <div class="journey">
+    <strong>Sugerencia de recorrido:</strong> los módulos siguen el orden del anexo del
+    estudio de caso — exploración inicial, calidad de datos, variables categóricas y,
+    al final, variables numéricas y sus relaciones. Pero cada uno funciona solo, así
+    que puedes explorarlos en cualquier orden.
+  </div>
+</main>
+
+<footer>
+  Recurso complementario al <a href="../../Semana_2/Semana_2_Actividad/EIARV011_A2.md">estudio de caso de Semana 2</a>, no lo reemplaza.
+  Dataset: <code>StudentsPerformance.csv</code> (Kaggle,
+  <a href="https://www.kaggle.com/datasets/spscientist/students-performance-in-exams">Students Performance in Exams</a>).
+</footer>
+
+</body>
+</html>

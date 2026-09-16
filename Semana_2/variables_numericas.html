@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Variables numéricas y relaciones — Semana 2 | Fundamentos para IA</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="data.js"></script>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-border: #26314a;
+    --text: #e7ecf7;
+    --text-dim: #9aa7c2;
+    --accent: #5eb1ff;
+    --accent-2: #ffb75e;
+    --good: #5edc9a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header { padding: 32px 20px 16px; max-width: 980px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 70ch; }
+  header code, main code { color: var(--accent-2); }
+  main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  select { background: #0f1420; color: var(--text); border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 10px; font-size: 14px; min-width: 190px; }
+  .viz-wrap { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-top: 14px; }
+  svg { flex-shrink: 0; max-width: 100%; height: auto; }
+  .axis text { fill: var(--text-dim); font-size: 11px; }
+  .axis path, .axis line { stroke: var(--panel-border); }
+  .bar { fill: var(--accent); opacity: 0.6; }
+  .dot { fill: var(--accent-2); fill-opacity: 0.55; }
+  .stats { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 10px; }
+  .stat-row { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--panel-border); padding-bottom: 6px; font-size: 14px; }
+  .stat-row span:first-child { color: var(--text-dim); }
+  .stat-row span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .verdict { margin-top: 6px; padding: 12px 14px; border-radius: 10px; font-size: 14px; background: #101826; border: 1px solid var(--panel-border); }
+  pre { background: #0a0e17; border: 1px solid var(--panel-border); border-radius: 10px; padding: 14px 16px; font-size: 13px; overflow-x: auto; color: #d6deef; }
+  .code-wrap { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 18px; }
+  .code-card { flex: 1; min-width: 260px; }
+  .code-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: 8px; }
+  pre.describe-code { border-left: 3px solid var(--accent); }
+  pre.corr-code { border-left: 3px solid var(--good); }
+  pre.groupby-code { border-left: 3px solid var(--accent-2); }
+  code { font-family: "SF Mono", Consolas, Menlo, monospace; }
+  .learn { margin-top: 18px; font-size: 13px; color: var(--accent-2); }
+  footer { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">&larr; Recurso interactivo Semana 2</a>
+  <div class="kicker">Semana 2 · Módulo 4 · Variables numéricas y relaciones</div>
+  <h1><code>describe()</code>, distribución y relaciones entre variables</h1>
+  <p>
+    Para una variable numérica, <code>describe()</code> resume su distribución en unos
+    pocos números. Pero el estudio de caso también pide encontrar relaciones entre
+    variables — aquí comparas dos puntajes con un diagrama de dispersión y comparas el
+    promedio de un puntaje entre grupos, distinguiendo correlación de causalidad.
+  </p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>Resumen estadístico y distribución</h2>
+    <div class="subtitle"><code>df["variable"].describe()</code> — sobre los tres puntajes del dataset.</div>
+
+    <div class="controls">
+      <div class="field">
+        <label for="var-select">Variable</label>
+        <select id="var-select">
+          <option value="mathScore">math score</option>
+          <option value="readingScore">reading score</option>
+          <option value="writingScore">writing score</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="viz-wrap">
+      <svg id="hist-svg" width="560" height="300"></svg>
+      <div class="stats">
+        <div class="stat-row"><span>count</span><span id="s-count">—</span></div>
+        <div class="stat-row"><span>mean</span><span id="s-mean">—</span></div>
+        <div class="stat-row"><span>std</span><span id="s-std">—</span></div>
+        <div class="stat-row"><span>min</span><span id="s-min">—</span></div>
+        <div class="stat-row"><span>25%</span><span id="s-q1">—</span></div>
+        <div class="stat-row"><span>50%</span><span id="s-median">—</span></div>
+        <div class="stat-row"><span>75%</span><span id="s-q3">—</span></div>
+        <div class="stat-row"><span>max</span><span id="s-max">—</span></div>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="describe-code"><code id="describe-code"></code></pre>
+      </div>
+    </div>
+    <div class="learn">Aprenderás: a leer los ocho números de <code>describe()</code> como un resumen rápido de forma, centro y dispersión.</div>
+  </section>
+
+  <section class="card">
+    <h2>Relación entre dos variables numéricas</h2>
+    <div class="subtitle">Diagrama de dispersión con el coeficiente de correlación de Pearson (r) calculado en vivo.</div>
+
+    <div class="controls">
+      <div class="field">
+        <label for="x-select">Eje X</label>
+        <select id="x-select">
+          <option value="mathScore">math score</option>
+          <option value="readingScore" selected>reading score</option>
+          <option value="writingScore">writing score</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="y-select">Eje Y</label>
+        <select id="y-select">
+          <option value="mathScore">math score</option>
+          <option value="readingScore">reading score</option>
+          <option value="writingScore" selected>writing score</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="viz-wrap">
+      <svg id="scatter-svg" width="560" height="360"></svg>
+      <div class="stats">
+        <div class="stat-row"><span>r de Pearson</span><span id="s-r">—</span></div>
+        <div id="scatter-verdict" class="verdict">—</div>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="corr-code"><code id="corr-code"></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Comparación de medias por grupo</h2>
+    <div class="subtitle">
+      Promedio de una variable numérica según una variable categórica —
+      equivalente a <code>df.groupby("columna")["variable"].mean()</code>.
+    </div>
+
+    <div class="controls">
+      <div class="field">
+        <label for="group-var-select">Variable numérica</label>
+        <select id="group-var-select">
+          <option value="mathScore">math score</option>
+          <option value="readingScore">reading score</option>
+          <option value="writingScore">writing score</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="group-by-select">Agrupar por</label>
+        <select id="group-by-select">
+          <option value="gender">gender</option>
+          <option value="group">race/ethnicity</option>
+          <option value="parentalEducation">parental level of education</option>
+          <option value="lunch" selected>lunch</option>
+          <option value="testPrep">test preparation course</option>
+        </select>
+      </div>
+    </div>
+
+    <svg id="groupby-svg" width="560" height="260"></svg>
+    <div class="verdict">
+      Que dos grupos tengan promedios distintos no prueba que uno cause el otro:
+      pueden compartir otra causa de fondo (por ejemplo, el nivel socioeconómico
+      influye tanto en el tipo de almuerzo como en el rendimiento). Para hablar de
+      causalidad se necesita un diseño experimental, no solo una comparación de
+      promedios.
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="groupby-code"><code id="groupby-code"></code></pre>
+      </div>
+    </div>
+    <div class="learn">Aprenderás: a comparar grupos con <code>groupby</code> sin confundir una diferencia observada con una relación causal.</div>
+  </section>
+
+  <section class="card">
+    <h2>El código equivalente en pandas</h2>
+    <pre><code>df["math score"].describe()
+df["reading score"].corr(df["writing score"])   # r de Pearson
+df.groupby("lunch")["math score"].mean()          # promedio por grupo</code></pre>
+  </section>
+
+</main>
+
+<footer>
+  Módulo 4/4 del recurso interactivo de Semana 2. Dataset: <code>StudentsPerformance.csv</code>
+  (mismo del <a href="../../Semana_2/Semana_2_Actividad/EIARV011_A2.md">estudio de caso de la semana</a>). Complementa la actividad, no la reemplaza.
+</footer>
+
+<script>
+const VAR_LABELS = { mathScore: "math score", readingScore: "reading score", writingScore: "writing score" };
+const GROUP_LABELS = {
+  gender: "gender", group: "race/ethnicity", parentalEducation: "parental level of education",
+  lunch: "lunch", testPrep: "test preparation course",
+};
+
+function mean(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+function std(arr, m) { return Math.sqrt(arr.reduce((a, b) => a + (b - m) ** 2, 0) / arr.length); }
+function quantile(sorted, q) {
+  const pos = (sorted.length - 1) * q;
+  const base = Math.floor(pos);
+  const rest = pos - base;
+  return sorted[base + 1] !== undefined ? sorted[base] + rest * (sorted[base + 1] - sorted[base]) : sorted[base];
+}
+function pearson(xs, ys) {
+  const mx = mean(xs), my = mean(ys);
+  let num = 0, dx2 = 0, dy2 = 0;
+  for (let i = 0; i < xs.length; i++) {
+    const dx = xs[i] - mx, dy = ys[i] - my;
+    num += dx * dy; dx2 += dx * dx; dy2 += dy * dy;
+  }
+  return num / Math.sqrt(dx2 * dy2);
+}
+
+// --- Sección 1: describe() + histograma ---
+const varSelect = document.getElementById("var-select");
+const histSvg = d3.select("#hist-svg");
+const hMargin = { top: 16, right: 16, bottom: 36, left: 44 };
+const hW = 560 - hMargin.left - hMargin.right;
+const hH = 300 - hMargin.top - hMargin.bottom;
+const hg = histSvg.append("g").attr("transform", `translate(${hMargin.left},${hMargin.top})`);
+const hxAxisG = hg.append("g").attr("class", "axis").attr("transform", `translate(0,${hH})`);
+const hyAxisG = hg.append("g").attr("class", "axis");
+
+function renderDescribe() {
+  const key = varSelect.value;
+  const values = STUDENTS_DATA.map(d => d[key]);
+  const sorted = [...values].sort((a, b) => a - b);
+  const m = mean(values);
+  const s = std(values, m);
+  const q1 = quantile(sorted, 0.25), med = quantile(sorted, 0.5), q3 = quantile(sorted, 0.75);
+
+  document.getElementById("s-count").textContent = values.length;
+  document.getElementById("s-mean").textContent = m.toFixed(2);
+  document.getElementById("s-std").textContent = s.toFixed(2);
+  document.getElementById("s-min").textContent = sorted[0];
+  document.getElementById("s-q1").textContent = q1.toFixed(2);
+  document.getElementById("s-median").textContent = med.toFixed(2);
+  document.getElementById("s-q3").textContent = q3.toFixed(2);
+  document.getElementById("s-max").textContent = sorted[sorted.length - 1];
+  document.getElementById("describe-code").textContent = `df["${VAR_LABELS[key]}"].describe()`;
+
+  const x = d3.scaleLinear().domain([0, 100]).range([0, hW]);
+  const bins = d3.bin().domain(x.domain()).thresholds(20)(values);
+  const y = d3.scaleLinear().domain([0, d3.max(bins, b => b.length)]).nice().range([hH, 0]);
+
+  hxAxisG.transition().duration(200).call(d3.axisBottom(x).ticks(6));
+  hyAxisG.transition().duration(200).call(d3.axisLeft(y).ticks(5));
+
+  const bars = hg.selectAll("rect.bar").data(bins);
+  bars.join(
+    enter => enter.append("rect").attr("class", "bar")
+      .attr("x", d => x(d.x0) + 1).attr("width", d => Math.max(0, x(d.x1) - x(d.x0) - 1))
+      .attr("y", d => y(d.length)).attr("height", d => hH - y(d.length)),
+    update => update.transition().duration(200)
+      .attr("x", d => x(d.x0) + 1).attr("width", d => Math.max(0, x(d.x1) - x(d.x0) - 1))
+      .attr("y", d => y(d.length)).attr("height", d => hH - y(d.length))
+  );
+}
+varSelect.addEventListener("change", renderDescribe);
+renderDescribe();
+
+// --- Sección 2: dispersión + correlación ---
+const xSelect = document.getElementById("x-select");
+const ySelect = document.getElementById("y-select");
+const scatterSvg = d3.select("#scatter-svg");
+const sMargin = { top: 16, right: 16, bottom: 40, left: 48 };
+const sW = 560 - sMargin.left - sMargin.right;
+const sH = 360 - sMargin.top - sMargin.bottom;
+const sg = scatterSvg.append("g").attr("transform", `translate(${sMargin.left},${sMargin.top})`);
+const sxAxisG = sg.append("g").attr("class", "axis").attr("transform", `translate(0,${sH})`);
+const syAxisG = sg.append("g").attr("class", "axis");
+
+function renderScatter() {
+  const xKey = xSelect.value, yKey = ySelect.value;
+  const xs = STUDENTS_DATA.map(d => d[xKey]);
+  const ys = STUDENTS_DATA.map(d => d[yKey]);
+  const r = pearson(xs, ys);
+
+  const x = d3.scaleLinear().domain([0, 100]).range([0, sW]);
+  const y = d3.scaleLinear().domain([0, 100]).range([sH, 0]);
+  sxAxisG.transition().duration(200).call(d3.axisBottom(x).ticks(6));
+  syAxisG.transition().duration(200).call(d3.axisLeft(y).ticks(6));
+
+  const dots = sg.selectAll("circle.dot").data(STUDENTS_DATA);
+  dots.join(
+    enter => enter.append("circle").attr("class", "dot").attr("r", 3)
+      .attr("cx", d => x(d[xKey])).attr("cy", d => y(d[yKey])),
+    update => update.attr("cx", d => x(d[xKey])).attr("cy", d => y(d[yKey]))
+  );
+
+  document.getElementById("s-r").textContent = r.toFixed(3);
+  const verdict = document.getElementById("scatter-verdict");
+  const strength = Math.abs(r) > 0.7 ? "fuerte" : Math.abs(r) > 0.4 ? "moderada" : "débil";
+  verdict.textContent = `Correlación ${strength} y ${r >= 0 ? "positiva" : "negativa"} entre ${VAR_LABELS[xKey]} y ${VAR_LABELS[yKey]}. Recuerda: correlación no implica causalidad.`;
+  document.getElementById("corr-code").textContent = `df["${VAR_LABELS[xKey]}"].corr(df["${VAR_LABELS[yKey]}"])  # r de Pearson`;
+}
+xSelect.addEventListener("change", renderScatter);
+ySelect.addEventListener("change", renderScatter);
+renderScatter();
+
+// --- Sección 3: groupby ---
+const groupVarSelect = document.getElementById("group-var-select");
+const groupBySelect = document.getElementById("group-by-select");
+const gbSvg = d3.select("#groupby-svg");
+const gMargin = { top: 16, right: 60, bottom: 30, left: 170 };
+const gW = 560 - gMargin.left - gMargin.right;
+const gH = 260 - gMargin.top - gMargin.bottom;
+const gg = gbSvg.append("g").attr("transform", `translate(${gMargin.left},${gMargin.top})`);
+const gyAxisG = gg.append("g").attr("class", "axis");
+const gxAxisG = gg.append("g").attr("class", "axis").attr("transform", `translate(0,${gH})`);
+
+function renderGroupby() {
+  const varKey = groupVarSelect.value;
+  const byKey = groupBySelect.value;
+  const groups = new Map();
+  STUDENTS_DATA.forEach(d => {
+    if (!groups.has(d[byKey])) groups.set(d[byKey], []);
+    groups.get(d[byKey]).push(d[varKey]);
+  });
+  const rows = [...groups.entries()]
+    .map(([cat, vals]) => ({ cat, mean: mean(vals), n: vals.length }))
+    .sort((a, b) => b.mean - a.mean);
+
+  const y = d3.scaleBand().domain(rows.map(r => r.cat)).range([0, gH]).padding(0.25);
+  const x = d3.scaleLinear().domain([0, 100]).range([0, gW]);
+  gyAxisG.transition().duration(200).call(d3.axisLeft(y));
+  gxAxisG.transition().duration(200).call(d3.axisBottom(x).ticks(5));
+
+  const bars = gg.selectAll("rect.bar").data(rows, d => d.cat);
+  bars.join(
+    enter => enter.append("rect").attr("class", "bar")
+      .attr("y", d => y(d.cat)).attr("height", y.bandwidth())
+      .attr("x", 0).attr("width", d => x(d.mean)),
+    update => update.transition().duration(200)
+      .attr("y", d => y(d.cat)).attr("height", y.bandwidth())
+      .attr("width", d => x(d.mean)),
+    exit => exit.remove()
+  );
+
+  const labels = gg.selectAll("text.bar-label").data(rows, d => d.cat);
+  labels.join(
+    enter => enter.append("text").attr("class", "bar-label").attr("fill", "var(--text)").attr("font-size", "12px")
+      .attr("y", d => y(d.cat) + y.bandwidth() / 2 + 4)
+      .attr("x", d => x(d.mean) + 6)
+      .text(d => `${d.mean.toFixed(1)} (n=${d.n})`),
+    update => update.transition().duration(200)
+      .attr("y", d => y(d.cat) + y.bandwidth() / 2 + 4)
+      .attr("x", d => x(d.mean) + 6)
+      .text(d => `${d.mean.toFixed(1)} (n=${d.n})`),
+    exit => exit.remove()
+  );
+
+  document.getElementById("groupby-code").textContent =
+    `df.groupby("${GROUP_LABELS[byKey]}")["${VAR_LABELS[varKey]}"].mean().sort_values(ascending=False)`;
+}
+groupVarSelect.addEventListener("change", renderGroupby);
+groupBySelect.addEventListener("change", renderGroupby);
+renderGroupby();
+</script>
+
+</body>
+</html>

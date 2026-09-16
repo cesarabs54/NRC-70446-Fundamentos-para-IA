@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recurso interactivo — Semana 5 | Fundamentos para IA</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-border: #26314a;
+    --panel-hover: #1c2438;
+    --text: #e7ecf7;
+    --text-dim: #9aa7c2;
+    --accent: #5eb1ff;
+    --accent-2: #ffb75e;
+    --good: #5edc9a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header {
+    padding: 48px 20px 20px;
+    max-width: 1040px;
+    margin: 0 auto;
+  }
+  header .kicker {
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  header h1 { margin: 8px 0 12px; font-size: clamp(26px, 5vw, 40px); }
+  header p { color: var(--text-dim); max-width: 72ch; font-size: 15px; }
+  header p a { color: var(--accent); }
+  .back-link {
+    display: inline-block;
+    margin-bottom: 14px;
+    color: var(--text-dim);
+    font-size: 13px;
+    text-decoration: none;
+  }
+  .back-link:hover { color: var(--accent); }
+  main { max-width: 1040px; margin: 0 auto; padding: 12px 20px 40px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 18px;
+  }
+  a.card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 20px 22px 22px;
+    text-decoration: none;
+    color: var(--text);
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  }
+  a.card:hover {
+    background: var(--panel-hover);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .badge {
+    align-self: flex-start;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+  }
+  .badge.desc { color: #7cc4ff; border-color: #2c4360; }
+  .badge.viz { color: #b39ddb; border-color: #3a2f52; }
+  .badge.inf { color: #ffcf8a; border-color: #4a3a20; }
+  a.card h2 { margin: 0; font-size: 18px; }
+  a.card .desc { color: var(--text-dim); font-size: 14px; }
+  a.card .learn { color: var(--accent-2); font-size: 13px; margin-top: auto; padding-top: 6px; }
+  .journey {
+    margin-top: 28px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  footer {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="../index.html">← Volver al índice del curso</a>
+  <div class="kicker">Fundamentos para IA · Semana 5</div>
+  <h1>Estadística básica y visualización de datos</h1>
+  <p>
+    Cuatro recursos cortos e interactivos para experimentar con estadística descriptiva,
+    elección de gráficos y estadística inferencial, sobre el mismo dataset de la semana
+    (<code>StudentsPerformance.csv</code>, notas de 1000 estudiantes). Cambia variables, mueve
+    sliders y observa cómo responden los estadísticos y los gráficos — cada módulo se puede
+    explorar de forma independiente.
+  </p>
+</header>
+
+<main>
+  <div class="grid">
+
+    <a class="card" href="centro_dispersion.html">
+      <span class="badge desc">Módulo 1 · Estadística descriptiva</span>
+      <h2>Media, mediana, moda y dispersión</h2>
+      <p class="desc">Histograma con media/mediana/moda y un diagrama de caja con cuartiles, IQR y detección de valores atípicos, sobre la variable y el grupo que elijas.</p>
+      <p class="learn">Aprenderás: cuándo media y mediana se separan, y cómo el IQR marca qué notas son atípicas.</p>
+    </a>
+
+    <a class="card" href="que_grafico_usar.html">
+      <span class="badge viz">Módulo 2 · Visualización</span>
+      <h2>Qué gráfico usar según la pregunta</h2>
+      <p class="desc">Elige el tipo de pregunta (conteo, promedio por grupo, distribución, comparación entre grupos, relación o proporción) y observa el gráfico recomendado renderizarse en vivo. Incluye el "Reto final" del taller con las respuestas del docente.</p>
+      <p class="learn">Aprenderás: a elegir entre barras, histograma, boxplot, dispersión y pastel según lo que quieras mostrar.</p>
+    </a>
+
+    <a class="card" href="bins_escala_eje.html">
+      <span class="badge viz">Módulo 3 · Visualización</span>
+      <h2>Mismos datos, impresiones distintas</h2>
+      <p class="desc">Mueve el número de <em>bins</em> de un histograma y alterna el rango del eje Y de un gráfico de barras, con los mismos datos de fondo.</p>
+      <p class="learn">Aprenderás: por qué los parámetros de un gráfico pueden exagerar o esconder diferencias reales.</p>
+    </a>
+
+    <a class="card" href="hipotesis_prueba.html">
+      <span class="badge inf">Módulo 4 · Inferencial</span>
+      <h2>De la hipótesis a la decisión sobre H0</h2>
+      <p class="desc">Elige una pregunta de investigación, revisa H0/H1, valida homogeneidad de varianzas y ejecuta la prueba estadística correspondiente (t, ANOVA, Kruskal-Wallis o correlación de Pearson).</p>
+      <p class="learn">Aprenderás: a leer un p-valor frente a α = 0.05 y a distinguir asociación estadística de causalidad.</p>
+    </a>
+
+  </div>
+
+  <div class="journey">
+    <strong>Sugerencia de recorrido:</strong> los módulos siguen el orden de la guía y el taller —
+    estadística descriptiva, elección de gráfico, cómo los parámetros de un gráfico distorsionan
+    la lectura y, al final, estadística inferencial. Pero cada uno funciona solo, así que puedes
+    explorarlos en cualquier orden.
+  </div>
+</main>
+
+<footer>
+  Recurso complementario a la <a href="../../Semana_5/01_%20Estadistica_basica/01_Estadistica_Basica.md">guía de estadística básica</a>
+  y al <a href="../../Semana_5/02_Taller_01_visualizacion_de_datos/Taller_01_Visualizacion_de_datos.md">taller de visualización</a>
+  de Semana 5, no los reemplaza. Dataset: <code>StudentsPerformance.csv</code>. Inspirado en
+  <a href="https://rodanmuro.github.io/material_didactico_machine_learning/">rodanmuro.github.io/material_didactico_machine_learning</a>.
+</footer>
+
+</body>
+</html>

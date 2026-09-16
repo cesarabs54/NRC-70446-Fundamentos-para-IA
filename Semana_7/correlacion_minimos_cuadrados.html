@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Correlación y mínimos cuadrados | Semana 7</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="data.js"></script>
+<style>
+  :root {
+    --bg: #0f1420; --panel: #161d2e; --panel-border: #26314a; --text: #e7ecf7;
+    --text-dim: #9aa7c2; --accent: #5eb1ff; --accent-2: #ffb75e; --good: #5edc9a; --bad: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.5; }
+  header { padding: 32px 20px 16px; max-width: 980px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 70ch; }
+  main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  select { background: #0f1420; color: var(--text); border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 10px; font-size: 14px; min-width: 220px; }
+  .viz-wrap { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-top: 14px; }
+  svg { flex-shrink: 0; max-width: 100%; height: auto; }
+  .axis text { fill: var(--text-dim); font-size: 11px; }
+  .axis path, .axis line { stroke: var(--panel-border); }
+  .axis-label { fill: var(--text-dim); font-size: 12px; }
+  .dot { fill: var(--accent); opacity: 0.35; }
+  .fit-line { stroke: var(--accent-2); stroke-width: 2.5px; fill: none; }
+  .stats { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 10px; }
+  table.desc { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.desc th, table.desc td { padding: 6px 8px; border-bottom: 1px dashed var(--panel-border); text-align: right; }
+  table.desc th:first-child, table.desc td:first-child { text-align: left; color: var(--text-dim); }
+  table.desc th { color: var(--text-dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .verdict { margin-top: 6px; padding: 12px 14px; border-radius: 10px; font-size: 14px; background: #101826; border: 1px solid var(--panel-border); }
+  .verdict strong { color: var(--accent-2); }
+  .equation-box { margin-top: 4px; padding: 12px 16px; border-radius: 10px; background: #101826; border: 1px solid var(--panel-border); font-size: 16px; text-align: center; font-variant-numeric: tabular-nums; }
+  .formula-box { padding: 14px 16px; border-radius: 10px; background: #101826; border: 1px solid var(--panel-border); font-size: 14px; margin-top: 6px; }
+  .formula-box .f { text-align: center; margin: 8px 0; font-size: 15px; }
+  .formula-box .note { color: var(--text-dim); font-size: 13px; margin-top: 6px; }
+  sup, sub { font-size: 0.7em; }
+  details.code-toggle { margin-top: 14px; border: 1px solid var(--panel-border); border-radius: 10px; background: #0b0f18; }
+  details.code-toggle summary { cursor: pointer; padding: 10px 14px; font-size: 13px; color: var(--accent); list-style: none; user-select: none; }
+  details.code-toggle summary::-webkit-details-marker { display: none; }
+  details.code-toggle summary::before { content: "▸ "; }
+  details.code-toggle[open] summary::before { content: "▾ "; }
+  details.code-toggle .code-wrap { position: relative; }
+  details.code-toggle pre { margin: 0; padding: 4px 16px 16px; overflow-x: auto; }
+  details.code-toggle code { font-family: "Consolas", "Menlo", monospace; font-size: 12.5px; color: #c9d6f0; white-space: pre; }
+  .copy-btn { position: absolute; top: 4px; right: 14px; background: var(--panel); border: 1px solid var(--panel-border); color: var(--text-dim); font-size: 11px; padding: 3px 8px; border-radius: 6px; cursor: pointer; }
+  .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+  footer { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">&larr; Recurso interactivo Semana 7</a>
+  <div class="kicker">Semana 7 · Módulo 1 · Correlación y mínimos cuadrados</div>
+  <h1>La recta que mejor atraviesa la nube de puntos</h1>
+  <p>
+    Elige cualquier par de notas (matemáticas, lectura, escritura) como <code>X</code> y <code>Y</code>.
+    Verás el diagrama de dispersión con la recta de mínimos cuadrados superpuesta, y cómo se calculan
+    <code>b1</code> y <code>b0</code> a partir de <code>S<sub>xy</sub></code> y <code>S<sub>xx</sub></code>
+    (Sección 3 de <code>01_Regresion_lineal_conceptos_basicos.md</code>).
+  </p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>1 · Elige X e Y</h2>
+    <div class="subtitle">
+      Con 3 variables numéricas hay 6 combinaciones ordenadas posibles (X → Y). El valor por defecto
+      reproduce el ejemplo del documento: lectura → escritura.
+    </div>
+    <div class="controls">
+      <div class="field">
+        <label for="x-select">Variable independiente (X)</label>
+        <select id="x-select"></select>
+      </div>
+      <div class="field">
+        <label for="y-select">Variable dependiente (Y)</label>
+        <select id="y-select"></select>
+      </div>
+    </div>
+
+    <div class="viz-wrap">
+      <svg id="scatter-svg" width="540" height="420" viewBox="0 0 540 420" preserveAspectRatio="xMinYMin meet"></svg>
+      <div class="stats">
+        <div id="stats-table-wrap"></div>
+        <div class="equation-box" id="equation-box">—</div>
+      </div>
+    </div>
+
+    <div class="formula-box">
+      <div><strong>Fórmulas de mínimos cuadrados</strong> (Sección 3 del documento conceptual):</div>
+      <div class="f">b1 = S<sub>xy</sub> / S<sub>xx</sub> &nbsp;&nbsp;&nbsp; b0 = ȳ − b1·x̄</div>
+      <div class="f">S<sub>xy</sub> = Σ(x<sub>i</sub> − x̄)(y<sub>i</sub> − ȳ) &nbsp;&nbsp;&nbsp; S<sub>xx</sub> = Σ(x<sub>i</sub> − x̄)²</div>
+      <div class="f">r = S<sub>xy</sub> / √(S<sub>xx</sub> · S<sub>yy</sub>) &nbsp;&nbsp;&nbsp; (correlación de Pearson)</div>
+      <div class="note">
+        S<sub>xy</sub> mide cuánto se mueven juntas las dos variables; S<sub>xx</sub> mide cuánto varía por
+        sí sola X. <code>r</code> es la versión de S<sub>xy</sub> ya normalizada entre −1 y 1 (no depende de
+        las unidades de X e Y), mientras que <code>b1</code> sí queda en las unidades originales de Y por
+        cada unidad de X.
+      </div>
+    </div>
+
+    <details class="code-toggle">
+      <summary>Ver código Python equivalente</summary>
+      <div class="code-wrap">
+        <button class="copy-btn" data-target="code-fit">Copiar</button>
+        <pre><code id="code-fit"></code></pre>
+      </div>
+    </details>
+  </section>
+
+</main>
+
+<footer>
+  Módulo 1/4 del recurso interactivo de Semana 7. Dataset: <code>StudentsPerformance.csv</code> (1000
+  estudiantes), filtrado a casos completos con <code>build_data.py</code>. Complementa
+  <code>01_Regresion_lineal_conceptos_basicos.md</code> y el
+  <code>Taller_02_Regresion_lineal_conceptos_basicos.md</code>, no los reemplaza.
+</footer>
+
+<script>
+const NUMERIC_VARS = {
+  mathScore: "Nota de matemáticas (math score)",
+  readingScore: "Nota de lectura (reading score)",
+  writingScore: "Nota de escritura (writing score)",
+};
+const COL_NAMES = { mathScore: "math score", readingScore: "reading score", writingScore: "writing score" };
+
+function setCode(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".copy-btn");
+  if (!btn) return;
+  const code = document.getElementById(btn.dataset.target);
+  navigator.clipboard.writeText(code.textContent).then(() => {
+    const original = btn.textContent;
+    btn.textContent = "¡Copiado!";
+    setTimeout(() => { btn.textContent = original; }, 1200);
+  }).catch(() => {});
+});
+
+function mean(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+
+function linreg(x, y) {
+  const n = x.length;
+  const xbar = mean(x), ybar = mean(y);
+  let Sxy = 0, Sxx = 0, Syy = 0;
+  for (let i = 0; i < n; i++) {
+    const dx = x[i] - xbar, dy = y[i] - ybar;
+    Sxy += dx * dy; Sxx += dx * dx; Syy += dy * dy;
+  }
+  const b1 = Sxy / Sxx;
+  const b0 = ybar - b1 * xbar;
+  const r = Sxy / Math.sqrt(Sxx * Syy);
+  return { n, xbar, ybar, Sxy, Sxx, Syy, b1, b0, r };
+}
+
+function populateSelect(sel, options, selected) {
+  sel.innerHTML = "";
+  Object.entries(options).forEach(([k, v]) => {
+    const opt = document.createElement("option");
+    opt.value = k; opt.textContent = v;
+    if (k === selected) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+const xSelect = document.getElementById("x-select");
+const ySelect = document.getElementById("y-select");
+populateSelect(xSelect, NUMERIC_VARS, "readingScore");
+
+function refreshYOptions(keepY) {
+  const xKey = xSelect.value;
+  const yOptions = Object.fromEntries(Object.entries(NUMERIC_VARS).filter(([k]) => k !== xKey));
+  const current = keepY && keepY !== xKey ? keepY : Object.keys(yOptions)[0];
+  populateSelect(ySelect, yOptions, current);
+}
+refreshYOptions("writingScore");
+
+// ---------- Diagrama de dispersión con recta ajustada ----------
+const svg = d3.select("#scatter-svg");
+const margin = { top: 16, right: 20, bottom: 50, left: 54 };
+const W = 540 - margin.left - margin.right;
+const H = 420 - margin.top - margin.bottom;
+const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+const xAxisG = g.append("g").attr("class", "axis").attr("transform", `translate(0,${H})`);
+const yAxisG = g.append("g").attr("class", "axis");
+const xLabel = svg.append("text").attr("class", "axis-label").attr("text-anchor", "middle")
+  .attr("x", margin.left + W / 2).attr("y", 414);
+const yLabel = svg.append("text").attr("class", "axis-label").attr("text-anchor", "middle")
+  .attr("transform", `translate(14,${margin.top + H / 2}) rotate(-90)`);
+
+function render() {
+  const xKey = xSelect.value, yKey = ySelect.value;
+  const xVals = STUDENTS_DATA.map(d => d[xKey]);
+  const yVals = STUDENTS_DATA.map(d => d[yKey]);
+  const fit = linreg(xVals, yVals);
+
+  const x = d3.scaleLinear().domain(d3.extent(xVals)).nice().range([0, W]);
+  const y = d3.scaleLinear().domain(d3.extent(yVals)).nice().range([H, 0]);
+
+  xAxisG.transition().duration(200).call(d3.axisBottom(x).ticks(8));
+  yAxisG.transition().duration(200).call(d3.axisLeft(y).ticks(8));
+  xLabel.text(NUMERIC_VARS[xKey]);
+  yLabel.text(NUMERIC_VARS[yKey]);
+
+  const dots = g.selectAll("circle.dot").data(STUDENTS_DATA);
+  dots.join(
+    enter => enter.append("circle").attr("class", "dot").attr("r", 2.4)
+      .attr("cx", d => x(d[xKey])).attr("cy", d => y(d[yKey])),
+    update => update.transition().duration(200)
+      .attr("cx", d => x(d[xKey])).attr("cy", d => y(d[yKey]))
+  );
+
+  const [x0, x1] = x.domain();
+  const lineData = [{ x: x0, y: fit.b0 + fit.b1 * x0 }, { x: x1, y: fit.b0 + fit.b1 * x1 }];
+  const lineGen = d3.line().x(d => x(d.x)).y(d => y(d.y));
+  let fitLine = g.select("path.fit-line");
+  if (fitLine.empty()) fitLine = g.append("path").attr("class", "fit-line");
+  fitLine.transition().duration(200).attr("d", lineGen(lineData));
+
+  const wrap = document.getElementById("stats-table-wrap");
+  wrap.innerHTML = `
+    <table class="desc">
+      <tr><th>Estadístico</th><th>Valor</th></tr>
+      <tr><td>n</td><td>${fit.n}</td></tr>
+      <tr><td>x̄</td><td>${fit.xbar.toFixed(4)}</td></tr>
+      <tr><td>ȳ</td><td>${fit.ybar.toFixed(4)}</td></tr>
+      <tr><td>S<sub>xy</sub></td><td>${fit.Sxy.toFixed(2)}</td></tr>
+      <tr><td>S<sub>xx</sub></td><td>${fit.Sxx.toFixed(2)}</td></tr>
+      <tr><td>b1 (pendiente)</td><td>${fit.b1.toFixed(4)}</td></tr>
+      <tr><td>b0 (intercepto)</td><td>${fit.b0.toFixed(4)}</td></tr>
+      <tr><td>r (Pearson)</td><td>${fit.r.toFixed(4)}</td></tr>
+      <tr><td>r²</td><td>${(fit.r * fit.r).toFixed(4)}</td></tr>
+    </table>`;
+
+  document.getElementById("equation-box").innerHTML =
+    `ŷ = ${fit.b0.toFixed(4)} ${fit.b1 >= 0 ? "+" : "−"} ${Math.abs(fit.b1).toFixed(4)} · x`;
+
+  const xCol = COL_NAMES[xKey], yCol = COL_NAMES[yKey];
+  setCode("code-fit", `from scipy import stats
+
+x = df["${xCol}"]
+y = df["${yCol}"]
+
+# Ajuste por mínimos cuadrados
+resultado = stats.linregress(x, y)
+print(f"b1 (pendiente) = {resultado.slope:.4f}")
+print(f"b0 (intercepto) = {resultado.intercept:.4f}")
+print(f"r (correlación) = {resultado.rvalue:.4f}")
+print(f"r² = {resultado.rvalue ** 2:.4f}")
+
+# Equivalente manual con pandas (Sxy y Sxx explícitos)
+xbar, ybar = x.mean(), y.mean()
+Sxy = ((x - xbar) * (y - ybar)).sum()
+Sxx = ((x - xbar) ** 2).sum()
+b1 = Sxy / Sxx
+b0 = ybar - b1 * xbar
+
+# También: x.cov(y) / x.var(ddof=1) da el mismo b1 (cov y var muestrales)
+print(f"cov(x,y) = {x.cov(y):.4f}, corr(x,y) = {x.corr(y):.4f}")`);
+}
+
+xSelect.addEventListener("change", () => { refreshYOptions(ySelect.value); render(); });
+ySelect.addEventListener("change", render);
+render();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Validación de supuestos | Semana 6</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.9.6/jstat.min.js"></script>
+<script src="data.js"></script>
+<style>
+  :root {
+    --bg: #0f1420; --panel: #161d2e; --panel-border: #26314a; --text: #e7ecf7;
+    --text-dim: #9aa7c2; --accent: #5eb1ff; --accent-2: #ffb75e; --good: #5edc9a; --bad: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.5; }
+  header { padding: 32px 20px 16px; max-width: 980px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 70ch; }
+  main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  select { background: #0f1420; color: var(--text); border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 10px; font-size: 14px; min-width: 190px; }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-top: 14px; }
+  svg { flex-shrink: 0; max-width: 100%; height: auto; }
+  .axis text { fill: var(--text-dim); font-size: 11px; }
+  .axis path, .axis line { stroke: var(--panel-border); }
+  .bar { fill: var(--accent); opacity: 0.55; }
+  .normcurve { fill: none; stroke: var(--accent-2); stroke-width: 2px; }
+  .group-title { font-size: 13px; color: var(--text-dim); margin-bottom: 6px; text-align: center; }
+  .card-badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 10px; border-radius: 999px; margin-top: 6px; }
+  .card-badge.ok { color: var(--good); border: 1px solid #1f4a35; }
+  .card-badge.no { color: var(--bad); border: 1px solid #4a1f1f; }
+  .stat-row { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--panel-border); padding: 4px 0; font-size: 13px; gap: 10px; }
+  .stat-row span:first-child { color: var(--text-dim); }
+  .stat-row span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+  .verdict { margin-top: 6px; padding: 12px 14px; border-radius: 10px; font-size: 14px; background: #101826; border: 1px solid var(--panel-border); }
+  .verdict.good { border-color: var(--good); }
+  .verdict.bad { border-color: var(--bad); }
+  .note { font-size: 13px; color: var(--text-dim); background: #101826; border: 1px solid var(--panel-border); border-radius: 10px; padding: 12px 14px; margin-top: 10px; }
+  details.code-toggle { margin-top: 14px; border: 1px solid var(--panel-border); border-radius: 10px; background: #0b0f18; }
+  details.code-toggle summary { cursor: pointer; padding: 10px 14px; font-size: 13px; color: var(--accent); list-style: none; user-select: none; }
+  details.code-toggle summary::-webkit-details-marker { display: none; }
+  details.code-toggle summary::before { content: "▸ "; }
+  details.code-toggle[open] summary::before { content: "▾ "; }
+  details.code-toggle .code-wrap { position: relative; }
+  details.code-toggle pre { margin: 0; padding: 4px 16px 16px; overflow-x: auto; }
+  details.code-toggle code { font-family: "Consolas", "Menlo", monospace; font-size: 12.5px; color: #c9d6f0; white-space: pre; }
+  .copy-btn { position: absolute; top: 4px; right: 14px; background: var(--panel); border: 1px solid var(--panel-border); color: var(--text-dim); font-size: 11px; padding: 3px 8px; border-radius: 6px; cursor: pointer; }
+  .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+  footer { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">&larr; Recurso interactivo Semana 6</a>
+  <div class="kicker">Semana 6 · Módulo 2 · Validación de supuestos</div>
+  <h1>¿Puedo confiar en la prueba t? Normalidad y homogeneidad</h1>
+  <p>
+    Antes de comparar grupos con una prueba paramétrica, el notebook valida dos supuestos
+    (Sección 6): que cada grupo se parezca a una distribución normal (Shapiro-Wilk) y que todos
+    los grupos tengan una variabilidad comparable (Levene). Elige la variable de agrupación (2 o
+    más grupos) y el puntaje para revisar ambos supuestos en vivo.
+  </p>
+</header>
+
+<main>
+
+  <section class="card">
+    <div class="controls">
+      <div class="field">
+        <label for="group-select">Variable de agrupación</label>
+        <select id="group-select"></select>
+      </div>
+      <div class="field">
+        <label for="score-select">Puntaje</label>
+        <select id="score-select"></select>
+      </div>
+    </div>
+
+    <h2>1 · Normalidad por grupo (Jarque-Bera)</h2>
+    <div class="subtitle">
+      Cada histograma se compara contra la campana normal (línea naranja) con la misma media y
+      desviación del grupo. La prueba de Jarque-Bera usa la asimetría y la curtosis de la
+      muestra para dar un <em>p-value</em> formal, calculable en JavaScript en el navegador.
+    </div>
+    <div id="norm-grid" class="grid2"></div>
+    <div class="note">
+      El notebook aplica la prueba exacta de <strong>Shapiro-Wilk</strong>
+      (<code>scipy.stats.shapiro</code>), que no tiene una implementación simple en JavaScript.
+      Aquí se usa <strong>Jarque-Bera</strong> como sustituto formal (basado en asimetría y
+      curtosis, con <em>p-value</em> exacto vía chi-cuadrado); ambas pruebas suelen coincidir en
+      la conclusión práctica, pero no son el mismo cálculo.
+    </div>
+    <details class="code-toggle">
+      <summary>Ver código Python equivalente (Shapiro-Wilk, el que usa el notebook)</summary>
+      <div class="code-wrap">
+        <button class="copy-btn" data-target="code-norm">Copiar</button>
+        <pre><code id="code-norm"></code></pre>
+      </div>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>2 · Homogeneidad de varianzas (Levene)</h2>
+    <div class="subtitle">
+      Revisa si los grupos tienen una dispersión estadísticamente comparable alrededor de su
+      propia mediana. Se calcula igual que en <code>scipy.stats.levene</code>.
+    </div>
+    <div id="levene-stats" style="max-width:420px;"></div>
+    <div class="verdict" id="levene-verdict">—</div>
+    <details class="code-toggle">
+      <summary>Ver código Python equivalente</summary>
+      <div class="code-wrap">
+        <button class="copy-btn" data-target="code-levene">Copiar</button>
+        <pre><code id="code-levene"></code></pre>
+      </div>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>3 · Conclusión: ¿qué prueba corresponde?</h2>
+    <div class="verdict" id="combined-verdict">—</div>
+  </section>
+
+</main>
+
+<footer>
+  Módulo 2/5 del recurso interactivo de Semana 6. Dataset: <code>StudentsPerformance.csv</code>
+  (mismo del notebook docente <code>EIARV011_A6_Notebook.ipynb</code>). Sigue en el
+  <a href="eleccion_prueba.html">Módulo 3</a> con la prueba inferencial correspondiente.
+</footer>
+
+<script>
+const SCORE_VARS = { mathScore: "Nota de matemáticas", readingScore: "Nota de lectura", writingScore: "Nota de escritura" };
+const GROUP_VARS = {
+  testPrep: "Curso de preparación (none / completed)",
+  gender: "Género (female / male)",
+  lunch: "Tipo de almuerzo (standard / free-reduced)",
+  ethnicity: "Grupo étnico (5 grupos)",
+  parentEducation: "Nivel educativo de los padres (6 grupos)",
+};
+const ALPHA = 0.05;
+const COL_NAMES = {
+  testPrep: "test preparation course", gender: "gender", lunch: "lunch",
+  ethnicity: "race/ethnicity", parentEducation: "parental level of education",
+  mathScore: "math score", readingScore: "reading score", writingScore: "writing score",
+};
+
+function setCode(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".copy-btn");
+  if (!btn) return;
+  const code = document.getElementById(btn.dataset.target);
+  navigator.clipboard.writeText(code.textContent).then(() => {
+    const original = btn.textContent;
+    btn.textContent = "¡Copiado!";
+    setTimeout(() => { btn.textContent = original; }, 1200);
+  }).catch(() => {});
+});
+const GROUP_COLORS = ["var(--accent)", "var(--accent-2)", "#ff6b9d", "var(--good)", "#b39ddb", "#ffcf8a"];
+
+function mean(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+function variance(arr, m) { return arr.reduce((a, b) => a + (b - m) ** 2, 0) / (arr.length - 1); }
+function std(arr, m) { return Math.sqrt(variance(arr, m)); }
+function medianOf(arr) {
+  const s = [...arr].sort((a, b) => a - b);
+  const n = s.length, mid = Math.floor(n / 2);
+  return n % 2 === 0 ? (s[mid - 1] + s[mid]) / 2 : s[mid];
+}
+
+// Jarque-Bera: usa desviación poblacional (denominador n) para asimetría y curtosis.
+function jarqueBera(arr) {
+  const n = arr.length;
+  const m = mean(arr);
+  const s2 = arr.reduce((a, b) => a + (b - m) ** 2, 0) / n;
+  const s = Math.sqrt(s2);
+  const skew = arr.reduce((a, b) => a + ((b - m) / s) ** 3, 0) / n;
+  const kurt = arr.reduce((a, b) => a + ((b - m) / s) ** 4, 0) / n;
+  const JB = (n / 6) * (skew ** 2 + ((kurt - 3) ** 2) / 4);
+  const p = 1 - jStat.chisquare.cdf(JB, 2);
+  return { n, mean: m, std: Math.sqrt(variance(arr, m)), skew, kurt, JB, p };
+}
+
+function levene(groupsArrays) {
+  const k = groupsArrays.length;
+  const Z = groupsArrays.map(arr => { const med = medianOf(arr); return arr.map(v => Math.abs(v - med)); });
+  const ni = Z.map(z => z.length);
+  const N = ni.reduce((a, b) => a + b, 0);
+  const ZiBar = Z.map(z => mean(z));
+  const ZBar = mean(Z.flat());
+  let num = 0;
+  for (let i = 0; i < k; i++) num += ni[i] * (ZiBar[i] - ZBar) ** 2;
+  num *= (N - k) / (k - 1);
+  let den = 0;
+  Z.forEach((z, i) => z.forEach(v => den += (v - ZiBar[i]) ** 2));
+  const W = num / den;
+  const df1 = k - 1, df2 = N - k;
+  const p = 1 - jStat.centralF.cdf(W, df1, df2);
+  return { W, df1, df2, p };
+}
+
+function populateSelect(sel, options, selected) {
+  sel.innerHTML = "";
+  Object.entries(options).forEach(([k, v]) => {
+    const opt = document.createElement("option");
+    opt.value = k; opt.textContent = v;
+    if (k === selected) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+const groupSelect = document.getElementById("group-select");
+const scoreSelect = document.getElementById("score-select");
+populateSelect(groupSelect, GROUP_VARS, "testPrep");
+populateSelect(scoreSelect, SCORE_VARS, "mathScore");
+
+function groupsFor(groupKey, scoreKey) {
+  const groups = d3.groups(STUDENTS_DATA, d => d[groupKey]).sort((a, b) => d3.ascending(a[0], b[0]));
+  return groups.map(([label, rows]) => ({ label, values: rows.map(r => r[scoreKey]) }));
+}
+
+function normalPdf(x, m, s) {
+  return (1 / (s * Math.sqrt(2 * Math.PI))) * Math.exp(-((x - m) ** 2) / (2 * s * s));
+}
+
+function drawNormCard(container, group, scoreKey, colorIdx) {
+  const wrap = document.createElement("div");
+  const title = document.createElement("div");
+  title.className = "group-title";
+  title.textContent = `${group.label} (n = ${group.values.length})`;
+  wrap.appendChild(title);
+
+  const W = 280, H = 160, margin = { top: 8, right: 10, bottom: 26, left: 34 };
+  const innerW = W - margin.left - margin.right, innerH = H - margin.top - margin.bottom;
+  const svg = d3.select(wrap).append("svg").attr("width", W).attr("height", H)
+    .attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMinYMin meet");
+  const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const jb = jarqueBera(group.values);
+  const x = d3.scaleLinear().domain([0, 100]).range([0, innerW]);
+  const bins = d3.bin().domain(x.domain()).thresholds(14)(group.values);
+  const binWidth = bins[0] ? (bins[0].x1 - bins[0].x0) : 1;
+  const density = bins.map(b => ({ x0: b.x0, x1: b.x1, d: b.length / (group.values.length * binWidth) }));
+  const yMax = Math.max(d3.max(density, d => d.d), normalPdf(jb.mean, jb.mean, jb.std));
+  const y = d3.scaleLinear().domain([0, yMax]).nice().range([innerH, 0]);
+
+  g.append("g").attr("class", "axis").attr("transform", `translate(0,${innerH})`).call(d3.axisBottom(x).ticks(4));
+  g.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(3));
+
+  g.selectAll("rect").data(density).join("rect")
+    .attr("x", d => x(d.x0) + 1).attr("width", d => Math.max(0, x(d.x1) - x(d.x0) - 1))
+    .attr("y", d => y(d.d)).attr("height", d => innerH - y(d.d))
+    .attr("fill", GROUP_COLORS[colorIdx % 6]).attr("opacity", 0.55);
+
+  const curve = d3.line().x(d => x(d)).y(d => y(normalPdf(d, jb.mean, jb.std)));
+  const xs = d3.range(0, 100, 1);
+  g.append("path").attr("class", "normcurve").attr("d", curve(xs));
+
+  const ok = jb.p >= ALPHA;
+  const badge = document.createElement("span");
+  badge.className = `card-badge ${ok ? "ok" : "no"}`;
+  badge.textContent = ok ? "No se rechaza normalidad" : "Se rechaza normalidad";
+  wrap.appendChild(badge);
+
+  const stats = document.createElement("div");
+  stats.innerHTML = `
+    <div class="stat-row"><span>Asimetría</span><span>${jb.skew.toFixed(3)}</span></div>
+    <div class="stat-row"><span>Curtosis</span><span>${jb.kurt.toFixed(3)}</span></div>
+    <div class="stat-row"><span>Jarque-Bera</span><span>JB = ${jb.JB.toFixed(3)}</span></div>
+    <div class="stat-row"><span>p-value</span><span>${jb.p < 0.0001 ? "< 0.0001" : jb.p.toFixed(4)}</span></div>
+  `;
+  wrap.appendChild(stats);
+
+  container.appendChild(wrap);
+  return { label: group.label, jb, ok };
+}
+
+function render() {
+  const groupKey = groupSelect.value;
+  const scoreKey = scoreSelect.value;
+  const groups = groupsFor(groupKey, scoreKey);
+  const arrays = groups.map(g => g.values);
+
+  const normGrid = document.getElementById("norm-grid");
+  normGrid.innerHTML = "";
+  const normResults = groups.map((g, i) => drawNormCard(normGrid, g, scoreKey, i));
+
+  const lev = levene(arrays);
+  const levOk = lev.p >= ALPHA;
+  document.getElementById("levene-stats").innerHTML = `
+    <div class="stat-row"><span>Estadístico W</span><span>${lev.W.toFixed(4)}</span></div>
+    <div class="stat-row"><span>Grados de libertad</span><span>(${lev.df1}, ${lev.df2})</span></div>
+    <div class="stat-row"><span>p-value</span><span>${lev.p < 0.0001 ? "< 0.0001" : lev.p.toFixed(4)}</span></div>
+  `;
+  const levVerdict = document.getElementById("levene-verdict");
+  levVerdict.className = `verdict ${levOk ? "good" : "bad"}`;
+  levVerdict.textContent = levOk
+    ? `p = ${lev.p.toFixed(4)} ≥ 0.05 → no se rechaza H0 de Levene: las varianzas son homogéneas entre los grupos de "${GROUP_VARS[groupKey]}".`
+    : `p = ${lev.p.toFixed(4)} < 0.05 → se rechaza H0 de Levene: las varianzas NO son homogéneas entre los grupos de "${GROUP_VARS[groupKey]}".`;
+
+  const allNormal = normResults.every(r => r.ok);
+  const combined = document.getElementById("combined-verdict");
+  const twoGroups = groups.length === 2;
+  let text;
+  if (twoGroups && allNormal && levOk) {
+    text = "Ambos supuestos se cumplen (normalidad en todos los grupos y varianzas homogéneas): corresponde la prueba t de Student con varianza combinada (pooled). El Módulo 3 la calcula en vivo.";
+  } else if (twoGroups && !allNormal && levOk) {
+    text = "La normalidad no se cumple en al menos un grupo, pero las varianzas sí son homogéneas: como en el caso del notebook, conviene usar Mann-Whitney U como prueba principal (no paramétrica) y reportar la prueba t como verificación de robustez, sobre todo si el tamaño de muestra es grande.";
+  } else if (twoGroups && allNormal && !levOk) {
+    text = "La normalidad se cumple, pero las varianzas NO son homogéneas: corresponde la prueba t de Welch, que no combina las varianzas de los dos grupos. El Módulo 3 la calcula en vivo.";
+  } else if (twoGroups) {
+    text = "Ni la normalidad ni la homogeneidad de varianzas se cumplen: la alternativa más segura es la prueba no paramétrica de Mann-Whitney U, que no depende de ninguno de los dos supuestos. El Módulo 3 la calcula en vivo.";
+  } else if (allNormal && levOk) {
+    text = `Con ${groups.length} grupos, ambos supuestos se cumplen: corresponde ANOVA de un factor (paramétrica). El Módulo 3 la calcula en vivo.`;
+  } else {
+    text = `Con ${groups.length} grupos, al menos uno de los dos supuestos no se cumple: la alternativa más segura es Kruskal-Wallis (no paramétrica), que no depende de normalidad ni de homogeneidad de varianzas. El Módulo 3 la calcula en vivo.`;
+  }
+  combined.className = "verdict";
+  combined.textContent = text;
+
+  const g = COL_NAMES[groupKey], s = COL_NAMES[scoreKey];
+  setCode("code-norm", `from scipy import stats
+
+for etiqueta, sub in df.groupby("${g}")["${s}"]:
+    stat, p = stats.shapiro(sub)
+    print(f"{etiqueta}: statistic={stat:.4f}, p-value={p:.4g}")`);
+
+  setCode("code-levene", `grupos = [sub.values for _, sub in df.groupby("${g}")["${s}"]]
+stat, p = stats.levene(*grupos)
+print(f"Levene -> statistic={stat:.4f}, p-value={p:.4g}")`);
+}
+
+groupSelect.addEventListener("change", render);
+scoreSelect.addEventListener("change", render);
+render();
+</script>
+
+</body>
+</html>

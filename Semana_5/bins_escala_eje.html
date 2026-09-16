@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bins y escala del eje | Semana 5</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="data.js"></script>
+<style>
+  :root {
+    --bg: #0f1420; --panel: #161d2e; --panel-border: #26314a; --text: #e7ecf7;
+    --text-dim: #9aa7c2; --accent: #5eb1ff; --accent-2: #ffb75e; --good: #5edc9a; --bad: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.5; }
+  header { padding: 32px 20px 16px; max-width: 980px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 70ch; }
+  main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  select { background: #0f1420; color: var(--text); border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 10px; font-size: 14px; min-width: 170px; }
+  .field.slider { min-width: 220px; }
+  input[type="range"] { width: 220px; accent-color: var(--accent); }
+  .slider-value { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--accent-2); }
+  .toggle-row { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+  .toggle-row input { accent-color: var(--accent); width: 18px; height: 18px; }
+  .viz-wrap { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-top: 14px; }
+  svg { flex-shrink: 0; max-width: 100%; height: auto; }
+  .axis text { fill: var(--text-dim); font-size: 11px; }
+  .axis path, .axis line { stroke: var(--panel-border); }
+  .bar { fill: var(--accent); opacity: 0.6; }
+  .verdict { margin-top: 10px; padding: 12px 14px; border-radius: 10px; font-size: 14px; background: #101826; border: 1px solid var(--panel-border); }
+  .code-wrap { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 18px; }
+  .code-card { flex: 1; min-width: 260px; }
+  .code-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: 8px; }
+  pre {
+    background: #0b111c; border: 1px solid var(--panel-border); border-radius: 10px;
+    padding: 14px 16px; font-size: 13px; overflow-x: auto; margin: 0;
+  }
+  pre.hist-code { border-left: 3px solid var(--accent); }
+  pre.bar-code { border-left: 3px solid var(--good); }
+  code { font-family: "SF Mono", Consolas, Menlo, monospace; }
+  footer { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">&larr; Recurso interactivo Semana 5</a>
+  <div class="kicker">Semana 5 · Módulo 3 · Visualización</div>
+  <h1>Mismos datos, impresiones distintas</h1>
+  <p>
+    Un gráfico nunca es "neutral": la forma en que se configura cambia lo que el ojo percibe,
+    aunque los números de fondo sean exactamente los mismos. Este módulo aísla dos decisiones
+    de diseño que suelen pasar desapercibidas — el número de <em>bins</em> de un histograma y el
+    rango del eje Y de un gráfico de barras.
+  </p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>1 · El número de bins de un histograma</h2>
+    <div class="subtitle">
+      Con pocos <em>bins</em> el histograma se ve "grueso" y pierde detalle; con demasiados se
+      vuelve ruidoso y dentado. El número de <em>bins</em> no es un detalle menor: cambia la
+      historia que cuenta el gráfico, aunque los datos no hayan cambiado en nada.
+    </div>
+    <div class="controls">
+      <div class="field">
+        <label for="var-select">Variable</label>
+        <select id="var-select"></select>
+      </div>
+      <div class="field slider">
+        <label for="bins-slider">Número de bins — <span class="slider-value" id="bins-value">20</span></label>
+        <input type="range" id="bins-slider" min="3" max="60" value="20" step="1">
+      </div>
+    </div>
+    <div class="viz-wrap">
+      <svg id="hist-svg" width="700" height="340"></svg>
+    </div>
+    <div class="verdict" id="hist-verdict">—</div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="hist-code"><code id="hist-code"></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>2 · El rango del eje Y de un gráfico de barras</h2>
+    <div class="subtitle">
+      Cuando el eje Y no empieza en 0, cualquier diferencia entre barras se magnifica
+      visualmente. Cuando abarca todo el rango posible de la variable, la comparación queda
+      proporcional a la escala real del fenómeno. Ninguna versión es "falsa" en sus números,
+      pero comunican una impresión distinta.
+    </div>
+    <div class="controls">
+      <div class="field">
+        <label for="num-select">Variable numérica (promedio)</label>
+        <select id="num-select"></select>
+      </div>
+      <div class="field">
+        <label for="group-select">Agrupar por</label>
+        <select id="group-select"></select>
+      </div>
+      <div class="toggle-row">
+        <input type="checkbox" id="axis-toggle">
+        <label for="axis-toggle">Forzar eje Y de 0 a 100</label>
+      </div>
+    </div>
+    <div class="viz-wrap">
+      <svg id="bar-svg" width="700" height="340"></svg>
+    </div>
+    <div class="verdict" id="bar-verdict">—</div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="bar-code"><code id="bar-code"></code></pre>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Módulo 3/4 del recurso interactivo de Semana 5. Dataset: <code>StudentsPerformance.csv</code>
+  (mismo del <a href="../../Semana_5/02_Taller_01_visualizacion_de_datos/Taller_01_Visualizacion_de_datos.md">taller de visualización</a>,
+  ejercicios 2b y 6b), filtrado a casos completos con <code>build_data.py</code>. Complementa el taller, no lo reemplaza.
+</footer>
+
+<script>
+const NUMERIC_VARS = { mathScore: "Nota de matemáticas", readingScore: "Nota de lectura", writingScore: "Nota de escritura" };
+const CATEGORICAL_VARS = { ethnicity: "Grupo étnico", parentEducation: "Nivel educativo de los padres", testPrep: "Curso de preparación", lunch: "Tipo de almuerzo" };
+const COL_NAMES = {
+  mathScore: "math score", readingScore: "reading score", writingScore: "writing score",
+  ethnicity: "race/ethnicity", parentEducation: "parental level of education",
+  testPrep: "test preparation course", lunch: "lunch",
+};
+
+function populateSelect(sel, options, selected) {
+  sel.innerHTML = "";
+  Object.entries(options).forEach(([k, v]) => {
+    const opt = document.createElement("option");
+    opt.value = k; opt.textContent = v;
+    if (k === selected) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+// ---------- 1. Bins ----------
+const varSelect = document.getElementById("var-select");
+const binsSlider = document.getElementById("bins-slider");
+const binsValue = document.getElementById("bins-value");
+populateSelect(varSelect, NUMERIC_VARS, "mathScore");
+
+const histSvg = d3.select("#hist-svg");
+const hMargin = { top: 16, right: 16, bottom: 44, left: 56 };
+const hW = 700 - hMargin.left - hMargin.right;
+const hH = 340 - hMargin.top - hMargin.bottom;
+const hG = histSvg.append("g").attr("transform", `translate(${hMargin.left},${hMargin.top})`);
+const hXAxisG = hG.append("g").attr("class", "axis").attr("transform", `translate(0,${hH})`);
+const hYAxisG = hG.append("g").attr("class", "axis");
+const hXLabel = histSvg.append("text").attr("class", "axis").attr("text-anchor", "middle")
+  .attr("x", hMargin.left + hW / 2).attr("y", 336).style("fill", "var(--text-dim)").style("font-size", "12px");
+
+function renderHist() {
+  const key = varSelect.value;
+  const bins = +binsSlider.value;
+  binsValue.textContent = bins;
+  const values = STUDENTS_DATA.map(d => d[key]);
+
+  const x = d3.scaleLinear().domain([0, 100]).range([0, hW]);
+  const binGen = d3.bin().domain(x.domain()).thresholds(bins)(values);
+  const y = d3.scaleLinear().domain([0, d3.max(binGen, b => b.length)]).nice().range([hH, 0]);
+
+  hXAxisG.transition().duration(150).call(d3.axisBottom(x).ticks(8));
+  hYAxisG.transition().duration(150).call(d3.axisLeft(y).ticks(6));
+  hXLabel.text(NUMERIC_VARS[key]);
+
+  const bars = hG.selectAll("rect.bar").data(binGen);
+  bars.join(
+    enter => enter.append("rect").attr("class", "bar")
+      .attr("x", d => x(d.x0) + 0.5).attr("width", d => Math.max(0, x(d.x1) - x(d.x0) - 0.5))
+      .attr("y", d => y(d.length)).attr("height", d => hH - y(d.length)),
+    update => update.transition().duration(150)
+      .attr("x", d => x(d.x0) + 0.5).attr("width", d => Math.max(0, x(d.x1) - x(d.x0) - 0.5))
+      .attr("y", d => y(d.length)).attr("height", d => hH - y(d.length)),
+    exit => exit.remove()
+  );
+
+  const verdict = document.getElementById("hist-verdict");
+  if (bins <= 6) {
+    verdict.textContent = `Con ${bins} bins el histograma es "grueso": los cajones son tan anchos que se pierden detalles de la forma real de la distribución.`;
+  } else if (bins >= 45) {
+    verdict.textContent = `Con ${bins} bins el histograma se vuelve ruidoso y dentado: hay pocos datos por cada cajón tan angosto, y se pierde la lectura general de la tendencia.`;
+  } else {
+    verdict.textContent = `Con ${bins} bins hay un balance razonable: se ve la forma general sin ruido excesivo ni pérdida de detalle. Los mismos 1000 datos, contados distinto.`;
+  }
+
+  document.getElementById("hist-code").textContent =
+`plt.hist(df["${COL_NAMES[key]}"], bins=${bins})
+plt.show()`;
+}
+
+varSelect.addEventListener("change", renderHist);
+binsSlider.addEventListener("input", renderHist);
+renderHist();
+
+// ---------- 2. Escala del eje Y ----------
+const numSelect = document.getElementById("num-select");
+const groupSelect = document.getElementById("group-select");
+const axisToggle = document.getElementById("axis-toggle");
+populateSelect(numSelect, NUMERIC_VARS, "mathScore");
+populateSelect(groupSelect, CATEGORICAL_VARS, "ethnicity");
+
+const barSvg = d3.select("#bar-svg");
+const bMargin = { top: 16, right: 16, bottom: 50, left: 56 };
+const bW = 700 - bMargin.left - bMargin.right;
+const bH = 340 - bMargin.top - bMargin.bottom;
+const bG = barSvg.append("g").attr("transform", `translate(${bMargin.left},${bMargin.top})`);
+const bXAxisG = bG.append("g").attr("class", "axis").attr("transform", `translate(0,${bH})`);
+const bYAxisG = bG.append("g").attr("class", "axis");
+const bYLabel = barSvg.append("text").attr("class", "axis").attr("text-anchor", "middle")
+  .attr("transform", `translate(14, ${bMargin.top + bH / 2}) rotate(-90)`)
+  .style("fill", "var(--text-dim)").style("font-size", "12px");
+
+function renderBarScale() {
+  const numKey = numSelect.value, groupKey = groupSelect.value;
+  const forced = axisToggle.checked;
+
+  const groups = d3.rollup(STUDENTS_DATA, v => d3.mean(v, d => d[numKey]), d => d[groupKey]);
+  const data = Array.from(groups, ([k, v]) => ({ k, v })).sort((a, b) => d3.ascending(a.k, b.k));
+
+  const x = d3.scaleBand().domain(data.map(d => d.k)).range([0, bW]).padding(0.3);
+  const y = forced
+    ? d3.scaleLinear().domain([0, 100]).range([bH, 0])
+    : d3.scaleLinear().domain(d3.extent(data, d => d.v)).nice().range([bH, 0]);
+
+  bXAxisG.transition().duration(200).call(d3.axisBottom(x));
+  bXAxisG.selectAll("text").attr("transform", "rotate(-20)").style("text-anchor", "end");
+  bYAxisG.transition().duration(200).call(d3.axisLeft(y).ticks(6));
+  bYLabel.text(`Promedio de ${NUMERIC_VARS[numKey]}`);
+
+  const bars = bG.selectAll("rect.bar").data(data, d => d.k);
+  bars.join(
+    enter => enter.append("rect").attr("class", "bar")
+      .attr("x", d => x(d.k)).attr("width", x.bandwidth())
+      .attr("y", d => y(d.v)).attr("height", d => bH - y(d.v)),
+    update => update.transition().duration(200)
+      .attr("x", d => x(d.k)).attr("width", x.bandwidth())
+      .attr("y", d => y(d.v)).attr("height", d => bH - y(d.v)),
+    exit => exit.remove()
+  );
+
+  const maxRow = data.reduce((a, b) => a.v > b.v ? a : b);
+  const minRow = data.reduce((a, b) => a.v < b.v ? a : b);
+  const verdict = document.getElementById("bar-verdict");
+  const gap = (maxRow.v - minRow.v).toFixed(1);
+  if (forced) {
+    verdict.textContent = `Eje Y fijo de 0 a 100: la diferencia real entre "${maxRow.k}" (${maxRow.v.toFixed(1)}) y "${minRow.k}" (${minRow.v.toFixed(1)}) — ${gap} puntos — se ve proporcional al rango completo posible de la nota.`;
+  } else {
+    verdict.textContent = `Eje Y ajustado automáticamente a los datos: la misma diferencia de ${gap} puntos entre "${maxRow.k}" y "${minRow.k}" se ve mucho más grande, porque las barras ocupan casi todo el alto del gráfico.`;
+  }
+
+  const ylimLine = forced
+    ? `plt.ylim(0, 100)  # eje fijo, igual para todas las variables`
+    : `# sin plt.ylim(): el eje Y se ajusta automáticamente al rango de los datos`;
+  document.getElementById("bar-code").textContent =
+`promedios = df.groupby("${COL_NAMES[groupKey]}")["${COL_NAMES[numKey]}"].mean()
+promedios.plot(kind="bar")
+${ylimLine}`;
+}
+
+numSelect.addEventListener("change", renderBarScale);
+groupSelect.addEventListener("change", renderBarScale);
+axisToggle.addEventListener("change", renderBarScale);
+renderBarScale();
+</script>
+
+</body>
+</html>

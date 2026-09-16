@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Errores, archivos y módulos — Semana 1</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-border: #26314a;
+    --text: #e7ecf7;
+    --text-dim: #9aa7c2;
+    --accent: #5eb1ff;
+    --accent-2: #ffb75e;
+    --good: #5edc9a;
+    --bad: #ff8577;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header { padding: 32px 20px 16px; max-width: 1100px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 78ch; }
+  main { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+
+  .input-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+  input[type="text"] {
+    background: #0a0e17; color: var(--text); border: 1px solid var(--panel-border);
+    border-radius: 8px; padding: 8px 12px; font-size: 14px; font-family: Consolas, Menlo, monospace; width: 160px;
+  }
+  .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    background: #0a0e17; border: 1px solid var(--panel-border); color: var(--text-dim);
+    border-radius: 999px; padding: 5px 12px; font-size: 12.5px; font-family: Consolas, Menlo, monospace; cursor: pointer;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  pre.result {
+    background: #0a0e17; border: 1px solid var(--panel-border); border-radius: 8px;
+    padding: 12px 16px; font-size: 13.5px; margin-top: 4px; white-space: pre-wrap; min-height: 20px;
+  }
+  pre.result.ok { border-color: var(--good); color: var(--good); }
+  pre.result.err { border-color: var(--bad); color: #ff9d92; }
+
+  .file-flow { display: flex; flex-wrap: wrap; gap: 20px; align-items: stretch; margin-top: 10px; }
+  .file-box {
+    flex: 1; min-width: 240px; background: #0a0e17; border: 1px solid var(--panel-border);
+    border-radius: 10px; padding: 14px 16px; font-family: Consolas, Menlo, monospace; font-size: 13px;
+  }
+  .file-box .title { font-family: -apple-system, sans-serif; font-weight: 700; color: var(--text-dim); font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 8px; }
+  .file-box .line { color: var(--good); opacity: 0; transition: opacity 0.3s ease; }
+  .file-box .line.shown { opacity: 1; }
+  .arrow { align-self: center; color: var(--text-dim); font-size: 22px; }
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  button.primary {
+    background: #0f1420; color: var(--text); border: 1px solid var(--panel-border);
+    border-radius: 8px; padding: 8px 12px; font-size: 13px; cursor: pointer;
+  }
+  button.primary:hover { border-color: var(--accent); color: var(--accent); }
+  button.primary:disabled { opacity: 0.4; cursor: default; }
+
+  .module-diagram { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; margin-top: 14px; }
+  .mod-box { flex: 1; min-width: 240px; background: #0a0e17; border: 1px solid var(--panel-border); border-radius: 10px; padding: 14px 16px; }
+  .mod-box .filename { color: var(--accent-2); font-weight: 700; font-family: Consolas, Menlo, monospace; margin-bottom: 8px; }
+  .mod-box pre { margin: 0; font-size: 12px; color: #c9d4ea; white-space: pre-wrap; }
+  .mod-arrow { color: var(--accent); font-size: 24px; text-align: center; flex-shrink: 0; }
+  .mod-arrow .label { display: block; font-size: 11px; color: var(--text-dim); font-family: Consolas, Menlo, monospace; margin-top: 4px; }
+
+  .code-wrap { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 18px; }
+  .code-card { flex: 1; min-width: 260px; }
+  .code-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: 8px; }
+  pre {
+    background: #0b111c; border: 1px solid var(--panel-border); border-radius: 10px;
+    padding: 14px 16px; font-size: 13px; overflow-x: auto; margin: 0;
+  }
+  pre.validar-code { border-left: 3px solid var(--accent); }
+  code { font-family: "SF Mono", Consolas, Menlo, monospace; }
+
+  .learn { background: rgba(94, 220, 154, 0.08); border: 1px solid rgba(94, 220, 154, 0.35); border-radius: 10px; padding: 12px 16px; font-size: 14px; color: var(--text-dim); margin-top: 16px; }
+  .learn strong { color: var(--good); }
+  footer { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">← Recurso interactivo Semana 1</a>
+  <div class="kicker">Módulo 4 · Robustez y organización del código</div>
+  <h1>Manejo de errores, archivos y módulos</h1>
+  <p>
+    Prueba el validador del Ejercicio 10 con distintos valores, sigue el flujo de escritura
+    y lectura de un archivo (Ejercicio 11) y observa cómo dos scripts colaboran mediante
+    <code>import</code> (Ejercicio 12) — el mismo mecanismo con el que en unas semanas
+    importarás <code>numpy</code> o <code>pandas</code>.
+  </p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>Validador de accuracy con <code>try/except</code></h2>
+    <p class="subtitle">Escribe un valor (o usa los ejemplos) y observa cómo <code>validar_accuracy()</code> lo procesa.</p>
+    <div class="input-row">
+      <input type="text" id="val-input" value="0.87">
+      <button class="primary" id="btn-validate">Ejecutar validar_accuracy(valor)</button>
+    </div>
+    <div class="chip-row">
+      <span class="chip" data-v="0.87">"0.87"</span>
+      <span class="chip" data-v="abc">"abc"</span>
+      <span class="chip" data-v="1.5">"1.5"</span>
+      <span class="chip" data-v="-0.2">"-0.2"</span>
+    </div>
+    <pre class="result" id="val-result"></pre>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="validar-code"><code id="validar-code"></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Escribir y leer un archivo</h2>
+    <p class="subtitle">El historial de experimentos se guarda en <code>historial.txt</code> y se vuelve a leer — sigue el flujo del Ejercicio 11 paso a paso.</p>
+    <div class="file-flow">
+      <div class="file-box">
+        <div class="title">Python (escritura)</div>
+        <div>with open("historial.txt", "w") as archivo:</div>
+        <div>&nbsp;&nbsp;for exp in experimentos:</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;archivo.write(...)</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="file-box">
+        <div class="title">historial.txt (en disco)</div>
+        <div class="line" id="file-line-1">RandomForest,0.87</div>
+        <div class="line" id="file-line-2">SVM,0.91</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="file-box">
+        <div class="title">Consola (lectura)</div>
+        <div class="line" id="read-line-1">Modelo: RandomForest, Accuracy: 0.87</div>
+        <div class="line" id="read-line-2">Modelo: SVM, Accuracy: 0.91</div>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="primary" id="btn-file-next">Siguiente paso ▶</button>
+      <button class="primary" id="btn-file-reset">Reiniciar</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Módulos: separar lógica y punto de entrada</h2>
+    <p class="subtitle"><code>main.py</code> importa funciones definidas en <code>experimentos.py</code> — deben estar en la misma carpeta para que el <code>import</code> funcione sin configuración adicional.</p>
+    <div class="module-diagram">
+      <div class="mod-box">
+        <div class="filename">experimentos.py</div>
+        <pre>def clasificar_experimento(accuracy):
+    ...
+
+def promedio_accuracy(lista_experimentos):
+    ...</pre>
+      </div>
+      <div class="mod-arrow">→<span class="label">import</span></div>
+      <div class="mod-box">
+        <div class="filename">main.py</div>
+        <pre>from experimentos import (
+    clasificar_experimento,
+    promedio_accuracy,
+)
+
+promedio = promedio_accuracy(experimentos)
+mejor = max(experimentos, key=...)
+print(f"Promedio: {promedio:.3f}")
+print(clasificar_experimento(mejor["accuracy"]))</pre>
+      </div>
+    </div>
+    <pre class="result ok">Promedio: 0.853
+Mejor modelo (SVM): Excelente</pre>
+  </section>
+
+  <div class="learn">
+    <strong>Dos trampas típicas del Ejercicio 11:</strong> olvidar el <code>\n</code> al escribir (todo queda en una
+    sola línea) y no aplicar <code>.strip()</code> antes de <code>.split(",")</code> (el último campo arrastra el
+    salto de línea). <code>with open(...)</code> cierra el archivo automáticamente aunque ocurra una excepción.
+  </div>
+
+</main>
+
+<footer>
+  Recurso complementario al material de la <a href="../../Semana_1/semana_1_estudiante.md">Semana 1</a>, no lo reemplaza.
+</footer>
+
+<script>
+// ---------- Validador try/except ----------
+function validarAccuracy(valor) {
+  const numero = parseFloat(valor);
+  const isValidNumber = valor.trim() !== "" && !isNaN(numero) && /^-?\d*\.?\d+$/.test(valor.trim());
+  if (!isValidNumber) {
+    return {
+      ok: false,
+      log: `Dato inválido (${valor}): could not convert string to float: '${valor}'\nResultado: None`,
+    };
+  }
+  if (!(numero >= 0 && numero <= 1)) {
+    return {
+      ok: false,
+      log: `Dato inválido (${valor}): Accuracy fuera de rango\nResultado: None`,
+    };
+  }
+  return { ok: true, log: `Resultado: ${numero}` };
+}
+
+function buildValidarCode(valor, ok, numero) {
+  const header = `def validar_accuracy(valor):
+    try:
+        numero = float(valor)
+        if not (0 <= numero <= 1):
+            raise ValueError("Accuracy fuera de rango")
+        return numero
+    except ValueError as e:
+        print(f"Dato inválido ({valor}): {e}")
+        return None
+
+resultado = validar_accuracy("${valor}")`;
+  const comment = ok ? `\n# resultado = ${numero}` : `\n# resultado = None`;
+  return header + comment;
+}
+
+function runValidator() {
+  const valor = document.getElementById("val-input").value;
+  const { ok, log } = validarAccuracy(valor);
+  const out = document.getElementById("val-result");
+  out.textContent = log;
+  out.className = "result " + (ok ? "ok" : "err");
+  document.getElementById("validar-code").textContent = buildValidarCode(valor, ok, parseFloat(valor));
+}
+document.getElementById("btn-validate").addEventListener("click", runValidator);
+document.querySelectorAll(".chip").forEach(chip => {
+  chip.addEventListener("click", () => {
+    document.getElementById("val-input").value = chip.getAttribute("data-v");
+    runValidator();
+  });
+});
+runValidator();
+
+// ---------- Flujo de archivo ----------
+const FILE_STEPS = ["file-line-1", "file-line-2", "read-line-1", "read-line-2"];
+let fileStep = 0;
+function renderFileFlow() {
+  FILE_STEPS.forEach((id, i) => {
+    document.getElementById(id).classList.toggle("shown", i < fileStep);
+  });
+  document.getElementById("btn-file-next").disabled = fileStep >= FILE_STEPS.length;
+}
+document.getElementById("btn-file-next").addEventListener("click", () => {
+  if (fileStep < FILE_STEPS.length) {
+    fileStep++;
+    renderFileFlow();
+  }
+});
+document.getElementById("btn-file-reset").addEventListener("click", () => {
+  fileStep = 0;
+  renderFileFlow();
+});
+renderFileFlow();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KNN interactivo — Semana 3</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-border: #26314a;
+    --text: #e7ecf7;
+    --text-dim: #9aa7c2;
+    --accent: #5eb1ff;
+    --accent-2: #ffb75e;
+    --good: #5edc9a;
+    --grid: #26314a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header { padding: 32px 20px 16px; max-width: 980px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 70ch; }
+  main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  input[type="range"] { width: 200px; accent-color: var(--accent); }
+  .slider-value { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--accent-2); }
+  button {
+    background: #0f1420; color: var(--text); border: 1px solid var(--panel-border);
+    border-radius: 8px; padding: 8px 12px; font-size: 13px; cursor: pointer; align-self: flex-end;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  .viz-wrap { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-top: 14px; }
+  svg { flex-shrink: 0; max-width: 100%; height: auto; cursor: crosshair; }
+  .axis text { fill: var(--text-dim); font-size: 11px; }
+  .axis path, .axis line { stroke: var(--panel-border); }
+  .hint { color: var(--text-dim); font-size: 13px; margin-top: -4px; }
+  .side { display: flex; flex-direction: column; gap: 14px; min-width: 240px; flex: 1; }
+  .legend { font-size: 12px; color: var(--text-dim); display: flex; flex-wrap: wrap; gap: 16px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .result-box {
+    border: 1px solid var(--panel-border); border-radius: 10px; padding: 12px 14px; font-size: 14px;
+  }
+  .result-box .predicted { font-size: 17px; font-weight: 700; }
+  .breakdown { font-size: 13px; color: var(--text-dim); margin-top: 6px; }
+  pre.code {
+    background: #0a0e17; border: 1px solid var(--panel-border); border-radius: 8px;
+    padding: 10px 12px; font-size: 12px; overflow-x: auto; color: #c9d4ea; margin: 0;
+  }
+  .code-wrap { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 4px; }
+  .code-card { flex: 1; min-width: 260px; }
+  .code-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: 8px; }
+  pre.knn-code {
+    background: #0b111c; border: 1px solid var(--panel-border); border-left: 3px solid var(--accent);
+    border-radius: 10px; padding: 14px 16px; font-size: 13px; overflow-x: auto; margin: 0;
+  }
+  code { font-family: "SF Mono", Consolas, Menlo, monospace; }
+  .learn { background: rgba(94, 220, 154, 0.08); border: 1px solid rgba(94, 220, 154, 0.35); border-radius: 10px; padding: 12px 16px; font-size: 14px; color: var(--text-dim); }
+  .learn strong { color: var(--good); }
+  footer { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">← Recurso interactivo Semana 3</a>
+  <div class="kicker">Módulo 2 · Scikit-learn</div>
+  <h1>Clasificar viendo por qué: KNN interactivo</h1>
+  <p>
+    Un dataset sintético con 3 clases, análogo a las especies de Iris del Ejercicio 1.2 del
+    taller. Haz clic en el plano para soltar un punto nuevo, ajusta <code>k</code> y observa
+    exactamente qué vecinos decidieron su clase — la interpretabilidad que hace de KNN un
+    buen primer modelo con scikit-learn.
+  </p>
+</header>
+
+<main>
+  <section class="card">
+    <h2>Dataset sintético y punto de consulta</h2>
+    <p class="subtitle">Haz clic en cualquier parte del plano para clasificar un punto nuevo.</p>
+
+    <div class="controls">
+      <div class="field slider">
+        <label for="k-slider">k (vecinos) <span class="slider-value" id="k-value">3</span></label>
+        <input type="range" id="k-slider" min="1" max="11" value="3">
+      </div>
+      <button id="btn-clear">Borrar punto</button>
+    </div>
+
+    <div class="legend">
+      <span><span class="swatch" style="background:#5eb1ff"></span>Clase A</span>
+      <span><span class="swatch" style="background:#ffb75e"></span>Clase B</span>
+      <span><span class="swatch" style="background:#5edc9a"></span>Clase C</span>
+      <span><span class="swatch" style="background:#e7ecf7;border-radius:0;transform:rotate(45deg);width:8px;height:8px;"></span>Punto de consulta</span>
+    </div>
+
+    <div class="viz-wrap">
+      <svg id="knn-chart" width="500" height="440" viewBox="0 0 500 440"></svg>
+      <div class="side">
+        <div class="result-box">
+          <div>Predicción para el punto de consulta:</div>
+          <div class="predicted" id="predicted-class">Haz clic en el plano</div>
+          <div class="breakdown" id="breakdown"></div>
+        </div>
+        <div class="code-wrap">
+          <div class="code-card">
+            <h3>Código equivalente en Python</h3>
+            <pre class="knn-code"><code id="knn-code"></code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="learn">
+    <strong>Pregunta de reflexión (taller, Parte 1):</strong> ¿qué tan fácil te resultó pasar de "tener los datos"
+    a "tener un modelo entrenado" con scikit-learn? Con KNN puedes señalar exactamente qué vecinos decidieron la
+    clase de un punto nuevo — esa es la interpretabilidad que scikit-learn ofrece en modelos clásicos, algo mucho
+    más difícil de lograr con una red neuronal profunda.
+  </div>
+</main>
+
+<footer>
+  Recurso complementario al <a href="../../Semana_3/Semana_3_Taller_frameworks/Semana_taller_01.md">taller de Semana 3</a>, no lo reemplaza.
+</footer>
+
+<script>
+// Deterministic PRNG (mulberry32) so the synthetic dataset is stable across reloads.
+function mulberry32(seed) {
+  return function () {
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const rand = mulberry32(42);
+function gaussian() {
+  const u1 = Math.max(rand(), 1e-9), u2 = rand();
+  return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+}
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+const CLASS_DEFS = [
+  { name: "Clase A", color: "#5eb1ff", cx: 2.4, cy: 2.6 },
+  { name: "Clase B", color: "#ffb75e", cx: 5.6, cy: 6.8 },
+  { name: "Clase C", color: "#5edc9a", cx: 8.1, cy: 2.9 },
+];
+
+const points = [];
+CLASS_DEFS.forEach((c, ci) => {
+  for (let i = 0; i < 14; i++) {
+    points.push({
+      x: clamp(c.cx + gaussian() * 0.85, 0.4, 9.6),
+      y: clamp(c.cy + gaussian() * 0.85, 0.4, 9.6),
+      cls: ci,
+    });
+  }
+});
+
+const margin = { top: 10, right: 16, bottom: 34, left: 40 };
+const width = 500 - margin.left - margin.right;
+const height = 440 - margin.top - margin.bottom;
+const svg = d3.select("#knn-chart");
+const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+const xScale = d3.scaleLinear().domain([0, 10]).range([0, width]);
+const yScale = d3.scaleLinear().domain([0, 10]).range([height, 0]);
+
+g.append("g").attr("class", "axis").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
+g.append("g").attr("class", "axis").call(d3.axisLeft(yScale));
+
+// Clickable background
+g.append("rect").attr("width", width).attr("height", height).attr("fill", "transparent")
+  .on("click", function (event) {
+    const [mx, my] = d3.pointer(event);
+    const qx = clamp(xScale.invert(mx), 0, 10);
+    const qy = clamp(yScale.invert(my), 0, 10);
+    setQuery(qx, qy);
+  });
+
+const pointsG = g.append("g");
+pointsG.selectAll("circle.data-point")
+  .data(points)
+  .join("circle")
+  .attr("class", "data-point")
+  .attr("cx", d => xScale(d.x))
+  .attr("cy", d => yScale(d.y))
+  .attr("r", 5.5)
+  .attr("fill", d => CLASS_DEFS[d.cls].color)
+  .attr("fill-opacity", 0.85)
+  .attr("stroke", "none");
+
+const linesG = g.append("g");
+const queryMarker = g.append("path")
+  .attr("d", d3.symbol().type(d3.symbolDiamond).size(180)())
+  .attr("fill", "#e7ecf7")
+  .attr("stroke", "#0f1420")
+  .attr("stroke-width", 1.5)
+  .style("display", "none");
+
+let query = null;
+
+function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+
+function classify(qx, qy, k) {
+  const withDist = points.map(p => ({ ...p, d: distance(p, { x: qx, y: qy }) }));
+  withDist.sort((a, b) => a.d - b.d);
+  const neighbors = withDist.slice(0, k);
+  const counts = [0, 0, 0];
+  neighbors.forEach(n => counts[n.cls]++);
+  let winner = 0;
+  for (let c = 1; c < 3; c++) {
+    if (counts[c] > counts[winner]) winner = c;
+    else if (counts[c] === counts[winner] && neighbors[0].cls === c) winner = c;
+  }
+  return { neighbors, counts, winner };
+}
+
+function setQuery(x, y) {
+  query = { x, y };
+  render();
+}
+
+function buildKnnSnippet(k, query, winnerName) {
+  const header = `from sklearn.neighbors import KNeighborsClassifier
+
+# X_train: coordenadas (x, y) de los ${points.length} puntos de entrenamiento
+# y_train: su clase (0 = Clase A, 1 = Clase B, 2 = Clase C)
+modelo = KNeighborsClassifier(n_neighbors=${k})
+modelo.fit(X_train, y_train)`;
+  if (!query) {
+    return `${header}
+
+modelo.predict(X_nuevo)  # haz clic en el plano para elegir un punto`;
+  }
+  return `${header}
+
+X_nuevo = [[${query.x.toFixed(2)}, ${query.y.toFixed(2)}]]
+modelo.predict(X_nuevo)  # → array(['${winnerName}'])`;
+}
+
+function render() {
+  const k = +d3.select("#k-slider").node().value;
+
+  pointsG.selectAll("circle.data-point")
+    .attr("stroke", "none")
+    .attr("r", 5.5);
+
+  linesG.selectAll("line").remove();
+
+  if (!query) {
+    queryMarker.style("display", "none");
+    d3.select("#predicted-class").text("Haz clic en el plano");
+    d3.select("#breakdown").text("");
+    document.getElementById("knn-code").textContent = buildKnnSnippet(k, null, null);
+    return;
+  }
+
+  const { neighbors, counts, winner } = classify(query.x, query.y, k);
+
+  queryMarker
+    .style("display", null)
+    .attr("transform", `translate(${xScale(query.x)},${yScale(query.y)})`)
+    .attr("fill", CLASS_DEFS[winner].color);
+
+  neighbors.forEach(n => {
+    linesG.append("line")
+      .attr("x1", xScale(query.x)).attr("y1", yScale(query.y))
+      .attr("x2", xScale(n.x)).attr("y2", yScale(n.y))
+      .attr("stroke", "#e7ecf7").attr("stroke-opacity", 0.35).attr("stroke-width", 1.2);
+  });
+
+  const neighborIds = new Set(neighbors);
+  pointsG.selectAll("circle.data-point").each(function (d) {
+    if (neighbors.includes(d) || (neighbors.some(n => n.x === d.x && n.y === d.y && n.cls === d.cls))) {
+      d3.select(this).attr("stroke", "#e7ecf7").attr("stroke-width", 2).attr("r", 7);
+    }
+  });
+
+  d3.select("#predicted-class")
+    .style("color", CLASS_DEFS[winner].color)
+    .text(CLASS_DEFS[winner].name);
+
+  const parts = CLASS_DEFS.map((c, i) => `${counts[i]} de ${c.name}`).filter((_, i) => counts[i] > 0);
+  d3.select("#breakdown").text(`De los ${k} vecinos más cercanos: ${parts.join(", ")} → mayoría: ${CLASS_DEFS[winner].name}.`);
+  document.getElementById("knn-code").textContent = buildKnnSnippet(k, query, CLASS_DEFS[winner].name);
+}
+
+d3.select("#k-slider").on("input", function () {
+  d3.select("#k-value").text(this.value);
+  render();
+});
+d3.select("#btn-clear").on("click", () => { query = null; render(); });
+
+render();
+</script>
+
+</body>
+</html>

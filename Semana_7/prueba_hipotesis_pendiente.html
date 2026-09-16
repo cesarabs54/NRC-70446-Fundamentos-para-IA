@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prueba de hipótesis sobre la pendiente | Semana 7</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.9.6/jstat.min.js"></script>
+<script src="data.js"></script>
+<style>
+  :root {
+    --bg: #0f1420; --panel: #161d2e; --panel-border: #26314a; --text: #e7ecf7;
+    --text-dim: #9aa7c2; --accent: #5eb1ff; --accent-2: #ffb75e; --good: #5edc9a; --bad: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.5; }
+  header { padding: 32px 20px 16px; max-width: 980px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 70ch; }
+  main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  select { background: #0f1420; color: var(--text); border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 10px; font-size: 14px; min-width: 220px; }
+  .hyp-box { padding: 14px 16px; border-radius: 10px; background: #101826; border: 1px solid var(--panel-border); font-size: 14px; margin-top: 6px; }
+  .hyp-box .h0 { color: var(--text-dim); }
+  .hyp-box .h1 { color: var(--accent); margin-top: 6px; }
+  table.desc { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.desc th, table.desc td { padding: 6px 8px; border-bottom: 1px dashed var(--panel-border); text-align: right; }
+  table.desc th:first-child, table.desc td:first-child { text-align: left; color: var(--text-dim); }
+  table.desc th { color: var(--text-dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .verdict { margin-top: 6px; padding: 12px 14px; border-radius: 10px; font-size: 14px; background: #101826; border: 1px solid var(--panel-border); }
+  .decision { margin-top: 10px; padding: 10px 12px; border-radius: 8px; font-size: 14px; font-weight: 600; }
+  .decision.reject { background: rgba(94,220,154,0.12); color: var(--good); }
+  .decision.keep { background: rgba(255,107,107,0.12); color: var(--bad); }
+  .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 10px; }
+  sup, sub { font-size: 0.7em; }
+  details.code-toggle { margin-top: 14px; border: 1px solid var(--panel-border); border-radius: 10px; background: #0b0f18; }
+  details.code-toggle summary { cursor: pointer; padding: 10px 14px; font-size: 13px; color: var(--accent); list-style: none; user-select: none; }
+  details.code-toggle summary::-webkit-details-marker { display: none; }
+  details.code-toggle summary::before { content: "▸ "; }
+  details.code-toggle[open] summary::before { content: "▾ "; }
+  details.code-toggle .code-wrap { position: relative; }
+  details.code-toggle pre { margin: 0; padding: 4px 16px 16px; overflow-x: auto; }
+  details.code-toggle code { font-family: "Consolas", "Menlo", monospace; font-size: 12.5px; color: #c9d6f0; white-space: pre; }
+  .copy-btn { position: absolute; top: 4px; right: 14px; background: var(--panel); border: 1px solid var(--panel-border); color: var(--text-dim); font-size: 11px; padding: 3px 8px; border-radius: 6px; cursor: pointer; }
+  .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+  footer { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">&larr; Recurso interactivo Semana 7</a>
+  <div class="kicker">Semana 7 · Módulo 3 · Prueba de hipótesis sobre la pendiente</div>
+  <h1>¿b1 es real, o pudo salir por azar?</h1>
+  <p>
+    Todo coeficiente de una regresión trae su propia prueba t: H0 dice que la pendiente verdadera es
+    cero (la variable no aporta nada); H1 dice que no lo es. Esta página calcula
+    <code>t = (b1 − 0) / SE(b1)</code> y su p-value (Sección 2 de
+    <code>01_Regresion_lineal_conceptos_basicos.md</code>), y además reproduce el ejemplo del
+    documento donde comparar dos grupos con una prueba t es, matemáticamente, un caso particular de
+    regresión con una variable *dummy*.
+  </p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>1 · Pendiente de una regresión numérica</h2>
+    <div class="controls">
+      <div class="field">
+        <label for="x-select">Variable independiente (X)</label>
+        <select id="x-select"></select>
+      </div>
+      <div class="field">
+        <label for="y-select">Variable dependiente (Y)</label>
+        <select id="y-select"></select>
+      </div>
+    </div>
+    <div class="hyp-box">
+      <div class="h0" id="h0-text">—</div>
+      <div class="h1" id="h1-text">—</div>
+    </div>
+    <div class="two-col">
+      <div id="slope-table-wrap"></div>
+      <div>
+        <div class="verdict" id="slope-verdict">—</div>
+        <div class="decision" id="slope-decision">—</div>
+      </div>
+    </div>
+    <details class="code-toggle">
+      <summary>Ver código Python equivalente</summary>
+      <div class="code-wrap">
+        <button class="copy-btn" data-target="code-slope">Copiar</button>
+        <pre><code id="code-slope"></code></pre>
+      </div>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>2 · Caso aplicado: género como variable <em>dummy</em></h2>
+    <div class="subtitle">
+      Reproduce el ejemplo del documento: <code>writing score = b0 + b1 × gender_dummy</code> (1 = mujer,
+      0 = hombre). El coeficiente <code>b1</code> resulta ser, exactamente, la diferencia de promedios
+      entre los dos grupos — y su prueba t equivale a un t-test de dos muestras.
+    </div>
+    <div id="dummy-table-wrap"></div>
+    <div class="verdict" id="dummy-verdict">—</div>
+    <div class="verdict" id="levene-verdict">—</div>
+    <details class="code-toggle">
+      <summary>Ver código Python equivalente</summary>
+      <div class="code-wrap">
+        <button class="copy-btn" data-target="code-dummy">Copiar</button>
+        <pre><code id="code-dummy"></code></pre>
+      </div>
+    </details>
+  </section>
+
+</main>
+
+<footer>
+  Módulo 3/4 del recurso interactivo de Semana 7. Dataset: <code>StudentsPerformance.csv</code> (1000
+  estudiantes). Complementa el "Ejemplo aplicado" de la Sección 5 de
+  <code>01_Regresion_lineal_conceptos_basicos.md</code> y el Ejercicio 7 del
+  <code>Taller_02_Regresion_lineal_conceptos_basicos.md</code>, no los reemplaza. El p-value del
+  coeficiente y de Levene se calculan con las distribuciones t y F de <code>jStat</code>.
+</footer>
+
+<script>
+const NUMERIC_VARS = {
+  mathScore: "Nota de matemáticas (math score)",
+  readingScore: "Nota de lectura (reading score)",
+  writingScore: "Nota de escritura (writing score)",
+};
+const COL_NAMES = { mathScore: "math score", readingScore: "reading score", writingScore: "writing score" };
+const ALPHA = 0.05;
+
+function setCode(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".copy-btn");
+  if (!btn) return;
+  const code = document.getElementById(btn.dataset.target);
+  navigator.clipboard.writeText(code.textContent).then(() => {
+    const original = btn.textContent;
+    btn.textContent = "¡Copiado!";
+    setTimeout(() => { btn.textContent = original; }, 1200);
+  }).catch(() => {});
+});
+
+function mean(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+function variance(arr, m) { return arr.reduce((a, b) => a + (b - m) ** 2, 0) / (arr.length - 1); }
+function medianOf(arr) {
+  const s = [...arr].sort((a, b) => a - b);
+  const n = s.length, mid = Math.floor(n / 2);
+  return n % 2 === 0 ? (s[mid - 1] + s[mid]) / 2 : s[mid];
+}
+function pText(p) { return p < 0.0001 ? "< 0.0001" : p.toFixed(4); }
+
+function linregWithTest(x, y) {
+  const n = x.length;
+  const xbar = mean(x), ybar = mean(y);
+  let Sxy = 0, Sxx = 0;
+  for (let i = 0; i < n; i++) { const dx = x[i] - xbar, dy = y[i] - ybar; Sxy += dx * dy; Sxx += dx * dx; }
+  const b1 = Sxy / Sxx;
+  const b0 = ybar - b1 * xbar;
+  const ssRes = x.reduce((a, xi, i) => a + (y[i] - (b0 + b1 * xi)) ** 2, 0);
+  const df = n - 2;
+  const mse = ssRes / df;
+  const seB1 = Math.sqrt(mse / Sxx);
+  const t = b1 / seB1;
+  const p = 2 * (1 - jStat.studentt.cdf(Math.abs(t), df));
+  return { n, xbar, ybar, Sxy, Sxx, b1, b0, ssRes, df, mse, seB1, t, p };
+}
+
+function levene(groupsArrays) {
+  const k = groupsArrays.length;
+  const Z = groupsArrays.map(arr => { const med = medianOf(arr); return arr.map(v => Math.abs(v - med)); });
+  const ni = Z.map(z => z.length);
+  const N = ni.reduce((x, y) => x + y, 0);
+  const ZiBar = Z.map(z => mean(z));
+  const ZBar = mean(Z.flat());
+  let num = 0;
+  for (let i = 0; i < k; i++) num += ni[i] * (ZiBar[i] - ZBar) ** 2;
+  num *= (N - k) / (k - 1);
+  let den = 0;
+  Z.forEach((z, i) => z.forEach(v => den += (v - ZiBar[i]) ** 2));
+  const W = num / den;
+  const df1 = k - 1, df2 = N - k;
+  const p = 1 - jStat.centralF.cdf(W, df1, df2);
+  return { W, df1, df2, p };
+}
+
+function pooledTTest(a, b) {
+  const ma = mean(a), mb = mean(b);
+  const va = variance(a, ma), vb = variance(b, mb);
+  const na = a.length, nb = b.length;
+  const sp2 = ((na - 1) * va + (nb - 1) * vb) / (na + nb - 2);
+  const t = (ma - mb) / Math.sqrt(sp2 * (1 / na + 1 / nb));
+  const df = na + nb - 2;
+  const p = 2 * (1 - jStat.studentt.cdf(Math.abs(t), df));
+  return { t, df, p };
+}
+
+function populateSelect(sel, options, selected) {
+  sel.innerHTML = "";
+  Object.entries(options).forEach(([k, v]) => {
+    const opt = document.createElement("option");
+    opt.value = k; opt.textContent = v;
+    if (k === selected) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+const xSelect = document.getElementById("x-select");
+const ySelect = document.getElementById("y-select");
+populateSelect(xSelect, NUMERIC_VARS, "readingScore");
+function refreshYOptions(keepY) {
+  const xKey = xSelect.value;
+  const yOptions = Object.fromEntries(Object.entries(NUMERIC_VARS).filter(([k]) => k !== xKey));
+  const current = keepY && keepY !== xKey ? keepY : Object.keys(yOptions)[0];
+  populateSelect(ySelect, yOptions, current);
+}
+refreshYOptions("writingScore");
+
+function renderSlope() {
+  const xKey = xSelect.value, yKey = ySelect.value;
+  const xVals = STUDENTS_DATA.map(d => d[xKey]);
+  const yVals = STUDENTS_DATA.map(d => d[yKey]);
+  const r = linregWithTest(xVals, yVals);
+
+  document.getElementById("h0-text").textContent = `H0: la pendiente verdadera de ${NUMERIC_VARS[xKey]} sobre ${NUMERIC_VARS[yKey]} es cero (b1 = 0, no hay relación real).`;
+  document.getElementById("h1-text").textContent = `H1: la pendiente verdadera no es cero (b1 ≠ 0, sí hay relación real).`;
+
+  document.getElementById("slope-table-wrap").innerHTML = `
+    <table class="desc">
+      <tr><th>Estadístico</th><th>Valor</th></tr>
+      <tr><td>b1</td><td>${r.b1.toFixed(4)}</td></tr>
+      <tr><td>SE(b1)</td><td>${r.seB1.toFixed(4)}</td></tr>
+      <tr><td>t = b1 / SE(b1)</td><td>${r.t.toFixed(3)}</td></tr>
+      <tr><td>Grados de libertad (n−2)</td><td>${r.df}</td></tr>
+      <tr><td>p-value (dos colas)</td><td>${pText(r.p)}</td></tr>
+    </table>`;
+
+  const reject = r.p < ALPHA;
+  document.getElementById("slope-verdict").innerHTML =
+    `Con n = ${r.n} estudiantes, t = ${r.t.toFixed(3)} con ${r.df} grados de libertad da un p-value de
+    ${pText(r.p)}.`;
+  const decision = document.getElementById("slope-decision");
+  decision.className = "decision " + (reject ? "reject" : "keep");
+  decision.textContent = reject
+    ? `p < 0.05 → se rechaza H0: la pendiente es estadísticamente distinta de cero.`
+    : `p ≥ 0.05 → no se rechaza H0: no hay evidencia suficiente de que la pendiente sea distinta de cero.`;
+
+  const xCol = COL_NAMES[xKey], yCol = COL_NAMES[yKey];
+  setCode("code-slope", `from scipy import stats
+
+x = df["${xCol}"]
+y = df["${yCol}"]
+
+resultado = stats.linregress(x, y)
+t = resultado.slope / resultado.stderr
+print(f"b1 = {resultado.slope:.4f}, SE(b1) = {resultado.stderr:.4f}")
+print(f"t = {t:.3f}, df = {len(x) - 2}, p-value = {resultado.pvalue:.4g}")
+
+# Equivalente con un modelo OLS completo (statsmodels)
+import statsmodels.api as sm
+X = sm.add_constant(x)
+modelo = sm.OLS(y, X).fit()
+print(modelo.summary())`);
+}
+
+function renderDummy() {
+  const male = STUDENTS_DATA.filter(d => d.gender === "male").map(d => d.writingScore);
+  const female = STUDENTS_DATA.filter(d => d.gender === "female").map(d => d.writingScore);
+  const dummy = STUDENTS_DATA.map(d => d.gender === "female" ? 1 : 0);
+  const y = STUDENTS_DATA.map(d => d.writingScore);
+  const r = linregWithTest(dummy, y);
+
+  const mMale = mean(male), mFemale = mean(female);
+  const tt = pooledTTest(female, male);
+  const lev = levene([male, female]);
+  const levOk = lev.p >= ALPHA;
+
+  document.getElementById("dummy-table-wrap").innerHTML = `
+    <table class="desc">
+      <tr><th></th><th>Regresión con dummy</th><th>t-test de dos muestras</th></tr>
+      <tr><td>n (hombres / mujeres)</td><td colspan="2">${male.length} / ${female.length}</td></tr>
+      <tr><td>Media hombres (gender=0)</td><td colspan="2">${mMale.toFixed(2)}</td></tr>
+      <tr><td>Media mujeres (gender=1)</td><td colspan="2">${mFemale.toFixed(2)}</td></tr>
+      <tr><td>b0 / (media hombres)</td><td>${r.b0.toFixed(4)}</td><td>${mMale.toFixed(4)}</td></tr>
+      <tr><td>b1 / (diferencia de medias)</td><td>${r.b1.toFixed(4)}</td><td>${(mFemale - mMale).toFixed(4)}</td></tr>
+      <tr><td>t</td><td>${r.t.toFixed(3)}</td><td>${tt.t.toFixed(3)}</td></tr>
+      <tr><td>Grados de libertad</td><td>${r.df}</td><td>${tt.df}</td></tr>
+      <tr><td>p-value</td><td>${pText(r.p)}</td><td>${pText(tt.p)}</td></tr>
+    </table>`;
+
+  document.getElementById("dummy-verdict").innerHTML =
+    `El coeficiente <code>b1</code> de la regresión (${r.b1.toFixed(2)}) es exactamente la diferencia de
+    promedios mujeres − hombres (${(mFemale - mMale).toFixed(2)}), y su estadístico t
+    (${r.t.toFixed(3)}) coincide con el del t-test de dos muestras (${tt.t.toFixed(3)}, con el signo
+    invertido si se resta en el otro orden): dos formas distintas de hacer la misma pregunta, con el
+    mismo p-value (${pText(r.p)}).`;
+
+  document.getElementById("levene-verdict").innerHTML = levOk
+    ? `Levene (homogeneidad de varianzas): W = ${lev.W.toFixed(4)}, p = ${pText(lev.p)} ≥ 0.05 → no se
+       rechaza H0 de Levene, las varianzas de <code>writing score</code> son homogéneas entre hombres y
+       mujeres. Esto valida usar la t "pooled" (varianzas iguales) de la tabla de arriba.`
+    : `Levene (homogeneidad de varianzas): W = ${lev.W.toFixed(4)}, p = ${pText(lev.p)} < 0.05 → se
+       rechaza H0 de Levene, las varianzas no son homogéneas; convendría usar la t de Welch en vez de la
+       versión "pooled".`;
+
+  setCode("code-dummy", `from scipy import stats
+
+hombres = df.loc[df["gender"] == "male", "writing score"]
+mujeres = df.loc[df["gender"] == "female", "writing score"]
+
+# Homogeneidad de varianzas
+levene_resultado = stats.levene(hombres, mujeres)
+print(f"Levene -> estadístico={levene_resultado.statistic:.4f}, p-value={levene_resultado.pvalue:.4g}")
+
+# t-test de dos muestras (varianzas iguales, válido si Levene no rechaza)
+ttest_resultado = stats.ttest_ind(hombres, mujeres, equal_var=True)
+print(f"t-test -> t={ttest_resultado.statistic:.4f}, p-value={ttest_resultado.pvalue:.4g}")
+
+# Regresión con variable dummy (1 = mujer, 0 = hombre)
+df["gender_dummy"] = (df["gender"] == "female").astype(int)
+resultado_dummy = stats.linregress(df["gender_dummy"], df["writing score"])
+print(f"Regresión dummy -> b0={resultado_dummy.intercept:.4f}, b1={resultado_dummy.slope:.4f}, "
+      f"p-value={resultado_dummy.pvalue:.4g}")
+
+print(df.groupby("gender")["writing score"].mean())`);
+}
+
+xSelect.addEventListener("change", () => { refreshYOptions(ySelect.value); renderSlope(); });
+ySelect.addEventListener("change", renderSlope);
+renderSlope();
+renderDummy();
+</script>
+
+</body>
+</html>

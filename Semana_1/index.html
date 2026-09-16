@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recurso interactivo — Semana 1 | Fundamentos para IA</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-border: #26314a;
+    --panel-hover: #1c2438;
+    --text: #e7ecf7;
+    --text-dim: #9aa7c2;
+    --accent: #5eb1ff;
+    --accent-2: #ffb75e;
+    --good: #5edc9a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header {
+    padding: 48px 20px 20px;
+    max-width: 1040px;
+    margin: 0 auto;
+  }
+  header .kicker {
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  header h1 { margin: 8px 0 12px; font-size: clamp(26px, 5vw, 40px); }
+  header p { color: var(--text-dim); max-width: 72ch; font-size: 15px; }
+  header p a { color: var(--accent); }
+  .back-link {
+    display: inline-block;
+    margin-bottom: 14px;
+    color: var(--text-dim);
+    font-size: 13px;
+    text-decoration: none;
+  }
+  .back-link:hover { color: var(--accent); }
+  main { max-width: 1040px; margin: 0 auto; padding: 12px 20px 40px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 18px;
+  }
+  a.card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 20px 22px 22px;
+    text-decoration: none;
+    color: var(--text);
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  }
+  a.card:hover {
+    background: var(--panel-hover);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .badge {
+    align-self: flex-start;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+  }
+  .badge.basics { color: #6fe3d6; border-color: #1f4a45; }
+  .badge.collections { color: #ffa94d; border-color: #4a3316; }
+  .badge.flow { color: #b39ddb; border-color: #3a2f52; }
+  .badge.robust { color: #ff8577; border-color: #4a2020; }
+  a.card h2 { margin: 0; font-size: 18px; }
+  a.card .desc { color: var(--text-dim); font-size: 14px; }
+  a.card .learn { color: var(--accent-2); font-size: 13px; margin-top: auto; padding-top: 6px; }
+  .journey {
+    margin-top: 28px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  footer {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="../index.html">← Volver al índice del curso</a>
+  <div class="kicker">Fundamentos para IA · Semana 1</div>
+  <h1>Introducción a Python para inteligencia artificial</h1>
+  <p>
+    Cuatro recursos cortos e interactivos para practicar la sintaxis básica de Python
+    en torno al mismo hilo conductor de los
+    <a href="../../Semana_1/semana_1_estudiante.md">ejercicios de clase de la semana</a>:
+    construir, en Python puro, las piezas de un pequeño sistema para registrar experimentos
+    de entrenamiento de modelos de Machine Learning. Ejecuta el REPL paso a paso, arma listas
+    y diccionarios, recorre bucles y prueba el manejo de errores — cada módulo se puede
+    explorar de forma independiente.
+  </p>
+</header>
+
+<main>
+  <div class="grid">
+
+    <a class="card" href="tipos_operadores.html">
+      <span class="badge basics">Módulo 1 · Fundamentos</span>
+      <h2>El intérprete, tipos y operadores</h2>
+      <p class="desc">Ejecuta el REPL línea por línea, adivina el tipo de cada variable de un experimento y compara dos modelos moviendo sliders de accuracy.</p>
+      <p class="learn">Aprenderás: cómo Python evalúa expresiones y por qué cada tipo de dato importa.</p>
+    </a>
+
+    <a class="card" href="estructuras_datos.html">
+      <span class="badge collections">Módulo 2 · Colecciones</span>
+      <h2>Listas, tuplas, conjuntos y diccionarios</h2>
+      <p class="desc">Agrega y ordena una lista de accuracy, intenta "editar" una tupla inmutable, elimina duplicados con un set y arma un diccionario de experimento.</p>
+      <p class="learn">Aprenderás: cuándo usar cada estructura según si necesitas orden, unicidad o inmutabilidad.</p>
+    </a>
+
+    <a class="card" href="control_flujo.html">
+      <span class="badge flow">Módulo 3 · Control de flujo</span>
+      <h2>Condicionales, bucles y funciones</h2>
+      <p class="desc">Clasifica un experimento con un gauge en vivo, prueba un <code>match/case</code> de optimizadores y recorre un bucle paso a paso hasta encontrar el mejor modelo.</p>
+      <p class="learn">Aprenderás: cómo un <code>if</code> decide, cómo un bucle acumula estado y por qué encapsular en funciones ayuda a reutilizar lógica.</p>
+    </a>
+
+    <a class="card" href="errores_archivos_modulos.html">
+      <span class="badge robust">Módulo 4 · Robustez</span>
+      <h2>Errores, archivos y módulos</h2>
+      <p class="desc">Prueba el validador <code>try/except</code> con datos válidos e inválidos, sigue el flujo de escritura/lectura de un archivo y observa cómo colaboran dos módulos con <code>import</code>.</p>
+      <p class="learn">Aprenderás: a anticipar errores comunes de datos y a organizar el código en más de un archivo.</p>
+    </a>
+
+  </div>
+
+  <div class="journey">
+    <strong>Sugerencia de recorrido:</strong> los módulos siguen el orden de los ejercicios de clase —
+    primero el intérprete y los tipos básicos, luego las colecciones de datos, después el control de flujo
+    y las funciones y, al final, el manejo de errores, archivos y módulos. Pero cada uno funciona solo, así
+    que puedes explorarlos en cualquier orden.
+  </div>
+</main>
+
+<footer>
+  Recurso complementario al material de la <a href="../../Semana_1/semana_1_estudiante.md">Semana 1</a>
+  (<a href="../../Semana_1/semana_1_profesor.md">versión profesor</a>), no lo reemplaza.
+  Basado en el hilo conductor de registrar experimentos de entrenamiento de modelos de Machine Learning en Python puro.
+</footer>
+
+</body>
+</html>

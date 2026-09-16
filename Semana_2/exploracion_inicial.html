@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exploración inicial — Semana 2 | Fundamentos para IA</title>
+<script src="data.js"></script>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-border: #26314a;
+    --text: #e7ecf7;
+    --text-dim: #9aa7c2;
+    --accent: #5eb1ff;
+    --accent-2: #ffb75e;
+    --good: #5edc9a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header { padding: 32px 20px 16px; max-width: 980px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 70ch; }
+  header code, main code { color: var(--accent-2); }
+  main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+  .stat-cards { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 18px; }
+  .stat-cards .box {
+    flex: 1; min-width: 130px; background: #101826; border: 1px solid var(--panel-border);
+    border-radius: 10px; padding: 14px 16px;
+  }
+  .stat-cards .box .n { font-size: 26px; font-weight: 700; color: var(--good); }
+  .stat-cards .box .lbl { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  select, button {
+    background: #0f1420; color: var(--text); border: 1px solid var(--panel-border);
+    border-radius: 8px; padding: 8px 10px; font-size: 14px;
+  }
+  button { cursor: pointer; }
+  button.active { border-color: var(--accent); color: var(--accent); }
+  .btn-row { display: flex; gap: 8px; }
+  .field.slider { min-width: 200px; }
+  input[type="range"] { width: 200px; accent-color: var(--accent); }
+  .slider-value { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--accent-2); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 14px; }
+  th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--panel-border); white-space: nowrap; }
+  th { color: var(--text-dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+  tbody tr:hover { background: var(--panel-hover, #1c2438); }
+  .tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--panel-border); }
+  .tag.cat { color: #ffcf8a; border-color: #4a3a20; }
+  .tag.num { color: #b39ddb; border-color: #3a2f52; }
+  .table-wrap { overflow-x: auto; }
+  pre {
+    background: #0a0e17; border: 1px solid var(--panel-border); border-radius: 10px;
+    padding: 14px 16px; font-size: 13px; overflow-x: auto; color: #d6deef;
+  }
+  .code-wrap { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 18px; }
+  .code-card { flex: 1; min-width: 260px; }
+  .code-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: 8px; }
+  pre.rows-code { border-left: 3px solid var(--accent); }
+  code { font-family: "SF Mono", Consolas, Menlo, monospace; }
+  .learn { margin-top: 18px; font-size: 13px; color: var(--accent-2); }
+  footer { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">&larr; Recurso interactivo Semana 2</a>
+  <div class="kicker">Semana 2 · Módulo 1 · Exploración</div>
+  <h1>Primera mirada al dataset</h1>
+  <p>
+    Antes de analizar cualquier variable, hay que conocer la forma del dataset: cuántas
+    filas y columnas tiene, cómo se llaman, qué tipo de dato guarda cada una y qué pinta
+    tienen los primeros registros. Esto es lo que hace <code>df.shape</code>,
+    <code>df.columns</code>, <code>df.dtypes</code> y <code>df.head()</code> en pandas.
+  </p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>Tamaño y estructura</h2>
+    <div class="subtitle"><code>df.shape</code> — filas × columnas del dataset <code>StudentsPerformance.csv</code>.</div>
+    <div class="stat-cards">
+      <div class="box"><div class="n" id="n-rows">—</div><div class="lbl">filas (estudiantes)</div></div>
+      <div class="box"><div class="n" id="n-cols">—</div><div class="lbl">columnas (variables)</div></div>
+      <div class="box"><div class="n" id="n-cat">—</div><div class="lbl">variables categóricas</div></div>
+      <div class="box"><div class="n" id="n-num">—</div><div class="lbl">variables numéricas</div></div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="cols-table">
+        <thead>
+          <tr><th>Columna</th><th>Tipo</th><th>Dato</th><th>Valores únicos</th><th>Ejemplo</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="learn">Aprenderás: a diferenciar variables categóricas (texto, categorías) de numéricas (números continuos o discretos) antes de elegir qué análisis aplicar a cada una.</div>
+  </section>
+
+  <section class="card">
+    <h2>Vista de filas — <code>head()</code>, <code>tail()</code> y muestra aleatoria</h2>
+    <div class="subtitle">Cambia cuántas filas ver y desde dónde mirarlas, igual que exploras un DataFrame en un notebook.</div>
+
+    <div class="controls">
+      <div class="field">
+        <label>Vista</label>
+        <div class="btn-row">
+          <button id="btn-head" class="active">head()</button>
+          <button id="btn-tail">tail()</button>
+          <button id="btn-sample">sample()</button>
+        </div>
+      </div>
+      <div class="field slider">
+        <label for="n-slider">Número de filas — <span class="slider-value" id="n-value">5</span></label>
+        <input type="range" id="n-slider" min="1" max="20" value="5" step="1">
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="rows-table">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="rows-code"><code id="rows-code"></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>El código equivalente en pandas</h2>
+    <pre><code>import pandas as pd
+
+df = pd.read_csv("StudentsPerformance.csv")
+df.shape        # (filas, columnas)
+df.columns      # nombres de columnas
+df.dtypes       # tipo de dato por columna
+df.head(5)      # primeras 5 filas
+df.tail(5)      # últimas 5 filas
+df.sample(5)    # 5 filas aleatorias
+df.info()       # resumen: tipos + no-nulos por columna</code></pre>
+  </section>
+
+</main>
+
+<footer>
+  Módulo 1/4 del recurso interactivo de Semana 2. Dataset: <code>StudentsPerformance.csv</code>
+  (mismo del <a href="../../Semana_2/Semana_2_Actividad/EIARV011_A2.md">estudio de caso de la semana</a>). Complementa la actividad, no la reemplaza.
+</footer>
+
+<script>
+const COLUMNS = [
+  { key: "gender", label: "gender", type: "cat", example: "female" },
+  { key: "group", label: "race/ethnicity", type: "cat", example: "group B" },
+  { key: "parentalEducation", label: "parental level of education", type: "cat", example: "bachelor's degree" },
+  { key: "lunch", label: "lunch", type: "cat", example: "standard" },
+  { key: "testPrep", label: "test preparation course", type: "cat", example: "none" },
+  { key: "mathScore", label: "math score", type: "num", example: "72" },
+  { key: "readingScore", label: "reading score", type: "num", example: "72" },
+  { key: "writingScore", label: "writing score", type: "num", example: "74" },
+];
+
+function jsType(key) {
+  return typeof STUDENTS_DATA[0][key] === "number" ? "int64" : "object";
+}
+
+function nunique(key) {
+  return new Set(STUDENTS_DATA.map(d => d[key])).size;
+}
+
+document.getElementById("n-rows").textContent = STUDENTS_DATA.length;
+document.getElementById("n-cols").textContent = COLUMNS.length;
+document.getElementById("n-cat").textContent = COLUMNS.filter(c => c.type === "cat").length;
+document.getElementById("n-num").textContent = COLUMNS.filter(c => c.type === "num").length;
+
+const colsBody = document.querySelector("#cols-table tbody");
+COLUMNS.forEach(c => {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td>${c.label}</td>
+    <td><span class="tag ${c.type}">${c.type === "cat" ? "categórica" : "numérica"}</span></td>
+    <td>${jsType(c.key)}</td>
+    <td>${nunique(c.key)}</td>
+    <td>${c.example}</td>`;
+  colsBody.appendChild(tr);
+});
+
+const rowsThead = document.querySelector("#rows-table thead");
+rowsThead.innerHTML = "<tr>" + COLUMNS.map(c => `<th>${c.label}</th>`).join("") + "</tr>";
+const rowsBody = document.querySelector("#rows-table tbody");
+
+const nSlider = document.getElementById("n-slider");
+const nValue = document.getElementById("n-value");
+const btnHead = document.getElementById("btn-head");
+const btnTail = document.getElementById("btn-tail");
+const btnSample = document.getElementById("btn-sample");
+let mode = "head";
+
+function setMode(newMode) {
+  mode = newMode;
+  [btnHead, btnTail, btnSample].forEach(b => b.classList.remove("active"));
+  ({ head: btnHead, tail: btnTail, sample: btnSample })[mode].classList.add("active");
+  render();
+}
+
+btnHead.addEventListener("click", () => setMode("head"));
+btnTail.addEventListener("click", () => setMode("tail"));
+btnSample.addEventListener("click", () => setMode("sample"));
+nSlider.addEventListener("input", render);
+
+function buildRowsSnippet(mode, n) {
+  const call = mode === "head" ? `df.head(${n})` : mode === "tail" ? `df.tail(${n})` : `df.sample(${n})`;
+  const comment = mode === "head" ? `primeras ${n} filas` : mode === "tail" ? `últimas ${n} filas` : `${n} filas aleatorias`;
+  return `${call}\n# ${comment} del DataFrame`;
+}
+
+function render() {
+  const n = +nSlider.value;
+  nValue.textContent = n;
+
+  let rows;
+  if (mode === "head") rows = STUDENTS_DATA.slice(0, n);
+  else if (mode === "tail") rows = STUDENTS_DATA.slice(-n);
+  else rows = [...STUDENTS_DATA].sort(() => Math.random() - 0.5).slice(0, n);
+
+  rowsBody.innerHTML = rows.map(r =>
+    "<tr>" + COLUMNS.map(c => `<td>${r[c.key]}</td>`).join("") + "</tr>"
+  ).join("");
+
+  document.getElementById("rows-code").textContent = buildRowsSnippet(mode, n);
+}
+
+render();
+</script>
+
+</body>
+</html>

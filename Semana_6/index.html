@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recurso interactivo — Semana 6 | Fundamentos para IA</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-border: #26314a;
+    --panel-hover: #1c2438;
+    --text: #e7ecf7;
+    --text-dim: #9aa7c2;
+    --accent: #5eb1ff;
+    --accent-2: #ffb75e;
+    --good: #5edc9a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header {
+    padding: 48px 20px 20px;
+    max-width: 1040px;
+    margin: 0 auto;
+  }
+  header .kicker {
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  header h1 { margin: 8px 0 12px; font-size: clamp(26px, 5vw, 40px); }
+  header p { color: var(--text-dim); max-width: 72ch; font-size: 15px; }
+  header p a { color: var(--accent); }
+  .back-link {
+    display: inline-block;
+    margin-bottom: 14px;
+    color: var(--text-dim);
+    font-size: 13px;
+    text-decoration: none;
+  }
+  .back-link:hover { color: var(--accent); }
+  main { max-width: 1040px; margin: 0 auto; padding: 12px 20px 40px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 18px;
+  }
+  a.card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 20px 22px 22px;
+    text-decoration: none;
+    color: var(--text);
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  }
+  a.card:hover {
+    background: var(--panel-hover);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .badge {
+    align-self: flex-start;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+  }
+  .badge.desc { color: #7cc4ff; border-color: #2c4360; }
+  .badge.inf { color: #ffcf8a; border-color: #4a3a20; }
+  .badge.story { color: #b39ddb; border-color: #3a2f52; }
+  .badge.power { color: #ff9d9d; border-color: #4a2020; }
+  a.card h2 { margin: 0; font-size: 18px; }
+  a.card .desc { color: var(--text-dim); font-size: 14px; }
+  a.card .learn { color: var(--accent-2); font-size: 13px; margin-top: auto; padding-top: 6px; }
+  .journey {
+    margin-top: 28px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  footer {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="../index.html">← Volver al índice del curso</a>
+  <div class="kicker">Fundamentos para IA · Semana 6</div>
+  <h1>Estadística inferencial I: prueba de hipótesis</h1>
+  <p>
+    Cinco módulos que siguen, paso a paso, el flujo completo de inferencia estadística de la
+    semana: describir la muestra, validar los supuestos de normalidad y homogeneidad de
+    varianzas, elegir y ejecutar la prueba correcta (t de Student, t de Welch, Mann-Whitney U,
+    ANOVA o Kruskal-Wallis según cuántos grupos compares), leer la decisión sobre H0, y evaluar si
+    la muestra alcanzaba para detectar el efecto encontrado (Cohen's d y análisis de potencia).
+    Todo se calcula en vivo sobre el mismo <code>StudentsPerformance.csv</code> del notebook
+    docente <code>EIARV011_A6_Notebook.ipynb</code> y de los documentos conceptuales de la semana.
+  </p>
+</header>
+
+<main>
+  <div class="grid">
+
+    <a class="card" href="muestra_y_descriptiva.html">
+      <span class="badge desc">Módulo 1 · Descriptiva</span>
+      <h2>Muestra y estadística descriptiva</h2>
+      <p class="desc">Tamaño de cada grupo, histograma superpuesto y boxplot por grupo, para cualquier combinación de variable de agrupación y puntaje.</p>
+      <p class="learn">Aprenderás: a describir una muestra antes de compararla — tamaños de grupo, medias y dispersión.</p>
+    </a>
+
+    <a class="card" href="supuestos_normalidad_varianza.html">
+      <span class="badge inf">Módulo 2 · Supuestos</span>
+      <h2>¿Puedo confiar en la prueba t?</h2>
+      <p class="desc">Normalidad por grupo (Jarque-Bera, calculado en vivo) y homogeneidad de varianzas (Levene), con el veredicto sobre qué prueba corresponde.</p>
+      <p class="learn">Aprenderás: por qué hay que validar supuestos antes de elegir una prueba paramétrica.</p>
+    </a>
+
+    <a class="card" href="eleccion_prueba.html">
+      <span class="badge inf">Módulo 3 · Prueba inferencial</span>
+      <h2>Las pruebas, lado a lado</h2>
+      <p class="desc">Con 2 grupos, calcula en vivo t de Student, t de Welch y Mann-Whitney U; con 3 o más grupos, ANOVA y Kruskal-Wallis. Observa cuál recomienda el flujo de decisión en cada caso.</p>
+      <p class="learn">Aprenderás: a distinguir "¿puedo usar la prueba?", "¿hay diferencia?" y "¿cuánta diferencia?" como tres preguntas separadas.</p>
+    </a>
+
+    <a class="card" href="caso_guiado.html">
+      <span class="badge story">Módulo 4 · Caso guiado</span>
+      <h2>Del curso de preparación a la conclusión</h2>
+      <p class="desc">El caso documentado del notebook, narrado paso a paso con los números reales de <code>scipy.stats</code>, con enlaces para reproducir cada cálculo en vivo.</p>
+      <p class="learn">Aprenderás: a leer el recorrido completo de una inferencia estadística de principio a fin.</p>
+    </a>
+
+    <a class="card" href="tamano_muestra.html">
+      <span class="badge power">Módulo 5 · Errores y potencia</span>
+      <h2>¿Cuánta muestra hace falta?</h2>
+      <p class="desc">Los dos tipos de error, el tamaño del efecto (Cohen's d) y una calculadora en vivo de cuántos estudiantes por grupo hacen falta para detectarlo con la potencia que elijas.</p>
+      <p class="learn">Aprenderás: por qué "p pequeño" no es "efecto grande", y cómo el tamaño de muestra puede ocultar un efecto real.</p>
+    </a>
+
+  </div>
+
+  <div class="journey">
+    <strong>Sugerencia de recorrido:</strong> los módulos 1 a 4 siguen el orden del notebook —
+    descriptiva, supuestos, prueba y decisión — y el Módulo 4 cierra con el caso completo ya
+    resuelto. El Módulo 5 es un paso extra, independiente de los demás: una vez que ya rechazaste
+    o no rechazaste H0, pregúntate si tu muestra alcanzaba para confiar en esa decisión. Empieza
+    por el Módulo 1 si quieres construir el flujo desde cero, o por el Módulo 4 si prefieres ver
+    primero la historia completa y luego explorar cada paso por tu cuenta.
+  </div>
+</main>
+
+<footer>
+  Recurso complementario al notebook docente <code>EIARV011_A6_Notebook.ipynb</code>
+  (carpeta <code>Semana_6/Semana_6_Actividad_solucion_profesor</code>) y a los documentos
+  conceptuales de Semana 6 (<code>01_Estadistica_inferencial_conceptos.md</code>,
+  <code>02_Pruebas_Hipotesis_conceptos.md</code>,
+  <code>03_Regla_definir_tamaño_muestra_optima.md</code>), no los reemplaza. Dataset:
+  <code>StudentsPerformance.csv</code>. Inspirado en
+  <a href="https://rodanmuro.github.io/material_didactico_machine_learning/">rodanmuro.github.io/material_didactico_machine_learning</a>.
+</footer>
+
+</body>
+</html>

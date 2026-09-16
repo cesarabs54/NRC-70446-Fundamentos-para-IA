@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tipos, operadores y el intérprete — Semana 1</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-border: #26314a;
+    --text: #e7ecf7;
+    --text-dim: #9aa7c2;
+    --accent: #5eb1ff;
+    --accent-2: #ffb75e;
+    --good: #5edc9a;
+    --bad: #ff8577;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header { padding: 32px 20px 16px; max-width: 1100px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 78ch; }
+  main { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+
+  .repl {
+    background: #0a0e17; border: 1px solid var(--panel-border); border-radius: 10px;
+    padding: 14px 16px; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 13.5px; overflow-x: auto;
+  }
+  .repl .line { display: flex; gap: 8px; margin-bottom: 6px; align-items: flex-start; }
+  .repl .prompt { color: var(--accent-2); flex-shrink: 0; }
+  .repl .expr { color: var(--text); }
+  .repl .out { color: var(--good); padding-left: 22px; opacity: 0; max-height: 0; overflow: hidden; transition: opacity 0.25s ease; }
+  .repl .out.shown { opacity: 1; max-height: 40px; }
+  .repl-controls { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+
+  .quiz-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-bottom: 14px; }
+  .quiz-expr { font-family: Consolas, Menlo, monospace; background: #0a0e17; border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 14px; font-size: 15px; }
+  .options { display: flex; gap: 8px; flex-wrap: wrap; }
+  .opt-btn {
+    background: #0f1420; color: var(--text); border: 1px solid var(--panel-border);
+    border-radius: 8px; padding: 8px 14px; font-size: 13px; cursor: pointer; font-family: Consolas, Menlo, monospace;
+  }
+  .opt-btn:hover { border-color: var(--accent); }
+  .opt-btn.correct { border-color: var(--good); color: var(--good); background: rgba(94, 220, 154, 0.08); }
+  .opt-btn.wrong { border-color: var(--bad); color: var(--bad); background: rgba(255, 133, 119, 0.08); }
+  .feedback { font-size: 13px; color: var(--text-dim); min-height: 18px; }
+
+  .slider-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; max-width: 420px; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  .slider-value { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--accent-2); }
+  .compare-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-top: 14px; }
+  .compare-panel { border: 1px solid var(--panel-border); border-radius: 10px; padding: 14px 16px; }
+  .compare-panel .name { font-weight: 700; margin-bottom: 8px; }
+  .compare-metric { display: flex; justify-content: space-between; font-size: 13.5px; padding: 3px 0; color: var(--text-dim); }
+  .compare-metric b { color: var(--text); font-variant-numeric: tabular-nums; }
+  .verdict { margin-top: 14px; padding: 12px 16px; border-radius: 10px; background: rgba(94, 177, 255, 0.08); border: 1px solid rgba(94, 177, 255, 0.35); font-size: 14px; }
+  .verdict b { color: var(--accent); }
+
+  .viz-wrap { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-top: 10px; }
+  svg { flex-shrink: 0; max-width: 100%; height: auto; }
+  .axis text { fill: var(--text-dim); font-size: 11px; }
+  .axis path, .axis line { stroke: var(--panel-border); }
+
+  button.primary {
+    background: #0f1420; color: var(--text); border: 1px solid var(--panel-border);
+    border-radius: 8px; padding: 8px 12px; font-size: 13px; cursor: pointer;
+  }
+  button.primary:hover { border-color: var(--accent); color: var(--accent); }
+
+  .code-wrap { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 18px; }
+  .code-card { flex: 1; min-width: 260px; }
+  .code-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: 8px; }
+  pre {
+    background: #0b111c; border: 1px solid var(--panel-border); border-radius: 10px;
+    padding: 14px 16px; font-size: 13px; overflow-x: auto; margin: 0;
+  }
+  pre.compare-code { border-left: 3px solid var(--accent); }
+  code { font-family: "SF Mono", Consolas, Menlo, monospace; }
+
+  .learn { background: rgba(94, 220, 154, 0.08); border: 1px solid rgba(94, 220, 154, 0.35); border-radius: 10px; padding: 12px 16px; font-size: 14px; color: var(--text-dim); }
+  .learn strong { color: var(--good); }
+  footer { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">← Recurso interactivo Semana 1</a>
+  <div class="kicker">Módulo 1 · El intérprete, tipos y operadores</div>
+  <h1>Explorando el REPL, los tipos de datos y los operadores</h1>
+  <p>
+    Antes de escribir un script, en IA se prueba mucho en el intérprete interactivo de Python.
+    Ejecuta línea por línea el REPL del <strong>Ejercicio 1</strong>, adivina el tipo de cada
+    variable del <strong>Ejercicio 2</strong> y compara dos modelos con operadores como en el
+    <strong>Ejercicio 3</strong>.
+  </p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>El intérprete interactivo (REPL)</h2>
+    <p class="subtitle">Haz clic en «Siguiente línea» para ejecutar, una por una, las mismas instrucciones del Ejercicio 1.</p>
+    <div class="repl" id="repl"></div>
+    <div class="repl-controls">
+      <button class="primary" id="repl-next">Siguiente línea ▶</button>
+      <button class="primary" id="repl-reset">Reiniciar</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Adivina el tipo</h2>
+    <p class="subtitle">Para cada variable del registro de un experimento, elige el tipo de dato correcto — igual que <code>type()</code> en el Ejercicio 2.</p>
+    <div id="type-quiz"></div>
+    <div class="learn">
+      <strong>Dato clave:</strong> <code>None</code> es el valor propio de Python para "ausencia de valor" —
+      distinto de <code>0</code>, <code>""</code> o <code>False</code>. Si alguien usa <code>"N/A"</code> en su
+      lugar, deja de ser un tipo especial y rompe comparaciones como <code>if observaciones is None</code>.
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Comparando dos modelos con operadores</h2>
+    <p class="subtitle">Mueve los sliders de accuracy de dos experimentos (Ejercicio 3) y observa cómo cambian el error, la diferencia y la comparación booleana en vivo.</p>
+
+    <div class="slider-row">
+      <label for="acc-a">Accuracy modelo A — <span class="slider-value" id="acc-a-value">0.87</span></label>
+      <input type="range" id="acc-a" min="0" max="1" step="0.01" value="0.87">
+    </div>
+    <div class="slider-row">
+      <label for="acc-b">Accuracy modelo B — <span class="slider-value" id="acc-b-value">0.91</span></label>
+      <input type="range" id="acc-b" min="0" max="1" step="0.01" value="0.91">
+    </div>
+
+    <div class="viz-wrap">
+      <svg id="acc-chart" width="420" height="160" viewBox="0 0 420 160"></svg>
+      <div class="compare-grid" style="flex: 1; min-width: 260px;">
+        <div class="compare-panel">
+          <div class="name">Modelo A</div>
+          <div class="compare-metric">Accuracy <b id="out-acc-a">0.87</b></div>
+          <div class="compare-metric">Error (1 - accuracy) <b id="out-err-a">0.13</b></div>
+        </div>
+        <div class="compare-panel">
+          <div class="name">Modelo B</div>
+          <div class="compare-metric">Accuracy <b id="out-acc-b">0.91</b></div>
+          <div class="compare-metric">Error (1 - accuracy) <b id="out-err-b">0.09</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="verdict" id="verdict">
+      Diferencia de accuracy: <b id="out-diff">0.04</b> · <code>accuracy_modelo_b &gt; accuracy_modelo_a</code> → <b id="out-bool">True</b>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="compare-code"><code id="compare-code"></code></pre>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Recurso complementario al material de la <a href="../../Semana_1/semana_1_estudiante.md">Semana 1</a>, no lo reemplaza.
+</footer>
+
+<script>
+// ---------- REPL paso a paso ----------
+const REPL_STEPS = [
+  { expr: "3 + 4 * 2", out: "11" },
+  { expr: "type(3.5)", out: "&lt;class 'float'&gt;" },
+  { expr: '"IA" * 3', out: "'IAIAIA'" },
+  { expr: 'nombre_modelo = "RandomForest"', out: null },
+  { expr: "nombre_modelo", out: "'RandomForest'" },
+  { expr: "dir(nombre_modelo)[-5:]", out: "['title', 'translate', 'upper', 'upper', 'zfill']  # varía según versión" },
+  { expr: "help(str.upper)", out: "# Muestra la docstring de str.upper: convierte el string a mayúsculas" },
+];
+
+const replEl = document.getElementById("repl");
+let replIndex = 0;
+
+function renderRepl() {
+  replEl.innerHTML = "";
+  for (let i = 0; i < replIndex; i++) {
+    const step = REPL_STEPS[i];
+    const lineDiv = document.createElement("div");
+    lineDiv.className = "line";
+    lineDiv.innerHTML = `<span class="prompt">&gt;&gt;&gt;</span><span class="expr">${step.expr}</span>`;
+    replEl.appendChild(lineDiv);
+    if (step.out) {
+      const outDiv = document.createElement("div");
+      outDiv.className = "out shown";
+      outDiv.innerHTML = step.out;
+      replEl.appendChild(outDiv);
+    }
+  }
+  if (replIndex >= REPL_STEPS.length) {
+    const doneDiv = document.createElement("div");
+    doneDiv.className = "line";
+    doneDiv.innerHTML = `<span class="prompt">&gt;&gt;&gt;</span><span class="expr">exit()</span>`;
+    replEl.appendChild(doneDiv);
+  }
+}
+renderRepl();
+
+document.getElementById("repl-next").addEventListener("click", () => {
+  if (replIndex < REPL_STEPS.length) {
+    replIndex++;
+    renderRepl();
+  }
+});
+document.getElementById("repl-reset").addEventListener("click", () => {
+  replIndex = 0;
+  renderRepl();
+});
+
+// ---------- Quiz de tipos ----------
+const TYPE_ITEMS = [
+  { code: 'nombre_modelo = "RandomForest"', answer: "str" },
+  { code: "accuracy = 0.87", answer: "float" },
+  { code: "epocas = 20", answer: "int" },
+  { code: "convergio = True", answer: "bool" },
+  { code: "observaciones = None", answer: "NoneType" },
+];
+const TYPE_OPTIONS = ["str", "float", "int", "bool", "NoneType"];
+
+const quizWrap = document.getElementById("type-quiz");
+TYPE_ITEMS.forEach((item, idx) => {
+  const row = document.createElement("div");
+  row.className = "quiz-row";
+  const exprSpan = document.createElement("span");
+  exprSpan.className = "quiz-expr";
+  exprSpan.textContent = item.code;
+  const optsDiv = document.createElement("div");
+  optsDiv.className = "options";
+  const feedback = document.createElement("span");
+  feedback.className = "feedback";
+
+  TYPE_OPTIONS.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "opt-btn";
+    btn.textContent = opt;
+    btn.addEventListener("click", () => {
+      const buttons = optsDiv.querySelectorAll("button");
+      buttons.forEach(b => { b.classList.remove("correct", "wrong"); b.disabled = true; });
+      if (opt === item.answer) {
+        btn.classList.add("correct");
+        feedback.textContent = `Correcto — type(${item.code.split("=")[0].trim()}) es <class '${item.answer}'>`;
+      } else {
+        btn.classList.add("wrong");
+        buttons.forEach(b => { if (b.textContent === item.answer) b.classList.add("correct"); });
+        feedback.textContent = `No. La respuesta correcta es ${item.answer}.`;
+      }
+    });
+    optsDiv.appendChild(btn);
+  });
+
+  row.appendChild(exprSpan);
+  row.appendChild(optsDiv);
+  quizWrap.appendChild(row);
+  quizWrap.appendChild(feedback);
+});
+
+// ---------- Comparador de accuracy ----------
+const sliderA = document.getElementById("acc-a");
+const sliderB = document.getElementById("acc-b");
+
+const marginC = { top: 10, right: 20, bottom: 24, left: 40 };
+const widthC = 420 - marginC.left - marginC.right;
+const heightC = 160 - marginC.top - marginC.bottom;
+const svgC = d3.select("#acc-chart");
+const gC = svgC.append("g").attr("transform", `translate(${marginC.left},${marginC.top})`);
+
+const xScaleC = d3.scaleBand().domain(["A", "B"]).range([0, widthC]).padding(0.4);
+const yScaleC = d3.scaleLinear().domain([0, 1]).range([heightC, 0]);
+
+gC.append("g").attr("class", "axis").attr("transform", `translate(0,${heightC})`).call(d3.axisBottom(xScaleC));
+gC.append("g").attr("class", "axis").call(d3.axisLeft(yScaleC).ticks(5));
+
+const barA = gC.append("rect").attr("fill", "#5eb1ff").attr("fill-opacity", 0.75).attr("x", xScaleC("A")).attr("width", xScaleC.bandwidth());
+const barB = gC.append("rect").attr("fill", "#ffb75e").attr("fill-opacity", 0.75).attr("x", xScaleC("B")).attr("width", xScaleC.bandwidth());
+const labelA = gC.append("text").attr("text-anchor", "middle").attr("fill", "var(--text)").attr("font-size", 12).attr("font-weight", 700);
+const labelB = gC.append("text").attr("text-anchor", "middle").attr("fill", "var(--text)").attr("font-size", 12).attr("font-weight", 700);
+
+function updateComparator() {
+  const a = parseFloat(sliderA.value);
+  const b = parseFloat(sliderB.value);
+  const errA = 1 - a;
+  const errB = 1 - b;
+  const diff = b - a;
+  const bMejor = b > a;
+
+  document.getElementById("acc-a-value").textContent = a.toFixed(2);
+  document.getElementById("acc-b-value").textContent = b.toFixed(2);
+  document.getElementById("out-acc-a").textContent = a.toFixed(2);
+  document.getElementById("out-acc-b").textContent = b.toFixed(2);
+  document.getElementById("out-err-a").textContent = errA.toFixed(2);
+  document.getElementById("out-err-b").textContent = errB.toFixed(2);
+  document.getElementById("out-diff").textContent = diff.toFixed(2);
+  document.getElementById("out-bool").textContent = bMejor ? "True" : "False";
+
+  barA.attr("y", yScaleC(a)).attr("height", heightC - yScaleC(a));
+  barB.attr("y", yScaleC(b)).attr("height", heightC - yScaleC(b));
+  labelA.attr("x", xScaleC("A") + xScaleC.bandwidth() / 2).attr("y", yScaleC(a) - 6).text(a.toFixed(2));
+  labelB.attr("x", xScaleC("B") + xScaleC.bandwidth() / 2).attr("y", yScaleC(b) - 6).text(b.toFixed(2));
+
+  document.getElementById("compare-code").textContent = `accuracy_modelo_a = ${a.toFixed(2)}
+accuracy_modelo_b = ${b.toFixed(2)}
+
+error_a = 1 - accuracy_modelo_a  # ${errA.toFixed(2)}
+error_b = 1 - accuracy_modelo_b  # ${errB.toFixed(2)}
+diferencia = accuracy_modelo_b - accuracy_modelo_a  # ${diff.toFixed(2)}
+b_es_mejor = accuracy_modelo_b > accuracy_modelo_a  # ${bMejor ? "True" : "False"}`;
+}
+
+sliderA.addEventListener("input", updateComparator);
+sliderB.addEventListener("input", updateComparator);
+updateComparator();
+</script>
+
+</body>
+</html>

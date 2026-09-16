@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recurso interactivo — Semana 4 | Fundamentos para IA</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-border: #26314a;
+    --panel-hover: #1c2438;
+    --text: #e7ecf7;
+    --text-dim: #9aa7c2;
+    --accent: #5eb1ff;
+    --accent-2: #ffb75e;
+    --good: #5edc9a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header {
+    padding: 48px 20px 20px;
+    max-width: 1040px;
+    margin: 0 auto;
+  }
+  header .kicker {
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  header h1 { margin: 8px 0 12px; font-size: clamp(26px, 5vw, 40px); }
+  header p { color: var(--text-dim); max-width: 1040px; font-size: 15px; }
+  header p a { color: var(--accent); }
+  .back-link {
+    display: inline-block;
+    margin-bottom: 14px;
+    color: var(--text-dim);
+    font-size: 13px;
+    text-decoration: none;
+  }
+  .back-link:hover { color: var(--accent); }
+  main { max-width: 1040px; margin: 0 auto; padding: 12px 20px 40px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 18px;
+  }
+  a.card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 20px 22px 22px;
+    text-decoration: none;
+    color: var(--text);
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  }
+  a.card:hover {
+    background: var(--panel-hover);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .badge {
+    align-self: flex-start;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+  }
+  .badge.numpy { color: #7cc4ff; border-color: #2c4360; }
+  .badge.scipy { color: #ffcf8a; border-color: #4a3a20; }
+  .badge.viz { color: #b39ddb; border-color: #3a2f52; }
+  a.card h2 { margin: 0; font-size: 18px; }
+  a.card .desc { color: var(--text-dim); font-size: 14px; }
+  a.card .learn { color: var(--accent-2); font-size: 13px; margin-top: auto; padding-top: 6px; }
+  .journey {
+    margin-top: 28px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  footer {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="../index.html">← Volver al índice del curso</a>
+  <div class="kicker">Fundamentos para IA · Semana 4</div>
+  <h1>Librerías para cálculo numérico, análisis y visualización de datos</h1>
+  <p>
+    Cuatro recursos cortos e interactivos para experimentar con NumPy, SciPy, Matplotlib y
+    Seaborn sobre el mismo dataset del <a href="../../Semana_4/Semana_4_Actividad/EIARV011_A4_Taller.md">taller de la semana</a>
+    (<code>titles.csv</code>, títulos de Netflix). Cambia variables, mueve sliders y observa
+    cómo responden los gráficos y los estadísticos — cada módulo se puede explorar de forma
+    independiente.
+  </p>
+</header>
+
+<main>
+  <div class="grid">
+
+    <a class="card" href="numpy_vectorizacion.html">
+      <span class="badge numpy">Módulo 1 · NumPy</span>
+      <h2>Por qué vectorizar en vez de iterar</h2>
+      <p class="desc">Compara un loop manual con un arreglo tipado contiguo, con un benchmark real medido en el navegador y su equivalente en código Python.</p>
+      <p class="learn">Aprenderás: por qué NumPy delega el cálculo a memoria contigua en vez de recorrer objeto por objeto.</p>
+    </a>
+
+    <a class="card" href="numpy_estadisticos.html">
+      <span class="badge numpy">Módulo 2 · NumPy</span>
+      <h2>Cómo NumPy resume una variable numérica</h2>
+      <p class="desc">Media, mediana, desviación estándar y percentiles sobre un histograma en vivo, con filtro por tipo de título.</p>
+      <p class="learn">Aprenderás: cómo media y mediana pueden diferir cuando la distribución no es simétrica.</p>
+    </a>
+
+    <a class="card" href="correlacion_ttest.html">
+      <span class="badge scipy">Módulo 3 · SciPy</span>
+      <h2>Correlación y prueba t, explorando el dataset del taller</h2>
+      <p class="desc">Calcula en vivo la r de Pearson entre dos variables y compara MOVIE vs. SHOW con una prueba t de Welch.</p>
+      <p class="learn">Aprenderás: a leer un p-valor frente a α = 0.05 y a distinguir correlación de causalidad.</p>
+    </a>
+
+    <a class="card" href="matplotlib_vs_seaborn.html">
+      <span class="badge viz">Módulo 4 · Matplotlib &amp; Seaborn</span>
+      <h2>El mismo gráfico, dos librerías</h2>
+      <p class="desc">Histograma, boxplot o dispersión, renderizados con el estilo por defecto de cada librería sobre los mismos datos.</p>
+      <p class="learn">Aprenderás: cuánto código necesita cada librería para agrupar, estimar densidad o ajustar una regresión.</p>
+    </a>
+
+  </div>
+
+  <div class="journey">
+    <strong>Sugerencia de recorrido:</strong> los módulos siguen el orden del taller — vectorización, estadísticos con NumPy, correlación/prueba t con SciPy y, al final, visualización con Matplotlib y Seaborn. Pero cada uno funciona solo, así que puedes explorarlos en cualquier orden.
+  </div>
+</main>
+
+<footer>
+  Recurso complementario al <a href="../../Semana_4/Semana_4_Actividad/EIARV011_A4_Taller.md">taller de Semana 4</a>, no lo reemplaza.
+  Dataset: <code>titles.csv</code>.
+</footer>
+
+</body>
+</html>

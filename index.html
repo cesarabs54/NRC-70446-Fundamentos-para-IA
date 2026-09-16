@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Recurso interactivo — Semana 4 | Fundamentos para IA</title>
+<title>Aplicación interactiva | Fundamentos para IA</title>
 <style>
   :root {
     --bg: #0f1420;
@@ -37,7 +37,7 @@
     text-transform: uppercase;
   }
   header h1 { margin: 8px 0 12px; font-size: clamp(26px, 5vw, 40px); }
-  header p { color: var(--text-dim); max-width: 72ch; font-size: 15px; }
+  header p { color: var(--text-dim); max-width: 1040px; font-size: 15px; }
   header p a { color: var(--accent); }
   main { max-width: 1040px; margin: 0 auto; padding: 12px 20px 40px; }
   .grid {
@@ -45,7 +45,7 @@
     grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
     gap: 18px;
   }
-  a.card {
+  a.card, div.card {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -62,6 +62,10 @@
     border-color: var(--accent);
     transform: translateY(-2px);
   }
+  div.card.pending {
+    opacity: 0.6;
+    cursor: default;
+  }
   .badge {
     align-self: flex-start;
     font-size: 11px;
@@ -73,21 +77,12 @@
     border: 1px solid var(--panel-border);
     color: var(--text-dim);
   }
-  .badge.numpy { color: #7cc4ff; border-color: #2c4360; }
-  .badge.scipy { color: #ffcf8a; border-color: #4a3a20; }
-  .badge.viz { color: #b39ddb; border-color: #3a2f52; }
-  a.card h2 { margin: 0; font-size: 18px; }
-  a.card .desc { color: var(--text-dim); font-size: 14px; }
+  .badge.ready { color: var(--good); border-color: #1f4a35; }
+  .badge.soon { color: var(--text-dim); border-color: var(--panel-border); }
+  a.card h2, div.card h2 { margin: 0; font-size: 18px; }
+  a.card .desc, div.card .desc { color: var(--text-dim); font-size: 14px; }
   a.card .learn { color: var(--accent-2); font-size: 13px; margin-top: auto; padding-top: 6px; }
-  .journey {
-    margin-top: 28px;
-    padding: 16px 20px;
-    border-radius: 12px;
-    background: var(--panel);
-    border: 1px solid var(--panel-border);
-    color: var(--text-dim);
-    font-size: 14px;
-  }
+  div.card .learn { color: var(--text-dim); font-size: 13px; margin-top: auto; padding-top: 6px; font-style: italic; }
   footer {
     max-width: 1040px;
     margin: 0 auto;
@@ -101,59 +96,83 @@
 <body>
 
 <header>
-  <div class="kicker">Fundamentos para IA · Semana 4</div>
-  <h1>Librerías para cálculo numérico, análisis y visualización de datos</h1>
+  <div class="kicker">Fundamentos para Inteligencia Artificial · UNIMINUTO</div>
+  <h1>Aplicación interactiva del curso</h1>
   <p>
-    Cuatro recursos cortos e interactivos para experimentar con NumPy, SciPy, Matplotlib y
-    Seaborn sobre el mismo dataset del <a href="https://github.com/cesarabs54/NRC-70446-Fundamentos-para-IA/blob/master/Semana_4/Semana_4_Actividad/EIARV011_A4_Taller.md">taller de la semana</a>
-    (<code>titles.csv</code>, títulos de Netflix). Cambia variables, mueve sliders y observa
-    cómo responden los gráficos y los estadísticos — cada módulo se puede explorar de forma
-    independiente.
+    Recursos interactivos complementarios, semana a semana, para explorar los temas del curso
+    con sliders, gráficos y ejemplos ejecutables directamente en el navegador.
+    No reemplazan el material oficial (diapositivas, talleres y foros de cada semana en el
+    <a href="../README.md">plan de trabajo</a>), lo acompañan.
+    Por ahora las semanas 1, 2, 3, 4, 5, 6 y 7 tienen módulos desarrollados; el resto se irá
+    publicando a medida que avance el curso.
   </p>
 </header>
 
 <main>
   <div class="grid">
 
-    <a class="card" href="numpy_vectorizacion.html">
-      <span class="badge numpy">Módulo 1 · NumPy</span>
-      <h2>Por qué vectorizar en vez de iterar</h2>
-      <p class="desc">Compara un loop manual con un arreglo tipado contiguo, con un benchmark real medido en el navegador y su equivalente en código Python.</p>
-      <p class="learn">Aprenderás: por qué NumPy delega el cálculo a memoria contigua en vez de recorrer objeto por objeto.</p>
+    <a class="card" href="Semana_1/index.html">
+      <span class="badge ready">Semana 1 · Disponible</span>
+      <h2>Introducción a Python para inteligencia artificial</h2>
+      <p class="desc">Cuatro módulos sobre sintaxis básica de Python: el intérprete, tipos y operadores; listas, tuplas, sets y diccionarios; condicionales, bucles y funciones; y manejo de errores, archivos y módulos.</p>
+      <p class="learn">Entrar a los módulos →</p>
     </a>
 
-    <a class="card" href="numpy_estadisticos.html">
-      <span class="badge numpy">Módulo 2 · NumPy</span>
-      <h2>Cómo NumPy resume una variable numérica</h2>
-      <p class="desc">Media, mediana, desviación estándar y percentiles sobre un histograma en vivo, con filtro por tipo de título.</p>
-      <p class="learn">Aprenderás: cómo media y mediana pueden diferir cuando la distribución no es simétrica.</p>
+    <a class="card" href="Semana_2/index.html">
+      <span class="badge ready">Semana 2 · Disponible</span>
+      <h2>Python para ciencia de datos</h2>
+      <p class="desc">Cuatro módulos sobre el dataset de Students Performance: exploración inicial del dataset, calidad de datos, variables categóricas (value_counts) y variables numéricas con relaciones entre ellas.</p>
+      <p class="learn">Entrar a los módulos →</p>
     </a>
 
-    <a class="card" href="correlacion_ttest.html">
-      <span class="badge scipy">Módulo 3 · SciPy</span>
-      <h2>Correlación y prueba t, explorando el dataset del taller</h2>
-      <p class="desc">Calcula en vivo la r de Pearson entre dos variables y compara MOVIE vs. SHOW con una prueba t de Welch.</p>
-      <p class="learn">Aprenderás: a leer un p-valor frente a α = 0.05 y a distinguir correlación de causalidad.</p>
+    <a class="card" href="Semana_3/index.html">
+      <span class="badge ready">Semana 3 · Disponible</span>
+      <h2>Frameworks para inteligencia artificial</h2>
+      <p class="desc">Cuatro módulos comparando scikit-learn, TensorFlow y PyTorch: un mismo problema resuelto de tres formas, KNN interactivo, radar de criterios y líneas de código vs. control.</p>
+      <p class="learn">Entrar a los módulos →</p>
     </a>
 
-    <a class="card" href="matplotlib_vs_seaborn.html">
-      <span class="badge viz">Módulo 4 · Matplotlib &amp; Seaborn</span>
-      <h2>El mismo gráfico, dos librerías</h2>
-      <p class="desc">Histograma, boxplot o dispersión, renderizados con el estilo por defecto de cada librería sobre los mismos datos.</p>
-      <p class="learn">Aprenderás: cuánto código necesita cada librería para agrupar, estimar densidad o ajustar una regresión.</p>
+    <a class="card" href="Semana_4/index.html">
+      <span class="badge ready">Semana 4 · Disponible</span>
+      <h2>Librerías para cálculo numérico, análisis y visualización de datos</h2>
+      <p class="desc">Módulos sobre NumPy (vectorización y estadísticos), correlación y prueba t, y Matplotlib vs. Seaborn.</p>
+      <p class="learn">Entrar a los módulos →</p>
     </a>
 
-  </div>
+    <a class="card" href="Semana_5/index.html">
+      <span class="badge ready">Semana 5 · Disponible</span>
+      <h2>Estadística básica y visualización de datos</h2>
+      <p class="desc">Cuatro módulos sobre Students Performance: centro y dispersión, qué gráfico usar, bins/escala del eje, e hipótesis y prueba estadística.</p>
+      <p class="learn">Entrar a los módulos →</p>
+    </a>
 
-  <div class="journey">
-    <strong>Sugerencia de recorrido:</strong> los módulos siguen el orden del taller — vectorización, estadísticos con NumPy, correlación/prueba t con SciPy y, al final, visualización con Matplotlib y Seaborn. Pero cada uno funciona solo, así que puedes explorarlos en cualquier orden.
+    <a class="card" href="Semana_6/index.html">
+      <span class="badge ready">Semana 6 · Disponible</span>
+      <h2>Estadística inferencial I: prueba de hipótesis</h2>
+      <p class="desc">Cinco módulos: muestra y descriptiva, validación de supuestos, elección de prueba (t, Welch, Mann-Whitney, ANOVA, Kruskal-Wallis), un caso guiado de principio a fin, y errores/tamaño de muestra (Cohen's d, potencia).</p>
+      <p class="learn">Entrar a los módulos →</p>
+    </a>
+
+    <a class="card" href="Semana_7/index.html">
+      <span class="badge ready">Semana 7 · Disponible</span>
+      <h2>Estadística inferencial II: regresión lineal</h2>
+      <p class="desc">Cuatro módulos: correlación y mínimos cuadrados, ajuste y residuos, prueba de hipótesis sobre la pendiente (con el caso de género como variable dummy), y cuándo usar el modelo para predecir (extrapolación y multicolinealidad).</p>
+      <p class="learn">Entrar a los módulos →</p>
+    </a>
+
+    <div class="card pending">
+      <span class="badge soon">Semana 8</span>
+      <h2>Estadística inferencial III: regresión logística</h2>
+      <p class="desc">Relación y aplicación de la regresión logística.</p>
+      <p class="learn">Próximamente</p>
+    </div>
+
   </div>
 </main>
 
 <footer>
-  Recurso complementario al <a href="https://github.com/cesarabs54/NRC-70446-Fundamentos-para-IA/blob/master/Semana_4/Semana_4_Actividad/EIARV011_A4_Taller.md">taller de Semana 4</a>, no lo reemplaza.
-  Dataset: <code>titles.csv</code>. Inspirado en
-  <a href="https://rodanmuro.github.io/material_didactico_machine_learning/">rodanmuro.github.io/material_didactico_machine_learning</a>.
+  Recurso complementario al curso <a href="../README.md">Fundamentos para Inteligencia Artificial</a> (NRC 70446, UNIMINUTO).
+  No reemplaza el material oficial de cada semana.
 </footer>
 
 </body>

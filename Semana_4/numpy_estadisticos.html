@@ -52,7 +52,7 @@
   }
   header p {
     color: var(--text-dim);
-    max-width: 70ch;
+    max-width: 1040px;
   }
   main {
     max-width: 980px;
@@ -169,6 +169,15 @@
     font-size: 13px;
     color: var(--accent-2);
   }
+  .code-wrap { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 18px; }
+  .code-card { flex: 1; min-width: 260px; }
+  .code-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: 8px; }
+  pre {
+    background: #0b111c; border: 1px solid var(--panel-border); border-radius: 10px;
+    padding: 14px 16px; font-size: 13px; overflow-x: auto; margin: 0;
+  }
+  pre.stats-code { border-left: 3px solid var(--accent); }
+  code { font-family: "SF Mono", Consolas, Menlo, monospace; }
   footer {
     max-width: 980px;
     margin: 0 auto;
@@ -240,13 +249,20 @@
         <div class="learn">Aprenderás: cómo NumPy resume una variable numérica y por qué media y mediana pueden diferir cuando la distribución no es simétrica.</div>
       </div>
     </div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="stats-code"><code id="stats-code"></code></pre>
+      </div>
+    </div>
   </section>
 
 </main>
 
 <footer>
   Módulo 2/4 del recurso interactivo de Semana 4. Dataset: <code>titles.csv</code>
-  (mismo del <a href="https://github.com/cesarabs54/NRC-70446-Fundamentos-para-IA/blob/master/Semana_4/Semana_4_Actividad/EIARV011_A4_Taller.md">taller de la semana</a>), filtrado a casos
+  (mismo del <a href="../../Semana_4/Semana_4_Actividad/EIARV011_A4_Taller.md">taller de la semana</a>), filtrado a casos
   completos con <code>build_data.py</code>. Complementa el taller, no lo reemplaza.
 </footer>
 
@@ -293,6 +309,18 @@ function percentile(sorted, p) {
   if (lo === hi) return sorted[lo];
   const frac = rank - lo;
   return sorted[lo] + (sorted[hi] - sorted[lo]) * frac;
+}
+
+function buildPythonSnippet(key, typeFilter, pct) {
+  const loadLine = typeFilter === "ALL"
+    ? `arr = df["${key}"].dropna().to_numpy()`
+    : `arr = df.loc[df["type"] == "${typeFilter}", "${key}"].dropna().to_numpy()`;
+  return `${loadLine}
+
+media = np.mean(arr)
+mediana = np.median(arr)
+desviacion = np.std(arr)
+percentil_${pct} = np.percentile(arr, ${pct})`;
 }
 
 const varSelect = document.getElementById("var-select");
@@ -375,6 +403,7 @@ function render() {
   document.getElementById("stat-std").textContent = s.toFixed(2);
   document.getElementById("stat-pct").textContent = p.toFixed(2);
   document.getElementById("stat-minmax").textContent = `${lo.toFixed(1)} / ${hi.toFixed(1)}`;
+  document.getElementById("stats-code").textContent = buildPythonSnippet(key, typeFilter, pct);
 
   const skewGap = Math.abs(m - med) / (s || 1);
   const verdict = document.getElementById("stat-verdict");

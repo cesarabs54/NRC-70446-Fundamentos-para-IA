@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estructuras de datos — Semana 1</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-border: #26314a;
+    --text: #e7ecf7;
+    --text-dim: #9aa7c2;
+    --accent: #5eb1ff;
+    --accent-2: #ffb75e;
+    --good: #5edc9a;
+    --bad: #ff8577;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header { padding: 32px 20px 16px; max-width: 1100px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 78ch; }
+  main { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+
+  .boxes { display: flex; flex-wrap: wrap; gap: 8px; min-height: 46px; margin: 14px 0; }
+  .box {
+    background: #0a0e17; border: 1px solid var(--accent); color: var(--text);
+    border-radius: 8px; padding: 8px 12px; font-family: Consolas, Menlo, monospace; font-size: 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .box .idx { color: var(--text-dim); font-size: 11px; }
+  .box.new { border-color: var(--good); color: var(--good); }
+  .box.removing { border-color: var(--bad); color: var(--bad); opacity: 0.5; }
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+  button.primary {
+    background: #0f1420; color: var(--text); border: 1px solid var(--panel-border);
+    border-radius: 8px; padding: 8px 12px; font-size: 13px; cursor: pointer;
+  }
+  button.primary:hover { border-color: var(--accent); color: var(--accent); }
+  button.primary:disabled { opacity: 0.4; cursor: default; }
+  .status-line { font-family: Consolas, Menlo, monospace; font-size: 13px; color: var(--text-dim); margin-top: 10px; background: #0a0e17; border: 1px solid var(--panel-border); border-radius: 8px; padding: 10px 14px; }
+  .status-line b { color: var(--good); }
+
+  .tuple-demo { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-top: 10px; }
+  .tuple-visual { display: flex; gap: 8px; }
+  .tuple-visual .box { border-color: var(--accent-2); color: var(--accent-2); border-style: dashed; }
+  .try-edit { flex: 1; min-width: 260px; }
+  .error-box {
+    font-family: Consolas, Menlo, monospace; font-size: 12.5px; background: #1a0f14; border: 1px solid var(--bad);
+    color: #ff9d92; border-radius: 8px; padding: 10px 14px; margin-top: 10px; display: none; white-space: pre-wrap;
+  }
+  .error-box.shown { display: block; }
+
+  .set-wrap { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-top: 10px; }
+  .list-col, .set-col { flex: 1; min-width: 220px; }
+  .set-col .box { border-color: var(--good); color: var(--good); }
+  .dup-box { border-color: var(--bad) !important; color: var(--bad) !important; }
+
+  .dict-view { font-family: Consolas, Menlo, monospace; font-size: 13.5px; background: #0a0e17; border: 1px solid var(--panel-border); border-radius: 10px; padding: 14px 18px; }
+  .dict-view .key { color: var(--accent); }
+  .dict-view .val { color: var(--good); }
+  .dict-view .new-key { animation: flash 1s ease; }
+  @keyframes flash { from { background: rgba(94, 220, 154, 0.25); } to { background: transparent; } }
+
+  .code-wrap { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 18px; }
+  .code-card { flex: 1; min-width: 260px; }
+  .code-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: 8px; }
+  pre {
+    background: #0b111c; border: 1px solid var(--panel-border); border-radius: 10px;
+    padding: 14px 16px; font-size: 13px; overflow-x: auto; margin: 0;
+  }
+  pre.list-code { border-left: 3px solid var(--accent); }
+  pre.tuple-code { border-left: 3px solid var(--accent-2); }
+  pre.set-code { border-left: 3px solid var(--good); }
+  code { font-family: "SF Mono", Consolas, Menlo, monospace; }
+
+  .learn { background: rgba(94, 220, 154, 0.08); border: 1px solid rgba(94, 220, 154, 0.35); border-radius: 10px; padding: 12px 16px; font-size: 14px; color: var(--text-dim); margin-top: 16px; }
+  .learn strong { color: var(--good); }
+  footer { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">← Recurso interactivo Semana 1</a>
+  <div class="kicker">Módulo 2 · Colecciones</div>
+  <h1>Listas, tuplas, conjuntos y diccionarios</h1>
+  <p>
+    Las cuatro estructuras de datos que agrupan información relacionada de un experimento:
+    listas mutables y ordenables (Ejercicio 4), tuplas inmutables (Ejercicio 5), conjuntos
+    que eliminan duplicados (Ejercicio 5) y diccionarios con llaves nombradas (Ejercicio 6).
+  </p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>Listas: agregar, quitar y ordenar</h2>
+    <p class="subtitle">Reproduce paso a paso el Ejercicio 4 sobre la lista de accuracy de 5 experimentos.</p>
+    <div class="boxes" id="list-boxes"></div>
+    <div class="controls">
+      <button class="primary" id="btn-append">accuracies.append(0.95)</button>
+      <button class="primary" id="btn-remove">accuracies.remove(0.68)</button>
+      <button class="primary" id="btn-sort">accuracies.sort(reverse=True)</button>
+      <button class="primary" id="btn-list-reset">Reiniciar</button>
+    </div>
+    <div class="status-line" id="list-status">Mejor accuracy: <b>—</b> · Total de experimentos: <b>—</b></div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="list-code"><code id="list-code"></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Tuplas: inmutables por diseño</h2>
+    <p class="subtitle">Los hiperparámetros de un experimento ya cerrado no deberían cambiar. Intenta "editar" la tupla del Ejercicio 5.</p>
+    <div class="tuple-demo">
+      <div>
+        <div class="tuple-visual" id="tuple-visual"></div>
+      </div>
+      <div class="try-edit">
+        <code>hiperparametros[0] = 0.1</code>
+        <div class="controls"><button class="primary" id="btn-try-edit">Intentar ejecutar</button></div>
+        <div class="error-box" id="tuple-error"></div>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="tuple-code"><code id="tuple-code"></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Conjuntos: fuera los duplicados</h2>
+    <p class="subtitle">Convierte la lista de modelos probados (con repetidos) en un <code>set</code> y observa cuántos son realmente distintos.</p>
+    <div class="set-wrap">
+      <div class="list-col">
+        <div style="color: var(--text-dim); font-size: 13px; margin-bottom: 6px;">Lista original (con repetidos)</div>
+        <div class="boxes" id="set-list-boxes"></div>
+      </div>
+      <div class="set-col">
+        <div style="color: var(--text-dim); font-size: 13px; margin-bottom: 6px;">set(nombres_con_repetidos)</div>
+        <div class="boxes" id="set-result-boxes"></div>
+      </div>
+    </div>
+    <div class="controls"><button class="primary" id="btn-set-convert">Convertir a set</button></div>
+    <div class="status-line" id="set-status">Modelos distintos probados: <b>—</b></div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="set-code"><code id="set-code"></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Diccionarios: campos con nombre</h2>
+    <p class="subtitle">Un experimento tiene varios campos relacionados — un diccionario los agrupa bajo una sola variable (Ejercicio 6).</p>
+    <div class="dict-view" id="dict-view"></div>
+    <div class="controls">
+      <button class="primary" id="btn-add-key">experimento["dataset_size"] = 5000</button>
+      <button class="primary" id="btn-dict-reset">Reiniciar</button>
+    </div>
+  </section>
+
+  <div class="learn">
+    <strong>Conexión con lo que viene:</strong> un diccionario como <code>experimento</code> agrupa la misma
+    información que las variables sueltas del Ejercicio 2, pero bajo un solo nombre. En las próximas semanas,
+    cada <em>fila</em> de un DataFrame de Pandas se comporta de forma muy parecida a un diccionario.
+  </div>
+
+</main>
+
+<footer>
+  Recurso complementario al material de la <a href="../../Semana_1/semana_1_estudiante.md">Semana 1</a>, no lo reemplaza.
+</footer>
+
+<script>
+// ---------- Listas ----------
+const INITIAL_LIST = [0.75, 0.82, 0.91, 0.68, 0.87];
+let accuracies = [...INITIAL_LIST];
+let listStep = 0; // 0=inicial, 1=append, 2=remove, 3=sort
+
+function renderList() {
+  const wrap = document.getElementById("list-boxes");
+  wrap.innerHTML = "";
+  accuracies.forEach((v, i) => {
+    const box = document.createElement("div");
+    box.className = "box" + (listStep === 1 && i === accuracies.length - 1 ? " new" : "");
+    box.innerHTML = `<span class="idx">[${i}]</span>${v.toFixed(2)}`;
+    wrap.appendChild(box);
+  });
+  const status = document.getElementById("list-status");
+  if (listStep === 0) {
+    status.innerHTML = "Mejor accuracy: <b>—</b> · Total de experimentos: <b>—</b>";
+  } else {
+    const best = Math.max(...accuracies);
+    status.innerHTML = `Mejor accuracy: <b>${best.toFixed(2)}</b> · Total de experimentos: <b>${accuracies.length}</b>`;
+  }
+  document.getElementById("btn-append").disabled = listStep >= 1;
+  document.getElementById("btn-remove").disabled = listStep >= 2 || listStep < 1;
+  document.getElementById("btn-sort").disabled = listStep >= 3 || listStep < 2;
+  document.getElementById("list-code").textContent = buildListCode(listStep, accuracies);
+}
+
+function buildListCode(step, current) {
+  const lines = [`accuracies = [${INITIAL_LIST.map(v => v.toFixed(2)).join(", ")}]`];
+  if (step >= 1) lines.push(`accuracies.append(0.95)`);
+  if (step >= 2) lines.push(`accuracies.remove(0.68)`);
+  if (step >= 3) lines.push(`accuracies.sort(reverse=True)`);
+  lines.push("");
+  lines.push(`# accuracies = [${current.map(v => v.toFixed(2)).join(", ")}]`);
+  return lines.join("\n");
+}
+
+document.getElementById("btn-append").addEventListener("click", () => {
+  accuracies.push(0.95);
+  listStep = 1;
+  renderList();
+});
+document.getElementById("btn-remove").addEventListener("click", () => {
+  const i = accuracies.indexOf(0.68);
+  if (i !== -1) accuracies.splice(i, 1);
+  listStep = 2;
+  renderList();
+});
+document.getElementById("btn-sort").addEventListener("click", () => {
+  accuracies.sort((a, b) => b - a);
+  listStep = 3;
+  renderList();
+});
+document.getElementById("btn-list-reset").addEventListener("click", () => {
+  accuracies = [...INITIAL_LIST];
+  listStep = 0;
+  renderList();
+});
+renderList();
+
+// ---------- Tuplas ----------
+const HIPERPARAMETROS = [0.01, 20, "adam"];
+function renderTuple() {
+  const wrap = document.getElementById("tuple-visual");
+  wrap.innerHTML = "";
+  HIPERPARAMETROS.forEach((v, i) => {
+    const box = document.createElement("div");
+    box.className = "box";
+    box.innerHTML = `<span class="idx">[${i}]</span>${typeof v === "string" ? `'${v}'` : v}`;
+    wrap.appendChild(box);
+  });
+}
+renderTuple();
+
+function buildTupleCode(triggered) {
+  let s = `hiperparametros = (0.01, 20, 'adam')\nhiperparametros[0] = 0.1`;
+  if (triggered) {
+    s += `\n\n# Traceback (most recent call last):\n#   File "<stdin>", line 1, in <module>\n# TypeError: 'tuple' object does not support item assignment`;
+  }
+  return s;
+}
+document.getElementById("tuple-code").textContent = buildTupleCode(false);
+
+document.getElementById("btn-try-edit").addEventListener("click", () => {
+  const err = document.getElementById("tuple-error");
+  err.textContent = "Traceback (most recent call last):\n  File \"<stdin>\", line 1, in <module>\nTypeError: 'tuple' object does not support item assignment";
+  err.classList.add("shown");
+  document.getElementById("tuple-code").textContent = buildTupleCode(true);
+});
+
+// ---------- Conjuntos ----------
+const NOMBRES_REPETIDOS = ["RandomForest", "SVM", "RandomForest", "KNN", "SVM"];
+function renderSetList() {
+  const wrap = document.getElementById("set-list-boxes");
+  wrap.innerHTML = "";
+  const seen = new Set();
+  NOMBRES_REPETIDOS.forEach((v) => {
+    const isDup = seen.has(v);
+    seen.add(v);
+    const box = document.createElement("div");
+    box.className = "box" + (isDup ? " dup-box" : "");
+    box.textContent = v;
+    wrap.appendChild(box);
+  });
+}
+renderSetList();
+
+function buildSetCode(converted, uniqueLen) {
+  let s = `nombres_con_repetidos = [${NOMBRES_REPETIDOS.map(v => `"${v}"`).join(", ")}]\nunicos = set(nombres_con_repetidos)`;
+  if (converted) s += `\n\n# len(unicos) = ${uniqueLen}`;
+  return s;
+}
+document.getElementById("set-code").textContent = buildSetCode(false);
+
+document.getElementById("btn-set-convert").addEventListener("click", () => {
+  const wrap = document.getElementById("set-result-boxes");
+  wrap.innerHTML = "";
+  const unique = [...new Set(NOMBRES_REPETIDOS)];
+  unique.forEach((v) => {
+    const box = document.createElement("div");
+    box.className = "box new";
+    box.textContent = v;
+    wrap.appendChild(box);
+  });
+  document.getElementById("set-status").innerHTML = `Modelos distintos probados: <b>${unique.length}</b>`;
+  document.getElementById("set-code").textContent = buildSetCode(true, unique.length);
+});
+
+// ---------- Diccionarios ----------
+const EXPERIMENTO_BASE = { modelo: "RandomForest", accuracy: 0.87, epocas: 20, convergio: true };
+let experimento = { ...EXPERIMENTO_BASE };
+
+function renderDict(highlightKey) {
+  const wrap = document.getElementById("dict-view");
+  const lines = Object.entries(experimento).map(([k, v]) => {
+    const valStr = typeof v === "string" ? `'${v}'` : v;
+    const isNew = k === highlightKey;
+    return `  <span class="key${isNew ? " new-key" : ""}">"${k}"</span>: <span class="val">${valStr}</span>`;
+  });
+  wrap.innerHTML = "experimento = {\n" + lines.join(",\n") + "\n}";
+}
+renderDict();
+
+document.getElementById("btn-add-key").addEventListener("click", () => {
+  experimento.dataset_size = 5000;
+  renderDict("dataset_size");
+});
+document.getElementById("btn-dict-reset").addEventListener("click", () => {
+  experimento = { ...EXPERIMENTO_BASE };
+  renderDict();
+});
+</script>
+
+</body>
+</html>

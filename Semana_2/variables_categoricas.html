@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Variables categóricas — Semana 2 | Fundamentos para IA</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="data.js"></script>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-border: #26314a;
+    --text: #e7ecf7;
+    --text-dim: #9aa7c2;
+    --accent: #5eb1ff;
+    --accent-2: #ffb75e;
+    --good: #5edc9a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header { padding: 32px 20px 16px; max-width: 980px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 70ch; }
+  header code, main code { color: var(--accent-2); }
+  main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  select, button { background: #0f1420; color: var(--text); border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 10px; font-size: 14px; }
+  select { min-width: 220px; }
+  button { cursor: pointer; }
+  button.active { border-color: var(--accent); color: var(--accent); }
+  .btn-row { display: flex; gap: 8px; }
+  .viz-wrap { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-top: 14px; }
+  svg { flex-shrink: 0; max-width: 100%; height: auto; }
+  .axis text { fill: var(--text-dim); font-size: 11px; }
+  .axis path, .axis line { stroke: var(--panel-border); }
+  .bar { fill: var(--accent); }
+  .bar-label { fill: var(--text); font-size: 12px; font-variant-numeric: tabular-nums; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--panel-border); }
+  th { color: var(--text-dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+  td.n { font-variant-numeric: tabular-nums; text-align: right; }
+  pre { background: #0a0e17; border: 1px solid var(--panel-border); border-radius: 10px; padding: 14px 16px; font-size: 13px; overflow-x: auto; color: #d6deef; }
+  .code-wrap { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 18px; }
+  .code-card { flex: 1; min-width: 260px; }
+  .code-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: 8px; }
+  pre.freq-code { border-left: 3px solid var(--accent); }
+  code { font-family: "SF Mono", Consolas, Menlo, monospace; }
+  .learn { margin-top: 18px; font-size: 13px; color: var(--accent-2); }
+  footer { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">&larr; Recurso interactivo Semana 2</a>
+  <div class="kicker">Semana 2 · Módulo 3 · Variables categóricas</div>
+  <h1><code>value_counts()</code> en vivo</h1>
+  <p>
+    Para una variable categórica, la pregunta básica es "¿qué valores aparecen y con
+    qué frecuencia?". Eso es exactamente lo que hace <code>value_counts()</code>, y con
+    <code>normalize=True</code> obtienes la misma información como porcentaje.
+    Elige una columna y compara ambas vistas sobre los mismos 1000 estudiantes.
+  </p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>Frecuencias por categoría</h2>
+
+    <div class="controls">
+      <div class="field">
+        <label for="col-select">Variable categórica</label>
+        <select id="col-select">
+          <option value="gender">gender</option>
+          <option value="group">race/ethnicity</option>
+          <option value="parentalEducation" selected>parental level of education</option>
+          <option value="lunch">lunch</option>
+          <option value="testPrep">test preparation course</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Vista</label>
+        <div class="btn-row">
+          <button id="btn-count" class="active">Conteo</button>
+          <button id="btn-pct">Porcentaje</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="viz-wrap">
+      <svg id="bar-svg" width="560" height="320"></svg>
+      <table id="counts-table">
+        <thead><tr><th>Categoría</th><th style="text-align:right">Conteo</th><th style="text-align:right">%</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="freq-code"><code id="freq-code"></code></pre>
+      </div>
+    </div>
+    <div class="learn">Aprenderás: a leer una tabla de frecuencias y a decidir si el conteo absoluto o el porcentaje comunica mejor un hallazgo.</div>
+  </section>
+
+  <section class="card">
+    <h2>El código equivalente en pandas</h2>
+    <pre><code>df["parental level of education"].value_counts()
+# conteo por categoría, de mayor a menor
+
+df["parental level of education"].value_counts(normalize=True) * 100
+# lo mismo, como porcentaje del total</code></pre>
+  </section>
+
+</main>
+
+<footer>
+  Módulo 3/4 del recurso interactivo de Semana 2. Dataset: <code>StudentsPerformance.csv</code>
+  (mismo del <a href="../../Semana_2/Semana_2_Actividad/EIARV011_A2.md">estudio de caso de la semana</a>). Complementa la actividad, no la reemplaza.
+</footer>
+
+<script>
+const COL_LABELS = {
+  gender: "gender",
+  group: "race/ethnicity",
+  parentalEducation: "parental level of education",
+  lunch: "lunch",
+  testPrep: "test preparation course",
+};
+
+function buildFreqSnippet(colLabel, showPct) {
+  if (showPct) return `df["${colLabel}"].value_counts(normalize=True) * 100`;
+  return `df["${colLabel}"].value_counts()`;
+}
+
+const total = STUDENTS_DATA.length;
+const colSelect = document.getElementById("col-select");
+const btnCount = document.getElementById("btn-count");
+const btnPct = document.getElementById("btn-pct");
+let showPct = false;
+
+btnCount.addEventListener("click", () => { showPct = false; btnCount.classList.add("active"); btnPct.classList.remove("active"); render(); });
+btnPct.addEventListener("click", () => { showPct = true; btnPct.classList.add("active"); btnCount.classList.remove("active"); render(); });
+colSelect.addEventListener("change", render);
+
+const svg = d3.select("#bar-svg");
+const margin = { top: 16, right: 60, bottom: 30, left: 170 };
+const W = 560 - margin.left - margin.right;
+const H = 320 - margin.top - margin.bottom;
+const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+const yAxisG = g.append("g").attr("class", "axis");
+const xAxisG = g.append("g").attr("class", "axis").attr("transform", `translate(0,${H})`);
+const tbody = document.querySelector("#counts-table tbody");
+
+function render() {
+  const key = colSelect.value;
+  const counts = new Map();
+  STUDENTS_DATA.forEach(d => counts.set(d[key], (counts.get(d[key]) || 0) + 1));
+  const rows = [...counts.entries()]
+    .map(([category, count]) => ({ category, count, pct: count / total * 100 }))
+    .sort((a, b) => b.count - a.count);
+
+  const y = d3.scaleBand().domain(rows.map(r => r.category)).range([0, H]).padding(0.25);
+  const maxVal = d3.max(rows, r => showPct ? r.pct : r.count);
+  const x = d3.scaleLinear().domain([0, maxVal]).nice().range([0, W]);
+
+  yAxisG.transition().duration(200).call(d3.axisLeft(y));
+  xAxisG.transition().duration(200).call(d3.axisBottom(x).ticks(5));
+
+  const bars = g.selectAll("rect.bar").data(rows, d => d.category);
+  bars.join(
+    enter => enter.append("rect").attr("class", "bar")
+      .attr("y", d => y(d.category)).attr("height", y.bandwidth())
+      .attr("x", 0).attr("width", d => x(showPct ? d.pct : d.count)),
+    update => update.transition().duration(200)
+      .attr("y", d => y(d.category)).attr("height", y.bandwidth())
+      .attr("width", d => x(showPct ? d.pct : d.count)),
+    exit => exit.remove()
+  );
+
+  const labels = g.selectAll("text.bar-label").data(rows, d => d.category);
+  labels.join(
+    enter => enter.append("text").attr("class", "bar-label")
+      .attr("y", d => y(d.category) + y.bandwidth() / 2 + 4)
+      .attr("x", d => x(showPct ? d.pct : d.count) + 6)
+      .text(d => showPct ? d.pct.toFixed(1) + "%" : d.count),
+    update => update.transition().duration(200)
+      .attr("y", d => y(d.category) + y.bandwidth() / 2 + 4)
+      .attr("x", d => x(showPct ? d.pct : d.count) + 6)
+      .text(d => showPct ? d.pct.toFixed(1) + "%" : d.count),
+    exit => exit.remove()
+  );
+
+  tbody.innerHTML = rows.map(r =>
+    `<tr><td>${r.category}</td><td class="n">${r.count}</td><td class="n">${r.pct.toFixed(1)}%</td></tr>`
+  ).join("");
+
+  document.getElementById("freq-code").textContent = buildFreqSnippet(COL_LABELS[key], showPct);
+}
+
+render();
+</script>
+
+</body>
+</html>

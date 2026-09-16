@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recurso interactivo — Semana 7 | Fundamentos para IA</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-border: #26314a;
+    --panel-hover: #1c2438;
+    --text: #e7ecf7;
+    --text-dim: #9aa7c2;
+    --accent: #5eb1ff;
+    --accent-2: #ffb75e;
+    --good: #5edc9a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header {
+    padding: 48px 20px 20px;
+    max-width: 1040px;
+    margin: 0 auto;
+  }
+  header .kicker {
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  header h1 { margin: 8px 0 12px; font-size: clamp(26px, 5vw, 40px); }
+  header p { color: var(--text-dim); max-width: 72ch; font-size: 15px; }
+  header p a { color: var(--accent); }
+  .back-link {
+    display: inline-block;
+    margin-bottom: 14px;
+    color: var(--text-dim);
+    font-size: 13px;
+    text-decoration: none;
+  }
+  .back-link:hover { color: var(--accent); }
+  main { max-width: 1040px; margin: 0 auto; padding: 12px 20px 40px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 18px;
+  }
+  a.card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 20px 22px 22px;
+    text-decoration: none;
+    color: var(--text);
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  }
+  a.card:hover {
+    background: var(--panel-hover);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .badge {
+    align-self: flex-start;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+  }
+  .badge.fit { color: #7cc4ff; border-color: #2c4360; }
+  .badge.resid { color: #ffcf8a; border-color: #4a3a20; }
+  .badge.hyp { color: #b39ddb; border-color: #3a2f52; }
+  .badge.use { color: #ff9d9d; border-color: #4a2020; }
+  a.card h2 { margin: 0; font-size: 18px; }
+  a.card .desc { color: var(--text-dim); font-size: 14px; }
+  a.card .learn { color: var(--accent-2); font-size: 13px; margin-top: auto; padding-top: 6px; }
+  .journey {
+    margin-top: 28px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  footer {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="../index.html">← Volver al índice del curso</a>
+  <div class="kicker">Fundamentos para IA · Semana 7</div>
+  <h1>Estadística inferencial II: regresión lineal</h1>
+  <p>
+    Cuatro módulos que recorren la regresión lineal simple de principio a fin: cómo se ajusta la recta
+    de mínimos cuadrados, qué tan bien queda (residuos, R², RMSE), si la pendiente es estadísticamente
+    real (prueba t sobre b1, con el caso aplicado de una variable dummy), y cuándo tiene sentido usar el
+    modelo para predecir (extrapolación, multicolinealidad). Todo se calcula en vivo sobre el mismo
+    <code>StudentsPerformance.csv</code> de los documentos conceptuales
+    <code>01_Regresion_lineal_conceptos_basicos.md</code> y
+    <code>02_Cuando_utilizar_modelo_regresion_lineal.md</code>, y del taller
+    <code>Taller_02_Regresion_lineal_conceptos_basicos.md</code>.
+  </p>
+</header>
+
+<main>
+  <div class="grid">
+
+    <a class="card" href="correlacion_minimos_cuadrados.html">
+      <span class="badge fit">Módulo 1 · Ajuste</span>
+      <h2>Correlación y mínimos cuadrados</h2>
+      <p class="desc">Elige cualquier par de notas como X e Y: diagrama de dispersión con la recta ajustada, y el cálculo en vivo de x̄, ȳ, Sxy, Sxx, b1, b0 y r.</p>
+      <p class="learn">Aprenderás: de dónde salen b0 y b1, y qué mide la correlación de Pearson.</p>
+    </a>
+
+    <a class="card" href="ajuste_residuos.html">
+      <span class="badge resid">Módulo 2 · Residuos</span>
+      <h2>Ajuste y residuos</h2>
+      <p class="desc">La misma recta, ahora evaluada: residuos vs. valores ajustados, SSres, SStot, R² y RMSE. Haz clic en cualquier punto para ver su residuo resaltado.</p>
+      <p class="learn">Aprenderás: a leer si un modelo ajusta bien, más allá de "se ve bien".</p>
+    </a>
+
+    <a class="card" href="prueba_hipotesis_pendiente.html">
+      <span class="badge hyp">Módulo 3 · Inferencia</span>
+      <h2>Prueba de hipótesis sobre la pendiente</h2>
+      <p class="desc">SE(b1), el estadístico t y su p-value para saber si b1 es real. Incluye el caso aplicado de género como variable dummy, con Levene y su equivalencia con un t-test.</p>
+      <p class="learn">Aprenderás: que comparar dos grupos con una prueba t es, matemáticamente, un caso particular de regresión.</p>
+    </a>
+
+    <a class="card" href="cuando_usar_prediccion.html">
+      <span class="badge use">Módulo 4 · Uso responsable</span>
+      <h2>Cuándo usar el modelo y predecir</h2>
+      <p class="desc">Calculadora de predicción con alerta de extrapolación, ilustración de multicolinealidad entre las tres notas, y el checklist rápido antes de ajustar un modelo.</p>
+      <p class="learn">Aprenderás: los límites del modelo — hasta dónde confiar en una predicción.</p>
+    </a>
+
+  </div>
+
+  <div class="journey">
+    <strong>Sugerencia de recorrido:</strong> los módulos 1 a 3 siguen el flujo del documento conceptual —
+    ajustar, evaluar el error, y comprobar si el coeficiente es estadísticamente real — y el Módulo 4 cierra
+    con la pregunta anterior a todas: ¿cuándo tiene sentido usar este modelo, y hasta dónde confiar en sus
+    predicciones? Empieza por el Módulo 1 si quieres construir el flujo desde cero, o por el Módulo 4 si
+    prefieres ver primero los límites prácticos y luego el detalle de cada cálculo.
+  </div>
+</main>
+
+<footer>
+  Recurso complementario a los documentos conceptuales de Semana 7
+  (<code>01_Regresion_lineal_conceptos_basicos.md</code>,
+  <code>02_Cuando_utilizar_modelo_regresion_lineal.md</code>) y al taller
+  <code>Taller_02_Regresion_lineal_conceptos_basicos.md</code>, no los reemplaza. Dataset:
+  <code>StudentsPerformance.csv</code>. Inspirado en
+  <a href="https://rodanmuro.github.io/material_didactico_machine_learning/">rodanmuro.github.io/material_didactico_machine_learning</a>.
+</footer>
+
+</body>
+</html>

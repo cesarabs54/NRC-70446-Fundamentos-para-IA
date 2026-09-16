@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hipótesis y prueba estadística | Semana 5</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.9.6/jstat.min.js"></script>
+<script src="data.js"></script>
+<style>
+  :root {
+    --bg: #0f1420; --panel: #161d2e; --panel-border: #26314a; --text: #e7ecf7;
+    --text-dim: #9aa7c2; --accent: #5eb1ff; --accent-2: #ffb75e; --good: #5edc9a; --bad: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.5; }
+  header { padding: 32px 20px 16px; max-width: 980px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 70ch; }
+  main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  select { background: #0f1420; color: var(--text); border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 10px; font-size: 14px; min-width: 190px; }
+  .hyp-box { padding: 14px 16px; border-radius: 10px; background: #101826; border: 1px solid var(--panel-border); font-size: 14px; margin-top: 6px; }
+  .hyp-box .h0 { color: var(--text-dim); }
+  .hyp-box .h1 { color: var(--accent); margin-top: 6px; }
+  .viz-wrap { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-top: 8px; }
+  svg { flex-shrink: 0; max-width: 100%; height: auto; }
+  .axis text { fill: var(--text-dim); font-size: 11px; }
+  .axis path, .axis line { stroke: var(--panel-border); }
+  .stats { flex: 1; min-width: 240px; display: flex; flex-direction: column; gap: 10px; }
+  .stat-row { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--panel-border); padding-bottom: 6px; font-size: 14px; gap: 10px; }
+  .stat-row span:first-child { color: var(--text-dim); }
+  .stat-row span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+  .verdict { margin-top: 6px; padding: 12px 14px; border-radius: 10px; font-size: 14px; background: #101826; border: 1px solid var(--panel-border); }
+  .verdict.good { border-color: var(--good); color: var(--good); }
+  .verdict.bad { border-color: var(--bad); color: var(--bad); }
+  .dot { fill: var(--accent); opacity: 0.35; }
+  .trend { stroke: var(--good); stroke-width: 2px; }
+  .meanline { stroke: var(--accent-2); stroke-width: 2.5px; }
+  .section-title { font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); margin: 18px 0 8px; }
+  .section-title:first-child { margin-top: 0; }
+  .code-wrap { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 18px; }
+  .code-card { flex: 1; min-width: 260px; }
+  .code-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: 8px; }
+  pre {
+    background: #0b111c; border: 1px solid var(--panel-border); border-radius: 10px;
+    padding: 14px 16px; font-size: 13px; overflow-x: auto; margin: 0;
+  }
+  pre.test-code { border-left: 3px solid var(--accent); }
+  code { font-family: "SF Mono", Consolas, Menlo, monospace; }
+  footer { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">&larr; Recurso interactivo Semana 5</a>
+  <div class="kicker">Semana 5 · Módulo 4 · Inferencial</div>
+  <h1>De la hipótesis a la decisión sobre H0</h1>
+  <p>
+    Elige una pregunta de investigación y observa el recorrido completo: formular H0/H1,
+    revisar la homogeneidad de varianzas entre grupos, ejecutar la prueba adecuada y leer el
+    p-valor para decidir. Todo se calcula en vivo sobre <code>StudentsPerformance.csv</code>.
+  </p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>Pregunta de investigación</h2>
+    <div class="controls">
+      <div class="field">
+        <label for="situacion-select">Tipo de pregunta</label>
+        <select id="situacion-select">
+          <option value="grupo2">Diferencia entre 2 grupos</option>
+          <option value="grupoN">Diferencia entre 3+ grupos</option>
+          <option value="correlacion">Relación entre 2 variables numéricas</option>
+        </select>
+      </div>
+      <div id="dynamic-controls" class="controls" style="margin:0;"></div>
+    </div>
+
+    <div class="section-title">1 · Hipótesis</div>
+    <div class="hyp-box">
+      <div class="h0" id="h0-text">—</div>
+      <div class="h1" id="h1-text">—</div>
+    </div>
+
+    <div class="section-title">2 · Supuestos</div>
+    <div class="stats" style="flex-direction: row; flex-wrap: wrap; gap: 20px;">
+      <div class="stat-row" style="flex:1; min-width:260px;"><span id="assump-1-label">Normalidad (indicador aproximado, asimetría)</span><span id="assump-1-value">—</span></div>
+      <div class="stat-row" style="flex:1; min-width:260px;"><span id="assump-2-label">Homogeneidad de varianzas (Levene)</span><span id="assump-2-value">—</span></div>
+    </div>
+    <div class="verdict" id="assump-verdict">—</div>
+
+    <div class="section-title">3 · Prueba y decisión</div>
+    <div class="viz-wrap">
+      <svg id="viz-svg" width="480" height="360"></svg>
+      <div class="stats" id="test-stats"></div>
+    </div>
+    <div class="verdict" id="test-verdict">—</div>
+
+    <div class="code-wrap">
+      <div class="code-card">
+        <h3>Código equivalente en Python</h3>
+        <pre class="test-code"><code id="test-code"></code></pre>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Módulo 4/4 del recurso interactivo de Semana 5. Dataset: <code>StudentsPerformance.csv</code>
+  (mismo de la <a href="../../Semana_5/01_%20Estadistica_basica/01_Estadistica_Basica.md">guía de estadística básica</a>),
+  filtrado a casos completos con <code>build_data.py</code>. El indicador de normalidad usado
+  aquí es una aproximación por asimetría; el notebook docente aplica la prueba exacta de
+  Shapiro-Wilk (<code>scipy.stats.shapiro</code>). Complementa la guía, no la reemplaza.
+</footer>
+
+<script>
+const NUMERIC_VARS = { mathScore: "Nota de matemáticas", readingScore: "Nota de lectura", writingScore: "Nota de escritura" };
+const GROUP2_VARS = { testPrep: "Curso de preparación (none / completed)", lunch: "Tipo de almuerzo (standard / free-reduced)", gender: "Género (female / male)" };
+const GROUPN_VARS = { ethnicity: "Grupo étnico (5 grupos)", parentEducation: "Nivel educativo de los padres (6 grupos)" };
+const SHORT_LABELS = { testPrep: "el curso de preparación", lunch: "el tipo de almuerzo", gender: "el género", ethnicity: "el grupo étnico", parentEducation: "el nivel educativo de los padres" };
+const ALPHA = 0.05;
+const COL_NAMES = {
+  mathScore: "math score", readingScore: "reading score", writingScore: "writing score",
+  testPrep: "test preparation course", lunch: "lunch", gender: "gender",
+  ethnicity: "race/ethnicity", parentEducation: "parental level of education",
+};
+
+function mean(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+function variance(arr, m) { return arr.reduce((a, b) => a + (b - m) ** 2, 0) / (arr.length - 1); }
+function std(arr, m) { return Math.sqrt(variance(arr, m)); }
+function medianOf(arr) {
+  const s = [...arr].sort((a, b) => a - b);
+  const n = s.length, mid = Math.floor(n / 2);
+  return n % 2 === 0 ? (s[mid - 1] + s[mid]) / 2 : s[mid];
+}
+function skewness(arr) {
+  const m = mean(arr), s = std(arr, m);
+  return arr.reduce((a, b) => a + ((b - m) / s) ** 3, 0) / arr.length;
+}
+function normalityNote(arr) {
+  const g = skewness(arr);
+  const ok = Math.abs(g) < 0.5;
+  return { g, ok, text: `asimetría ≈ ${g.toFixed(3)} — ${ok ? "cercana a simétrica" : "asimetría notable"}` };
+}
+function levene(groupsArrays) {
+  const k = groupsArrays.length;
+  const Z = groupsArrays.map(arr => { const med = medianOf(arr); return arr.map(v => Math.abs(v - med)); });
+  const ni = Z.map(z => z.length);
+  const N = ni.reduce((a, b) => a + b, 0);
+  const ZiBar = Z.map(z => mean(z));
+  const ZBar = mean(Z.flat());
+  let num = 0;
+  for (let i = 0; i < k; i++) num += ni[i] * (ZiBar[i] - ZBar) ** 2;
+  num *= (N - k) / (k - 1);
+  let den = 0;
+  Z.forEach((z, i) => z.forEach(v => den += (v - ZiBar[i]) ** 2));
+  const W = num / den;
+  const df1 = k - 1, df2 = N - k;
+  const p = 1 - jStat.centralF.cdf(W, df1, df2);
+  return { W, df1, df2, p };
+}
+function pooledTTest(a, b) {
+  const ma = mean(a), mb = mean(b);
+  const va = variance(a, ma), vb = variance(b, mb);
+  const na = a.length, nb = b.length;
+  const sp2 = ((na - 1) * va + (nb - 1) * vb) / (na + nb - 2);
+  const t = (ma - mb) / Math.sqrt(sp2 * (1 / na + 1 / nb));
+  const df = na + nb - 2;
+  const p = 2 * (1 - jStat.studentt.cdf(Math.abs(t), df));
+  return { ma, mb, t, df, p };
+}
+function anova(groupsArrays) {
+  const all = groupsArrays.flat();
+  const N = all.length, k = groupsArrays.length;
+  const grand = mean(all);
+  let msb = 0, msw = 0;
+  groupsArrays.forEach(arr => {
+    const ni = arr.length, mi = mean(arr);
+    msb += ni * (mi - grand) ** 2;
+    arr.forEach(v => msw += (v - mi) ** 2);
+  });
+  msb /= (k - 1); msw /= (N - k);
+  const F = msb / msw, df1 = k - 1, df2 = N - k;
+  const p = 1 - jStat.centralF.cdf(F, df1, df2);
+  return { F, df1, df2, p };
+}
+function kruskalWallis(groupsArrays) {
+  const all = [];
+  groupsArrays.forEach((arr, gi) => arr.forEach(v => all.push({ v, gi })));
+  all.sort((a, b) => a.v - b.v);
+  const ranks = new Array(all.length);
+  let i = 0;
+  while (i < all.length) {
+    let j = i;
+    while (j + 1 < all.length && all[j + 1].v === all[i].v) j++;
+    const avgRank = (i + j) / 2 + 1;
+    for (let m = i; m <= j; m++) ranks[m] = avgRank;
+    i = j + 1;
+  }
+  const N = all.length, k = groupsArrays.length;
+  const ni = groupsArrays.map(a => a.length);
+  const Rsum = new Array(k).fill(0);
+  all.forEach((d, idx) => { Rsum[d.gi] += ranks[idx]; });
+  let H = 0;
+  for (let g = 0; g < k; g++) H += (Rsum[g] ** 2) / ni[g];
+  H = (12 / (N * (N + 1))) * H - 3 * (N + 1);
+  const df = k - 1;
+  const p = 1 - jStat.chisquare.cdf(H, df);
+  return { H, df, p };
+}
+function pearson(xs, ys) {
+  const mx = mean(xs), my = mean(ys);
+  let num = 0, dx2 = 0, dy2 = 0;
+  for (let i = 0; i < xs.length; i++) { const dx = xs[i] - mx, dy = ys[i] - my; num += dx * dy; dx2 += dx * dx; dy2 += dy * dy; }
+  const r = num / Math.sqrt(dx2 * dy2);
+  const slope = num / dx2, intercept = my - slope * mx;
+  const n = xs.length;
+  const t = r * Math.sqrt((n - 2) / (1 - r * r));
+  const p = 2 * (1 - jStat.studentt.cdf(Math.abs(t), n - 2));
+  return { r, slope, intercept, t, df: n - 2, p, n };
+}
+
+function field(id, labelText, options, selected) {
+  const wrap = document.createElement("div");
+  wrap.className = "field";
+  const label = document.createElement("label");
+  label.setAttribute("for", id); label.textContent = labelText;
+  const sel = document.createElement("select");
+  sel.id = id;
+  Object.entries(options).forEach(([k, v]) => {
+    const opt = document.createElement("option");
+    opt.value = k; opt.textContent = v;
+    if (k === selected) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  wrap.appendChild(label); wrap.appendChild(sel);
+  return { wrap, sel };
+}
+
+const situacionSelect = document.getElementById("situacion-select");
+const dynamicControls = document.getElementById("dynamic-controls");
+const svg = d3.select("#viz-svg");
+const W = 480, H = 360;
+const margin = { top: 16, right: 16, bottom: 50, left: 56 };
+const innerW = W - margin.left - margin.right;
+const innerH = H - margin.top - margin.bottom;
+
+function clearSvg() { svg.selectAll("*").remove(); }
+
+function drawGroupStrip(groupKey, depKey) {
+  clearSvg();
+  const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+  const groups = d3.groups(STUDENTS_DATA, d => d[groupKey]).sort((a, b) => d3.ascending(a[0], b[0]));
+  const x = d3.scaleBand().domain(groups.map(d => d[0])).range([0, innerW]).padding(0.35);
+  const y = d3.scaleLinear().domain([0, 100]).range([innerH, 0]);
+
+  g.append("g").attr("class", "axis").attr("transform", `translate(0,${innerH})`).call(d3.axisBottom(x));
+  g.selectAll(".axis").selectAll("text").attr("transform", "rotate(-15)").style("text-anchor", "end");
+  g.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(6));
+  svg.append("text").attr("class", "axis").attr("text-anchor", "middle")
+    .attr("transform", `translate(16, ${margin.top + innerH / 2}) rotate(-90)`)
+    .style("fill", "var(--text-dim)").style("font-size", "12px").text(NUMERIC_VARS[depKey]);
+
+  groups.forEach(([gk, rows]) => {
+    const vals = rows.map(d => d[depKey]);
+    const cx0 = x(gk) + x.bandwidth() / 2;
+    g.selectAll(null).data(vals).enter().append("circle").attr("class", "dot")
+      .attr("r", 2).attr("cx", () => cx0 + (Math.random() - 0.5) * x.bandwidth() * 0.7).attr("cy", v => y(v));
+    const m = mean(vals);
+    g.append("line").attr("class", "meanline")
+      .attr("x1", x(gk)).attr("x2", x(gk) + x.bandwidth()).attr("y1", y(m)).attr("y2", y(m));
+  });
+}
+
+function drawScatter(xKey, yKey, fit) {
+  clearSvg();
+  const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+  const x = d3.scaleLinear().domain([0, 100]).range([0, innerW]);
+  const y = d3.scaleLinear().domain([0, 100]).range([innerH, 0]);
+  g.append("g").attr("class", "axis").attr("transform", `translate(0,${innerH})`).call(d3.axisBottom(x).ticks(6));
+  g.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(6));
+  svg.append("text").attr("class", "axis").attr("text-anchor", "middle")
+    .attr("x", margin.left + innerW / 2).attr("y", H - 8)
+    .style("fill", "var(--text-dim)").style("font-size", "12px").text(NUMERIC_VARS[xKey]);
+  svg.append("text").attr("class", "axis").attr("text-anchor", "middle")
+    .attr("transform", `translate(16, ${margin.top + innerH / 2}) rotate(-90)`)
+    .style("fill", "var(--text-dim)").style("font-size", "12px").text(NUMERIC_VARS[yKey]);
+
+  g.selectAll("circle.dot").data(STUDENTS_DATA).join("circle").attr("class", "dot")
+    .attr("r", 2.4).attr("cx", d => x(d[xKey])).attr("cy", d => y(d[yKey]));
+
+  const xd = x.domain();
+  g.append("line").attr("class", "trend")
+    .attr("x1", x(xd[0])).attr("y1", y(fit.intercept + fit.slope * xd[0]))
+    .attr("x2", x(xd[1])).attr("y2", y(fit.intercept + fit.slope * xd[1]));
+}
+
+function statRow(container, label, value) {
+  const row = document.createElement("div");
+  row.className = "stat-row";
+  row.innerHTML = `<span>${label}</span><span>${value}</span>`;
+  container.appendChild(row);
+}
+
+function decisionText(p, effectPhrase) {
+  const box = document.getElementById("test-verdict");
+  const pText = p < 0.0001 ? "p < 0.0001" : `p = ${p.toFixed(4)}`;
+  if (p < ALPHA) {
+    box.className = "verdict good";
+    box.textContent = `${pText} (menor que 0.05) → se rechaza H0: hay evidencia estadística de que ${effectPhrase}. Recuerda: esto es asociación, no causalidad.`;
+  } else {
+    box.className = "verdict bad";
+    box.textContent = `${pText} (mayor o igual a 0.05) → no se rechaza H0: no hay evidencia suficiente de que ${effectPhrase}.`;
+  }
+}
+
+function assumptionsVerdictText(normOk, homogP) {
+  const box = document.getElementById("assump-verdict");
+  const homogOk = homogP >= ALPHA;
+  if (homogOk) {
+    box.className = "verdict good";
+    box.textContent = `Levene: p = ${homogP.toFixed(4)} ≥ 0.05 → no se rechaza la homogeneidad de varianzas; se usa la prueba paramétrica (t / ANOVA).`;
+  } else {
+    box.className = "verdict bad";
+    box.textContent = `Levene: p = ${homogP.toFixed(4)} < 0.05 → las varianzas no son homogéneas; conviene apoyarse también en la alternativa no paramétrica.`;
+  }
+}
+
+function runGrupo2() {
+  const groupKey = document.getElementById("group-select").value;
+  const depKey = document.getElementById("dep-select").value;
+  const groups = d3.groups(STUDENTS_DATA, d => d[groupKey]).sort((a, b) => d3.ascending(a[0], b[0]));
+  const labels = groups.map(d => d[0]);
+  const arrays = groups.map(d => d[1].map(r => r[depKey]));
+
+  document.getElementById("h0-text").textContent = `H0: el promedio de "${NUMERIC_VARS[depKey]}" es igual entre los grupos "${labels[0]}" y "${labels[1]}" (μ1 = μ2).`;
+  document.getElementById("h1-text").textContent = `H1: el promedio de "${NUMERIC_VARS[depKey]}" es diferente entre "${labels[0]}" y "${labels[1]}" (μ1 ≠ μ2).`;
+
+  const norm = normalityNote(STUDENTS_DATA.map(d => d[depKey]));
+  document.getElementById("assump-1-value").textContent = norm.text;
+  const lev = levene(arrays);
+  document.getElementById("assump-2-value").textContent = `W = ${lev.W.toFixed(3)}, p = ${lev.p.toFixed(4)}`;
+  assumptionsVerdictText(norm.ok, lev.p);
+
+  drawGroupStrip(groupKey, depKey);
+  const tt = pooledTTest(arrays[0], arrays[1]);
+  const statsEl = document.getElementById("test-stats");
+  statsEl.innerHTML = "";
+  statRow(statsEl, `Media "${labels[0]}"`, tt.ma.toFixed(2));
+  statRow(statsEl, `Media "${labels[1]}"`, tt.mb.toFixed(2));
+  statRow(statsEl, "Prueba t de Student (pooled)", `t = ${tt.t.toFixed(3)}, gl = ${tt.df}`);
+  statRow(statsEl, "p-value", tt.p < 0.0001 ? "< 0.0001" : tt.p.toFixed(4));
+  decisionText(tt.p, `${SHORT_LABELS[groupKey]} está asociado con "${NUMERIC_VARS[depKey]}"`);
+
+  const n0 = "grupo_" + labels[0].replace(/[^a-zA-Z0-9]/g, "_");
+  const n1 = "grupo_" + labels[1].replace(/[^a-zA-Z0-9]/g, "_");
+  document.getElementById("test-code").textContent =
+`from scipy import stats
+
+${n0} = df.loc[df["${COL_NAMES[groupKey]}"] == "${labels[0]}", "${COL_NAMES[depKey]}"]
+${n1} = df.loc[df["${COL_NAMES[groupKey]}"] == "${labels[1]}", "${COL_NAMES[depKey]}"]
+
+stats.levene(${n0}, ${n1})
+t, p_valor = stats.ttest_ind(${n0}, ${n1}, equal_var=True)`;
+}
+
+function runGrupoN() {
+  const groupKey = document.getElementById("group-select").value;
+  const depKey = document.getElementById("dep-select").value;
+  const groups = d3.groups(STUDENTS_DATA, d => d[groupKey]).sort((a, b) => d3.ascending(a[0], b[0]));
+  const arrays = groups.map(d => d[1].map(r => r[depKey]));
+
+  document.getElementById("h0-text").textContent = `H0: el promedio de "${NUMERIC_VARS[depKey]}" es igual en los ${groups.length} grupos de "${GROUPN_VARS[groupKey]}" (μ1 = μ2 = ... = μk).`;
+  document.getElementById("h1-text").textContent = `H1: al menos un grupo de "${GROUPN_VARS[groupKey]}" tiene un promedio distinto de "${NUMERIC_VARS[depKey]}".`;
+
+  const norm = normalityNote(STUDENTS_DATA.map(d => d[depKey]));
+  document.getElementById("assump-1-value").textContent = norm.text;
+  const lev = levene(arrays);
+  document.getElementById("assump-2-value").textContent = `W = ${lev.W.toFixed(3)}, p = ${lev.p.toFixed(4)}`;
+  assumptionsVerdictText(norm.ok, lev.p);
+
+  drawGroupStrip(groupKey, depKey);
+  const av = anova(arrays);
+  const kw = kruskalWallis(arrays);
+  const statsEl = document.getElementById("test-stats");
+  statsEl.innerHTML = "";
+  statRow(statsEl, "ANOVA de un factor", `F = ${av.F.toFixed(3)}, gl = (${av.df1}, ${av.df2})`);
+  statRow(statsEl, "p-value (ANOVA)", av.p < 0.0001 ? "< 0.0001" : av.p.toFixed(4));
+  statRow(statsEl, "Kruskal-Wallis (no paramétrica)", `H = ${kw.H.toFixed(3)}, gl = ${kw.df}`);
+  statRow(statsEl, "p-value (Kruskal-Wallis)", kw.p < 0.0001 ? "< 0.0001" : kw.p.toFixed(4));
+  decisionText(av.p, `${SHORT_LABELS[groupKey]} está asociado con "${NUMERIC_VARS[depKey]}"`);
+
+  document.getElementById("test-code").textContent =
+`from scipy import stats
+
+grupos = [g["${COL_NAMES[depKey]}"].values for _, g in df.groupby("${COL_NAMES[groupKey]}")]
+
+stats.levene(*grupos)
+stats.f_oneway(*grupos)
+stats.kruskal(*grupos)`;
+}
+
+function runCorrelacion() {
+  let xKey = document.getElementById("x-select").value;
+  let yKey = document.getElementById("y-select").value;
+
+  document.getElementById("h0-text").textContent = `H0: no existe correlación entre "${NUMERIC_VARS[xKey]}" y "${NUMERIC_VARS[yKey]}" (ρ = 0).`;
+  document.getElementById("h1-text").textContent = `H1: sí existe correlación entre "${NUMERIC_VARS[xKey]}" y "${NUMERIC_VARS[yKey]}" (ρ ≠ 0).`;
+
+  const norm = normalityNote(STUDENTS_DATA.map(d => d[xKey]));
+  document.getElementById("assump-1-value").textContent = norm.text;
+  document.getElementById("assump-1-label").textContent = `Normalidad de "${NUMERIC_VARS[xKey]}" (indicador aproximado)`;
+  document.getElementById("assump-2-value").textContent = "no aplica (no se comparan grupos)";
+  document.getElementById("assump-2-label").textContent = "Homogeneidad de varianzas";
+  const box = document.getElementById("assump-verdict");
+  box.className = "verdict";
+  box.textContent = "Para una correlación, en vez de homogeneidad de varianzas conviene revisar visualmente si la nube de puntos sigue un patrón lineal (a la derecha).";
+
+  const xs = STUDENTS_DATA.map(d => d[xKey]), ys = STUDENTS_DATA.map(d => d[yKey]);
+  const fit = pearson(xs, ys);
+  drawScatter(xKey, yKey, fit);
+
+  const statsEl = document.getElementById("test-stats");
+  statsEl.innerHTML = "";
+  statRow(statsEl, "r de Pearson", fit.r.toFixed(3));
+  statRow(statsEl, "n (pares)", fit.n);
+  statRow(statsEl, "Prueba t sobre r", `t = ${fit.t.toFixed(3)}, gl = ${fit.df}`);
+  statRow(statsEl, "p-value", fit.p < 0.0001 ? "< 0.0001" : fit.p.toFixed(4));
+  decisionText(fit.p, `existe una correlación entre "${NUMERIC_VARS[xKey]}" y "${NUMERIC_VARS[yKey]}"`);
+
+  document.getElementById("test-code").textContent =
+`from scipy import stats
+
+r, p_valor = stats.pearsonr(df["${COL_NAMES[xKey]}"], df["${COL_NAMES[yKey]}"])`;
+}
+
+function renderDynamicControls() {
+  dynamicControls.innerHTML = "";
+  const mode = situacionSelect.value;
+  if (mode === "grupo2") {
+    const f1 = field("group-select", "Variable independiente (grupo)", GROUP2_VARS, "testPrep");
+    const f2 = field("dep-select", "Variable dependiente", NUMERIC_VARS, "mathScore");
+    dynamicControls.appendChild(f1.wrap); dynamicControls.appendChild(f2.wrap);
+    f1.sel.addEventListener("change", run); f2.sel.addEventListener("change", run);
+  } else if (mode === "grupoN") {
+    const f1 = field("group-select", "Variable independiente (grupo)", GROUPN_VARS, "ethnicity");
+    const f2 = field("dep-select", "Variable dependiente", NUMERIC_VARS, "mathScore");
+    dynamicControls.appendChild(f1.wrap); dynamicControls.appendChild(f2.wrap);
+    f1.sel.addEventListener("change", run); f2.sel.addEventListener("change", run);
+  } else {
+    const f1 = field("x-select", "Variable X", NUMERIC_VARS, "readingScore");
+    const f2 = field("y-select", "Variable Y", NUMERIC_VARS, "writingScore");
+    dynamicControls.appendChild(f1.wrap); dynamicControls.appendChild(f2.wrap);
+    f1.sel.addEventListener("change", run); f2.sel.addEventListener("change", run);
+  }
+  run();
+}
+
+function run() {
+  const mode = situacionSelect.value;
+  if (mode === "grupo2") runGrupo2();
+  else if (mode === "grupoN") runGrupoN();
+  else runCorrelacion();
+}
+
+situacionSelect.addEventListener("change", renderDynamicControls);
+renderDynamicControls();
+</script>
+
+</body>
+</html>

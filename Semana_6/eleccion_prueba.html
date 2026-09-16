@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elegir y ejecutar la prueba | Semana 6</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.9.6/jstat.min.js"></script>
+<script src="data.js"></script>
+<style>
+  :root {
+    --bg: #0f1420; --panel: #161d2e; --panel-border: #26314a; --text: #e7ecf7;
+    --text-dim: #9aa7c2; --accent: #5eb1ff; --accent-2: #ffb75e; --good: #5edc9a; --bad: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.5; }
+  header { padding: 32px 20px 16px; max-width: 980px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 70ch; }
+  main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  select { background: #0f1420; color: var(--text); border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 10px; font-size: 14px; min-width: 190px; }
+  .hyp-box { padding: 14px 16px; border-radius: 10px; background: #101826; border: 1px solid var(--panel-border); font-size: 14px; margin-top: 6px; }
+  .hyp-box .h0 { color: var(--text-dim); }
+  .hyp-box .h1 { color: var(--accent); margin-top: 6px; }
+  .flow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 16px 0; font-size: 13px; }
+  .flow .step { padding: 8px 12px; border-radius: 8px; background: #101826; border: 1px solid var(--panel-border); color: var(--text-dim); }
+  .flow .step.active { border-color: var(--accent); color: var(--text); }
+  .flow .arrow { color: var(--text-dim); }
+  .cards3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 10px; }
+  .test-card { background: #101826; border: 1px solid var(--panel-border); border-radius: 12px; padding: 16px; }
+  .test-card.recommended { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .test-card h3 { margin: 0 0 4px; font-size: 15px; }
+  .test-card .why { font-size: 12px; color: var(--text-dim); margin-bottom: 10px; min-height: 32px; }
+  .rec-badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 2px 8px; margin-bottom: 8px; }
+  .stat-row { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--panel-border); padding: 4px 0; font-size: 13px; gap: 10px; }
+  .stat-row span:first-child { color: var(--text-dim); }
+  .stat-row span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+  .decision { margin-top: 8px; padding: 8px 10px; border-radius: 8px; font-size: 13px; }
+  .decision.reject { background: rgba(94,220,154,0.12); color: var(--good); }
+  .decision.keep { background: rgba(255,107,107,0.12); color: var(--bad); }
+  .verdict { margin-top: 6px; padding: 12px 14px; border-radius: 10px; font-size: 14px; background: #101826; border: 1px solid var(--panel-border); }
+  .effect-box { margin-top: 16px; padding: 14px 16px; border-radius: 10px; background: #101826; border: 1px solid var(--panel-border); font-size: 14px; }
+  .effect-box strong { color: var(--accent-2); }
+  details.code-toggle { margin-top: 14px; border: 1px solid var(--panel-border); border-radius: 10px; background: #0b0f18; }
+  details.code-toggle summary { cursor: pointer; padding: 10px 14px; font-size: 13px; color: var(--accent); list-style: none; user-select: none; }
+  details.code-toggle summary::-webkit-details-marker { display: none; }
+  details.code-toggle summary::before { content: "▸ "; }
+  details.code-toggle[open] summary::before { content: "▾ "; }
+  details.code-toggle .code-wrap { position: relative; }
+  details.code-toggle pre { margin: 0; padding: 4px 16px 16px; overflow-x: auto; }
+  details.code-toggle code { font-family: "Consolas", "Menlo", monospace; font-size: 12.5px; color: #c9d6f0; white-space: pre; }
+  .copy-btn { position: absolute; top: 4px; right: 14px; background: var(--panel); border: 1px solid var(--panel-border); color: var(--text-dim); font-size: 11px; padding: 3px 8px; border-radius: 6px; cursor: pointer; }
+  .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+  footer { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">&larr; Recurso interactivo Semana 6</a>
+  <div class="kicker">Semana 6 · Módulo 3 · Selección y ejecución de la prueba</div>
+  <h1>Tres preguntas, tres herramientas distintas</h1>
+  <p>
+    Elegir la prueba correcta no es solo una formalidad: cambia según lo que digan los supuestos
+    del Módulo 2 <strong>y</strong> según cuántos grupos compares. Con 2 grupos, calcula en vivo
+    t de Student (pooled), t de Welch y Mann-Whitney U; con 3 o más grupos (grupo étnico, nivel
+    educativo de los padres), calcula ANOVA y Kruskal-Wallis — y en ambos casos ve cuál recomienda
+    el flujo de decisión del notebook (Secciones 6 a 8).
+  </p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>Pregunta de investigación</h2>
+    <div class="controls">
+      <div class="field">
+        <label for="group-select">Variable independiente (grupo)</label>
+        <select id="group-select"></select>
+      </div>
+      <div class="field">
+        <label for="score-select">Variable dependiente</label>
+        <select id="score-select"></select>
+      </div>
+    </div>
+    <div class="hyp-box">
+      <div class="h0" id="h0-text">—</div>
+      <div class="h1" id="h1-text">—</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>1 · Flujo de decisión</h2>
+    <div class="subtitle">Según normalidad (Jarque-Bera, proxy del Shapiro-Wilk del notebook) y homogeneidad de varianzas (Levene), calculadas en vivo sobre los grupos elegidos.</div>
+    <div class="flow" id="flow-diagram"></div>
+    <div class="verdict" id="assumptions-verdict">—</div>
+  </section>
+
+  <section class="card">
+    <h2>2 · Las pruebas, lado a lado</h2>
+    <div class="subtitle" id="tests-subtitle">La prueba con el borde resaltado es la que corresponde según el flujo de decisión de arriba — pero se calculan todas para que compares.</div>
+    <div class="cards3" id="tests-grid"></div>
+    <div class="effect-box" id="effect-box">—</div>
+    <details class="code-toggle">
+      <summary>Ver código Python equivalente</summary>
+      <div class="code-wrap">
+        <button class="copy-btn" data-target="code-tests">Copiar</button>
+        <pre><code id="code-tests"></code></pre>
+      </div>
+    </details>
+  </section>
+
+</main>
+
+<footer>
+  Módulo 3/5 del recurso interactivo de Semana 6. Dataset: <code>StudentsPerformance.csv</code>
+  (mismo del notebook docente <code>EIARV011_A6_Notebook.ipynb</code>). El caso documentado del
+  notebook (curso de preparación → nota de matemáticas) se puede reproducir eligiendo esa misma
+  combinación arriba; ver el recorrido narrado en el <a href="caso_guiado.html">Módulo 4</a>. El
+  tamaño de la diferencia (Cohen's d) y cuánta muestra hace falta para detectarla se calculan en
+  el <a href="tamano_muestra.html">Módulo 5</a>.
+</footer>
+
+<script>
+const SCORE_VARS = { mathScore: "Nota de matemáticas", readingScore: "Nota de lectura", writingScore: "Nota de escritura" };
+const GROUP_VARS = {
+  testPrep: "Curso de preparación (none / completed)",
+  gender: "Género (female / male)",
+  lunch: "Tipo de almuerzo (standard / free-reduced)",
+  ethnicity: "Grupo étnico (5 grupos)",
+  parentEducation: "Nivel educativo de los padres (6 grupos)",
+};
+const SHORT_LABELS = { testPrep: "el curso de preparación", gender: "el género", lunch: "el tipo de almuerzo", ethnicity: "el grupo étnico", parentEducation: "el nivel educativo de los padres" };
+const ALPHA = 0.05;
+const COL_NAMES = {
+  testPrep: "test preparation course", gender: "gender", lunch: "lunch",
+  ethnicity: "race/ethnicity", parentEducation: "parental level of education",
+  mathScore: "math score", readingScore: "reading score", writingScore: "writing score",
+};
+
+function setCode(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".copy-btn");
+  if (!btn) return;
+  const code = document.getElementById(btn.dataset.target);
+  navigator.clipboard.writeText(code.textContent).then(() => {
+    const original = btn.textContent;
+    btn.textContent = "¡Copiado!";
+    setTimeout(() => { btn.textContent = original; }, 1200);
+  }).catch(() => {});
+});
+
+function mean(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+function variance(arr, m) { return arr.reduce((a, b) => a + (b - m) ** 2, 0) / (arr.length - 1); }
+function std(arr, m) { return Math.sqrt(variance(arr, m)); }
+function medianOf(arr) {
+  const s = [...arr].sort((a, b) => a - b);
+  const n = s.length, mid = Math.floor(n / 2);
+  return n % 2 === 0 ? (s[mid - 1] + s[mid]) / 2 : s[mid];
+}
+
+function jarqueBera(arr) {
+  const n = arr.length;
+  const m = mean(arr);
+  const s2 = arr.reduce((a, b) => a + (b - m) ** 2, 0) / n;
+  const s = Math.sqrt(s2);
+  const skew = arr.reduce((a, b) => a + ((b - m) / s) ** 3, 0) / n;
+  const kurt = arr.reduce((a, b) => a + ((b - m) / s) ** 4, 0) / n;
+  const JB = (n / 6) * (skew ** 2 + ((kurt - 3) ** 2) / 4);
+  const p = 1 - jStat.chisquare.cdf(JB, 2);
+  return { p };
+}
+
+function levene(groupsArrays) {
+  const k = groupsArrays.length;
+  const Z = groupsArrays.map(arr => { const med = medianOf(arr); return arr.map(v => Math.abs(v - med)); });
+  const ni = Z.map(z => z.length);
+  const N = ni.reduce((x, y) => x + y, 0);
+  const ZiBar = Z.map(z => mean(z));
+  const ZBar = mean(Z.flat());
+  let num = 0;
+  for (let i = 0; i < k; i++) num += ni[i] * (ZiBar[i] - ZBar) ** 2;
+  num *= (N - k) / (k - 1);
+  let den = 0;
+  Z.forEach((z, i) => z.forEach(v => den += (v - ZiBar[i]) ** 2));
+  const W = num / den;
+  const df1 = k - 1, df2 = N - k;
+  const p = 1 - jStat.centralF.cdf(W, df1, df2);
+  return { W, df1, df2, p };
+}
+
+function pooledTTest(a, b) {
+  const ma = mean(a), mb = mean(b);
+  const va = variance(a, ma), vb = variance(b, mb);
+  const na = a.length, nb = b.length;
+  const sp2 = ((na - 1) * va + (nb - 1) * vb) / (na + nb - 2);
+  const t = (ma - mb) / Math.sqrt(sp2 * (1 / na + 1 / nb));
+  const df = na + nb - 2;
+  const p = 2 * (1 - jStat.studentt.cdf(Math.abs(t), df));
+  return { t, df, p };
+}
+
+function welchTTest(a, b) {
+  const ma = mean(a), mb = mean(b);
+  const va = variance(a, ma), vb = variance(b, mb);
+  const na = a.length, nb = b.length;
+  const se2 = va / na + vb / nb;
+  const t = (ma - mb) / Math.sqrt(se2);
+  const df = (se2 ** 2) / (((va / na) ** 2) / (na - 1) + ((vb / nb) ** 2) / (nb - 1));
+  const p = 2 * (1 - jStat.studentt.cdf(Math.abs(t), df));
+  return { t, df, p };
+}
+
+function mannWhitneyU(a, b) {
+  const na = a.length, nb = b.length, N = na + nb;
+  const all = [...a.map(v => ({ v, g: 0 })), ...b.map(v => ({ v, g: 1 }))];
+  all.sort((x, y) => x.v - y.v);
+  const ranks = new Array(N);
+  let i = 0;
+  const tieGroupSizes = [];
+  while (i < N) {
+    let j = i;
+    while (j + 1 < N && all[j + 1].v === all[i].v) j++;
+    const avgRank = (i + j) / 2 + 1;
+    for (let m = i; m <= j; m++) ranks[m] = avgRank;
+    tieGroupSizes.push(j - i + 1);
+    i = j + 1;
+  }
+  let R1 = 0;
+  all.forEach((d, idx) => { if (d.g === 0) R1 += ranks[idx]; });
+  const U1 = R1 - na * (na + 1) / 2;
+  const U2 = na * nb - U1;
+  const U = Math.min(U1, U2);
+  const muU = na * nb / 2;
+  const tieCorrection = tieGroupSizes.reduce((s, t) => s + (t ** 3 - t), 0);
+  const sigmaU = Math.sqrt((na * nb / 12) * ((N + 1) - tieCorrection / (N * (N - 1))));
+  const z = (Math.abs(U1 - muU) - 0.5) / sigmaU;
+  const p = 2 * (1 - jStat.normal.cdf(z, 0, 1));
+  return { U, U1, U2, z, p };
+}
+
+function anovaOneWay(groupsArrays) {
+  const all = groupsArrays.flat();
+  const N = all.length, k = groupsArrays.length;
+  const grand = mean(all);
+  let ssb = 0, ssw = 0;
+  groupsArrays.forEach(arr => {
+    const ni = arr.length, mi = mean(arr);
+    ssb += ni * (mi - grand) ** 2;
+    arr.forEach(v => ssw += (v - mi) ** 2);
+  });
+  const df1 = k - 1, df2 = N - k;
+  const msb = ssb / df1, msw = ssw / df2;
+  const F = msb / msw;
+  const p = 1 - jStat.centralF.cdf(F, df1, df2);
+  return { F, df1, df2, p };
+}
+
+function kruskalWallis(groupsArrays) {
+  const all = [];
+  groupsArrays.forEach((arr, gi) => arr.forEach(v => all.push({ v, gi })));
+  all.sort((a, b) => a.v - b.v);
+  const N = all.length;
+  const ranks = new Array(N);
+  let i = 0;
+  while (i < N) {
+    let j = i;
+    while (j + 1 < N && all[j + 1].v === all[i].v) j++;
+    const avgRank = (i + j) / 2 + 1;
+    for (let m = i; m <= j; m++) ranks[m] = avgRank;
+    i = j + 1;
+  }
+  const k = groupsArrays.length;
+  const ni = groupsArrays.map(a => a.length);
+  const Rsum = new Array(k).fill(0);
+  all.forEach((d, idx) => { Rsum[d.gi] += ranks[idx]; });
+  let H = 0;
+  for (let g = 0; g < k; g++) H += (Rsum[g] ** 2) / ni[g];
+  H = (12 / (N * (N + 1))) * H - 3 * (N + 1);
+  const df = k - 1;
+  const p = 1 - jStat.chisquare.cdf(H, df);
+  return { H, df, p };
+}
+
+function populateSelect(sel, options, selected) {
+  sel.innerHTML = "";
+  Object.entries(options).forEach(([k, v]) => {
+    const opt = document.createElement("option");
+    opt.value = k; opt.textContent = v;
+    if (k === selected) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+const groupSelect = document.getElementById("group-select");
+const scoreSelect = document.getElementById("score-select");
+populateSelect(groupSelect, GROUP_VARS, "testPrep");
+populateSelect(scoreSelect, SCORE_VARS, "mathScore");
+
+function pText(p) { return p < 0.0001 ? "< 0.0001" : p.toFixed(4); }
+
+function testCard(container, id, title, why, statLabel, statValue, df, p, recommended) {
+  const card = document.createElement("div");
+  card.className = "test-card" + (recommended ? " recommended" : "");
+  const reject = p < ALPHA;
+  card.innerHTML = `
+    ${recommended ? '<div class="rec-badge">Recomendada</div>' : ""}
+    <h3>${title}</h3>
+    <div class="why">${why}</div>
+    <div class="stat-row"><span>${statLabel}</span><span>${statValue}</span></div>
+    <div class="stat-row"><span>Grados de libertad</span><span>${df}</span></div>
+    <div class="stat-row"><span>p-value</span><span>${pText(p)}</span></div>
+    <div class="decision ${reject ? "reject" : "keep"}">${reject ? "p < 0.05 → se rechaza H0" : "p ≥ 0.05 → no se rechaza H0"}</div>
+  `;
+  container.appendChild(card);
+}
+
+function renderTwoGroups(groupKey, scoreKey, groups, labels) {
+  const [a, b] = groups.map(g => g[1].map(r => r[scoreKey]));
+
+  document.getElementById("h0-text").textContent = `H0: el promedio de "${SCORE_VARS[scoreKey]}" es igual entre "${labels[0]}" y "${labels[1]}" (μ1 = μ2).`;
+  document.getElementById("h1-text").textContent = `H1: el promedio de "${SCORE_VARS[scoreKey]}" difiere entre "${labels[0]}" y "${labels[1]}" (μ1 ≠ μ2).`;
+
+  const normResults = [a, b].map(jarqueBera);
+  const allNormal = normResults.every(r => r.p >= ALPHA);
+  const lev = levene([a, b]);
+  const levOk = lev.p >= ALPHA;
+
+  let recommended;
+  if (!allNormal) recommended = "mw";
+  else if (!levOk) recommended = "welch";
+  else recommended = "pooled";
+
+  const flow = document.getElementById("flow-diagram");
+  flow.innerHTML = `
+    <span class="step active">Normalidad: ${allNormal ? "se cumple (JB p≥0.05 en ambos)" : "no se cumple"}</span>
+    <span class="arrow">→</span>
+    <span class="step active">Homogeneidad: ${levOk ? "se cumple (Levene p≥0.05)" : "no se cumple"}</span>
+    <span class="arrow">→</span>
+    <span class="step active">Recomendada: ${recommended === "mw" ? "Mann-Whitney U" : recommended === "welch" ? "t de Welch" : "t de Student (pooled)"}</span>
+  `;
+
+  const assumpVerdict = document.getElementById("assumptions-verdict");
+  assumpVerdict.textContent = `Normalidad — "${labels[0]}": p = ${pText(normResults[0].p)}${normResults[0].p >= ALPHA ? " (no se rechaza)" : " (se rechaza)"}; "${labels[1]}": p = ${pText(normResults[1].p)}${normResults[1].p >= ALPHA ? " (no se rechaza)" : " (se rechaza)"}. Levene: p = ${pText(lev.p)} → varianzas ${levOk ? "homogéneas" : "no homogéneas"}.`;
+
+  document.getElementById("tests-subtitle").textContent = "La prueba con el borde resaltado es la que corresponde según el flujo de decisión de arriba — pero se calculan las tres para que compares.";
+  const grid = document.getElementById("tests-grid");
+  grid.innerHTML = "";
+  const pooled = pooledTTest(a, b);
+  const welch = welchTTest(a, b);
+  const mw = mannWhitneyU(a, b);
+
+  testCard(grid, "pooled", "t de Student (pooled)", "Combina las dos varianzas en una sola. Válida solo si Levene no se rechaza.", "t", pooled.t.toFixed(3), Math.round(pooled.df), pooled.p, recommended === "pooled");
+  testCard(grid, "welch", "t de Welch", "No combina las varianzas: cada grupo aporta la suya. Recomendada cuando Levene se rechaza.", "t", welch.t.toFixed(3), welch.df.toFixed(1), welch.p, recommended === "welch");
+  testCard(grid, "mw", "Mann-Whitney U", "No paramétrica: compara el orden (rangos) de los datos, no las medias. No requiere normalidad.", "U", mw.U.toFixed(1), "—", mw.p, recommended === "mw");
+
+  const ma = mean(a), mb = mean(b);
+  const diff = ma - mb;
+  const effectBox = document.getElementById("effect-box");
+  effectBox.innerHTML = `Son <strong>tres preguntas distintas</strong>: (1) ¿puedo usar la prueba t? — lo responden los supuestos de arriba. (2) ¿hay diferencia real? — lo responde el p-value de la prueba recomendada. (3) ¿cuánta diferencia? — eso no lo dice el p-value, lo dice la resta de promedios: <strong>${ma.toFixed(2)}</strong> ("${labels[0]}") vs <strong>${mb.toFixed(2)}</strong> ("${labels[1]}") = <strong>${Math.abs(diff).toFixed(2)} puntos</strong> de diferencia en ${SCORE_VARS[scoreKey]}. Para expresar ese tamaño en unidades comparables entre variables (Cohen's d) y ver cuánta muestra hace falta para detectarlo, ve al <a href="tamano_muestra.html">Módulo 5</a>.`;
+
+  const g = COL_NAMES[groupKey], s = COL_NAMES[scoreKey];
+  setCode("code-tests", `from scipy import stats
+
+a = df.loc[df["${g}"] == "${labels[0]}", "${s}"]
+b = df.loc[df["${g}"] == "${labels[1]}", "${s}"]
+
+# t de Student (pooled) — válida si Levene no se rechaza
+stats.ttest_ind(a, b, equal_var=True)
+
+# t de Welch — válida aunque las varianzas no sean homogéneas
+stats.ttest_ind(a, b, equal_var=False)
+
+# Mann-Whitney U — no paramétrica, no requiere normalidad
+stats.mannwhitneyu(a, b, alternative="two-sided")`);
+}
+
+function renderMultiGroup(groupKey, scoreKey, groups, labels) {
+  const arrays = groups.map(g => g[1].map(r => r[scoreKey]));
+  const muList = labels.map((_, i) => `μ${i + 1}`).join(" = ");
+
+  document.getElementById("h0-text").textContent = `H0: el promedio de "${SCORE_VARS[scoreKey]}" es igual en los ${labels.length} grupos de "${GROUP_VARS[groupKey]}" (${muList}).`;
+  document.getElementById("h1-text").textContent = `H1: al menos uno de los ${labels.length} grupos tiene un promedio distinto de "${SCORE_VARS[scoreKey]}".`;
+
+  const normResults = arrays.map(jarqueBera);
+  const allNormal = normResults.every(r => r.p >= ALPHA);
+  const lev = levene(arrays);
+  const levOk = lev.p >= ALPHA;
+  const recommended = (allNormal && levOk) ? "anova" : "kw";
+
+  const flow = document.getElementById("flow-diagram");
+  flow.innerHTML = `
+    <span class="step active">Normalidad: ${allNormal ? `se cumple (JB p≥0.05 en los ${labels.length} grupos)` : "no se cumple en todos"}</span>
+    <span class="arrow">→</span>
+    <span class="step active">Homogeneidad: ${levOk ? "se cumple (Levene p≥0.05)" : "no se cumple"}</span>
+    <span class="arrow">→</span>
+    <span class="step active">Recomendada: ${recommended === "anova" ? "ANOVA" : "Kruskal-Wallis"}</span>
+  `;
+
+  const normSummary = normResults.map((r, i) => `"${labels[i]}": p=${pText(r.p)}`).join(", ");
+  const assumpVerdict = document.getElementById("assumptions-verdict");
+  assumpVerdict.textContent = `Normalidad por grupo (Jarque-Bera) — ${normSummary}. Levene: p = ${pText(lev.p)} → varianzas ${levOk ? "homogéneas" : "no homogéneas"}.`;
+
+  document.getElementById("tests-subtitle").textContent = "Con 3 o más grupos, la t de Student ya no aplica: se comparan todos los grupos a la vez con ANOVA (paramétrica) o Kruskal-Wallis (no paramétrica).";
+  const grid = document.getElementById("tests-grid");
+  grid.innerHTML = "";
+  const av = anovaOneWay(arrays);
+  const kw = kruskalWallis(arrays);
+
+  testCard(grid, "anova", "ANOVA de un factor", "Compara las medias de todos los grupos en un solo test. Válida si normalidad y homogeneidad se cumplen.", "F", av.F.toFixed(3), `(${av.df1}, ${av.df2})`, av.p, recommended === "anova");
+  testCard(grid, "kw", "Kruskal-Wallis", "Versión no paramétrica de ANOVA: compara el orden (rangos) de los datos entre grupos. No requiere normalidad.", "H", kw.H.toFixed(3), kw.df, kw.p, recommended === "kw");
+
+  const ranked = labels.map((lab, i) => ({ lab, m: mean(arrays[i]) })).sort((x, y) => y.m - x.m);
+  const effectBox = document.getElementById("effect-box");
+  effectBox.innerHTML = `Son <strong>tres preguntas distintas</strong>: (1) ¿puedo usar ANOVA? — lo responden los supuestos de arriba. (2) ¿hay diferencia real entre <em>algún</em> par de grupos? — lo responde el p-value de la prueba recomendada. (3) ¿cuáles grupos difieren y por cuánto? — ni el p-value ni ANOVA lo dicen (haría falta una prueba <em>post-hoc</em>, fuera del alcance de este recurso); lo único que puedes leer directo es que el grupo con mayor media es <strong>"${ranked[0].lab}"</strong> (${ranked[0].m.toFixed(2)}) y el de menor media es <strong>"${ranked[ranked.length - 1].lab}"</strong> (${ranked[ranked.length - 1].m.toFixed(2)}) en ${SCORE_VARS[scoreKey]}.`;
+
+  const g = COL_NAMES[groupKey], s = COL_NAMES[scoreKey];
+  setCode("code-tests", `from scipy import stats
+
+grupos = [sub.values for _, sub in df.groupby("${g}")["${s}"]]
+
+# ANOVA de un factor — válida si normalidad y homogeneidad se cumplen
+stats.f_oneway(*grupos)
+
+# Kruskal-Wallis — no paramétrica, no requiere normalidad
+stats.kruskal(*grupos)`);
+}
+
+function render() {
+  const groupKey = groupSelect.value;
+  const scoreKey = scoreSelect.value;
+  const groups = d3.groups(STUDENTS_DATA, d => d[groupKey]).sort((a, b) => d3.ascending(a[0], b[0]));
+  const labels = groups.map(g => g[0]);
+
+  if (groups.length === 2) renderTwoGroups(groupKey, scoreKey, groups, labels);
+  else renderMultiGroup(groupKey, scoreKey, groups, labels);
+}
+
+groupSelect.addEventListener("change", render);
+scoreSelect.addEventListener("change", render);
+render();
+</script>
+
+</body>
+</html>

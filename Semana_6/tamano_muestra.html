@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Errores, tamaño del efecto y potencia | Semana 6</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.9.6/jstat.min.js"></script>
+<script src="data.js"></script>
+<style>
+  :root {
+    --bg: #0f1420; --panel: #161d2e; --panel-border: #26314a; --text: #e7ecf7;
+    --text-dim: #9aa7c2; --accent: #5eb1ff; --accent-2: #ffb75e; --good: #5edc9a; --bad: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.5; }
+  header { padding: 32px 20px 16px; max-width: 980px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 70ch; }
+  main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  select, input[type="number"] { background: #0f1420; color: var(--text); border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 10px; font-size: 14px; min-width: 130px; }
+  input[type="number"] { min-width: 90px; }
+  .radio-group { display: flex; gap: 14px; }
+  .radio-group label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-dim); text-transform: none; letter-spacing: normal; }
+  .radio-group input { accent-color: var(--accent); }
+  .matrix { display: grid; grid-template-columns: auto 1fr 1fr; gap: 1px; background: var(--panel-border); border-radius: 10px; overflow: hidden; margin-top: 12px; font-size: 13px; }
+  .matrix > div { background: #101826; padding: 12px 14px; }
+  .matrix .head { background: #0b0f18; color: var(--text-dim); font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.04em; display: flex; align-items: center; }
+  .matrix .corner { background: #0b0f18; }
+  .matrix .ok { color: var(--good); }
+  .matrix .err { color: var(--bad); font-weight: 600; }
+  .viz-wrap { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-top: 8px; }
+  svg { flex-shrink: 0; max-width: 100%; height: auto; }
+  .axis text { fill: var(--text-dim); font-size: 11px; }
+  .axis path, .axis line { stroke: var(--panel-border); }
+  .curve-a { fill: var(--accent); fill-opacity: 0.35; stroke: var(--accent); stroke-width: 1.5px; }
+  .curve-b { fill: var(--accent-2); fill-opacity: 0.35; stroke: var(--accent-2); stroke-width: 1.5px; }
+  .stats { flex: 1; min-width: 240px; display: flex; flex-direction: column; gap: 10px; }
+  .stat-row { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--panel-border); padding: 4px 0; font-size: 13px; gap: 10px; }
+  .stat-row span:first-child { color: var(--text-dim); }
+  .stat-row span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+  .d-badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 10px; border-radius: 999px; margin-top: 4px; }
+  .d-badge.small { color: var(--text-dim); border: 1px solid var(--panel-border); }
+  .d-badge.medium { color: var(--accent-2); border: 1px solid #4a3a20; }
+  .d-badge.large { color: var(--bad); border: 1px solid #4a1f1f; }
+  .verdict { margin-top: 6px; padding: 12px 14px; border-radius: 10px; font-size: 14px; background: #101826; border: 1px solid var(--panel-border); }
+  .verdict.good { border-color: var(--good); }
+  .verdict.bad { border-color: var(--bad); }
+  .power-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 14px; }
+  .power-card { background: #101826; border: 1px solid var(--panel-border); border-radius: 12px; padding: 16px; text-align: center; }
+  .power-card .n { font-size: 32px; font-weight: 700; color: var(--accent); }
+  .power-card .label { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+  .compare-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 14px; }
+  .compare-card { background: #101826; border: 1px solid var(--panel-border); border-radius: 12px; padding: 16px; }
+  .compare-card h3 { margin: 0 0 8px; font-size: 14px; }
+  details.code-toggle { margin-top: 14px; border: 1px solid var(--panel-border); border-radius: 10px; background: #0b0f18; }
+  details.code-toggle summary { cursor: pointer; padding: 10px 14px; font-size: 13px; color: var(--accent); list-style: none; user-select: none; }
+  details.code-toggle summary::-webkit-details-marker { display: none; }
+  details.code-toggle summary::before { content: "▸ "; }
+  details.code-toggle[open] summary::before { content: "▾ "; }
+  details.code-toggle .code-wrap { position: relative; }
+  details.code-toggle pre { margin: 0; padding: 4px 16px 16px; overflow-x: auto; }
+  details.code-toggle code { font-family: "Consolas", "Menlo", monospace; font-size: 12.5px; color: #c9d6f0; white-space: pre; }
+  .copy-btn { position: absolute; top: 4px; right: 14px; background: var(--panel); border: 1px solid var(--panel-border); color: var(--text-dim); font-size: 11px; padding: 3px 8px; border-radius: 6px; cursor: pointer; }
+  .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+  footer { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">&larr; Recurso interactivo Semana 6</a>
+  <div class="kicker">Semana 6 · Módulo 5 · Errores, efecto y tamaño de muestra</div>
+  <h1>¿Cuánta muestra hace falta para confiar en el resultado?</h1>
+  <p>
+    Un p-value pequeño no es lo mismo que un efecto grande, y un efecto real puede pasar
+    desapercibido si la muestra es insuficiente. Este módulo conecta tres ideas del documento
+    <code>03_Regla_definir_tamaño_muestra_optima.md</code>: los dos tipos de error, el tamaño del
+    efecto (Cohen's d) y cuánta muestra hace falta para detectarlo con confianza.
+  </p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>1 · Dos formas de equivocarse</h2>
+    <div class="subtitle">
+      Toda decisión sobre H0 puede salir bien o mal de dos maneras distintas, según lo que sea
+      cierto en la población (que nunca observamos directamente).
+    </div>
+    <div class="matrix">
+      <div class="corner"></div>
+      <div class="head">En la población, H0 es verdadera</div>
+      <div class="head">En la población, H0 es falsa</div>
+      <div class="head">Decides: rechazar H0</div>
+      <div><span class="err">Error tipo I</span> (falsa alarma) — probabilidad α, por convención 0.05</div>
+      <div><span class="ok">Acierto</span> — detectaste un efecto real</div>
+      <div class="head">Decides: no rechazar H0</div>
+      <div><span class="ok">Acierto</span> — no había nada que detectar</div>
+      <div><span class="err">Error tipo II</span> (no darte cuenta) — probabilidad β</div>
+    </div>
+    <div class="verdict">
+      El <strong>poder estadístico</strong> (1 − β) es la probabilidad de detectar un efecto real
+      cuando sí existe. Mientras más grande la muestra, más chico se vuelve β — por eso el error
+      tipo II es, sobre todo, un problema de <em>muestra insuficiente</em>, no de mala suerte.
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>2 · Tamaño del efecto: Cohen's d</h2>
+    <div class="subtitle">
+      El p-value dice si la diferencia es estadísticamente significativa; Cohen's d dice qué tan
+      grande es, en unidades comparables entre variables (desviaciones estándar).
+    </div>
+    <div class="controls">
+      <div class="field">
+        <label for="group-select">Variable independiente (2 grupos)</label>
+        <select id="group-select"></select>
+      </div>
+      <div class="field">
+        <label for="score-select">Variable dependiente</label>
+        <select id="score-select"></select>
+      </div>
+    </div>
+    <div class="viz-wrap">
+      <svg id="overlap-svg" width="480" height="260" viewBox="0 0 480 260" preserveAspectRatio="xMinYMin meet"></svg>
+      <div class="stats">
+        <div class="stat-row"><span>Media grupo 1</span><span id="d-mean1">—</span></div>
+        <div class="stat-row"><span>Media grupo 2</span><span id="d-mean2">—</span></div>
+        <div class="stat-row"><span>Desv. combinada (sp)</span><span id="d-sp">—</span></div>
+        <div class="stat-row"><span>Cohen's d</span><span id="d-value">—</span></div>
+        <div class="stat-row"><span>p-value (t de Student)</span><span id="d-pvalue">—</span></div>
+        <div id="d-badge" class="d-badge">—</div>
+        <div class="verdict" id="d-verdict">—</div>
+      </div>
+    </div>
+    <details class="code-toggle">
+      <summary>Ver código Python equivalente</summary>
+      <div class="code-wrap">
+        <button class="copy-btn" data-target="code-d">Copiar</button>
+        <pre><code id="code-d"></code></pre>
+      </div>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>3 · Calculadora: ¿cuánta muestra hace falta?</h2>
+    <div class="subtitle">
+      A partir del Cohen's d de arriba (o uno que tú elijas), calcula cuántos estudiantes por
+      grupo hacen falta para detectar ese efecto con la potencia deseada, con
+      n = 2(z<sub>α/2</sub> + z<sub>β</sub>)² / d².
+    </div>
+    <div class="controls">
+      <div class="field">
+        <label for="d-input">Tamaño del efecto (d)</label>
+        <input type="number" id="d-input" step="0.01" min="0.01" value="0.34">
+      </div>
+      <div class="field">
+        <label>Potencia deseada</label>
+        <div class="radio-group">
+          <label><input type="radio" name="power" value="0.80" checked> 80%</label>
+          <label><input type="radio" name="power" value="0.90"> 90%</label>
+          <label><input type="radio" name="power" value="0.95"> 95%</label>
+        </div>
+      </div>
+    </div>
+    <div class="power-grid">
+      <div class="power-card">
+        <div class="n" id="n-needed">—</div>
+        <div class="label">estudiantes por grupo (α = 0.05, dos colas)</div>
+      </div>
+      <div class="power-card">
+        <div class="n" id="n-actual">—</div>
+        <div class="label">estudiantes por grupo en tu muestra real (grupo más chico)</div>
+      </div>
+    </div>
+    <div class="verdict" id="power-verdict">—</div>
+    <details class="code-toggle">
+      <summary>Ver código Python equivalente</summary>
+      <div class="code-wrap">
+        <button class="copy-btn" data-target="code-power">Copiar</button>
+        <pre><code id="code-power"></code></pre>
+      </div>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>4 · El mismo efecto, con menos muestra</h2>
+    <div class="subtitle">
+      Misma comparación de arriba, pero con solo los primeros 10 estudiantes de cada grupo (el
+      orden del <em>dataset</em>, no una selección especial) en vez del grupo completo. La
+      diferencia de medias es parecida — pero mira qué le pasa al p-value.
+    </div>
+    <div class="compare-grid" id="compare-grid"></div>
+    <div class="verdict" id="compare-verdict">—</div>
+  </section>
+
+</main>
+
+<footer>
+  Módulo 5/5 del recurso interactivo de Semana 6. Dataset: <code>StudentsPerformance.csv</code>.
+  Basado en <code>03_Regla_definir_tamaño_muestra_optima.md</code> y en los Ejercicios 6-8 de
+  <code>02_Pruebas_Hipotesis_conceptos.md</code>. Complementa el <a href="eleccion_prueba.html">Módulo 3</a>
+  (dónde se calculan las pruebas t/Welch/Mann-Whitney) y el <a href="caso_guiado.html">Módulo 4</a>.
+</footer>
+
+<script>
+const SCORE_VARS = { mathScore: "Nota de matemáticas", readingScore: "Nota de lectura", writingScore: "Nota de escritura" };
+const GROUP_VARS = {
+  testPrep: "Curso de preparación (none / completed)",
+  gender: "Género (female / male)",
+  lunch: "Tipo de almuerzo (standard / free-reduced)",
+};
+const COL_NAMES = {
+  testPrep: "test preparation course", gender: "gender", lunch: "lunch",
+  mathScore: "math score", readingScore: "reading score", writingScore: "writing score",
+};
+const ALPHA = 0.05;
+
+function setCode(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".copy-btn");
+  if (!btn) return;
+  const code = document.getElementById(btn.dataset.target);
+  navigator.clipboard.writeText(code.textContent).then(() => {
+    const original = btn.textContent;
+    btn.textContent = "¡Copiado!";
+    setTimeout(() => { btn.textContent = original; }, 1200);
+  }).catch(() => {});
+});
+
+function mean(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+function variance(arr, m) { return arr.reduce((a, b) => a + (b - m) ** 2, 0) / (arr.length - 1); }
+function std(arr, m) { return Math.sqrt(variance(arr, m)); }
+function normalPdf(x, m, s) { return (1 / (s * Math.sqrt(2 * Math.PI))) * Math.exp(-((x - m) ** 2) / (2 * s * s)); }
+
+function pooledTTest(a, b) {
+  const ma = mean(a), mb = mean(b);
+  const va = variance(a, ma), vb = variance(b, mb);
+  const na = a.length, nb = b.length;
+  const sp2 = ((na - 1) * va + (nb - 1) * vb) / (na + nb - 2);
+  const sp = Math.sqrt(sp2);
+  const t = (ma - mb) / Math.sqrt(sp2 * (1 / na + 1 / nb));
+  const df = na + nb - 2;
+  const p = 2 * (1 - jStat.studentt.cdf(Math.abs(t), df));
+  return { ma, mb, sp, t, df, p, na, nb };
+}
+
+function cohensD(fit) {
+  return (fit.ma - fit.mb) / fit.sp;
+}
+
+function pText(p) { return p < 0.0001 ? "< 0.0001" : p.toFixed(4); }
+
+function dLabel(absD) {
+  if (absD < 0.35) return { cls: "small", text: "chico", ref: "convención: d≈0.2" };
+  if (absD < 0.65) return { cls: "medium", text: "mediano", ref: "convención: d≈0.5" };
+  return { cls: "large", text: "grande", ref: "convención: d≈0.8" };
+}
+
+function populateSelect(sel, options, selected) {
+  sel.innerHTML = "";
+  Object.entries(options).forEach(([k, v]) => {
+    const opt = document.createElement("option");
+    opt.value = k; opt.textContent = v;
+    if (k === selected) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+const groupSelect = document.getElementById("group-select");
+const scoreSelect = document.getElementById("score-select");
+populateSelect(groupSelect, GROUP_VARS, "gender");
+populateSelect(scoreSelect, SCORE_VARS, "mathScore");
+
+// ---------- Sección 2: curvas superpuestas ----------
+const svg = d3.select("#overlap-svg");
+const margin = { top: 16, right: 16, bottom: 36, left: 16 };
+const W = 480 - margin.left - margin.right, H = 260 - margin.top - margin.bottom;
+const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+const xAxisG = g.append("g").attr("class", "axis").attr("transform", `translate(0,${H})`);
+
+function drawOverlap(fitStats, label1, label2) {
+  const x = d3.scaleLinear().domain([0, 100]).range([0, W]);
+  const xs = d3.range(0, 100, 0.5);
+  const yMax = Math.max(normalPdf(fitStats.ma, fitStats.ma, fitStats.sp), normalPdf(fitStats.mb, fitStats.mb, fitStats.sp));
+  const y = d3.scaleLinear().domain([0, yMax * 1.1]).range([H, 0]);
+  xAxisG.transition().duration(200).call(d3.axisBottom(x).ticks(6));
+
+  const area = (m) => d3.area().x(d => x(d)).y0(H).y1(d => y(normalPdf(d, m, fitStats.sp)))(xs);
+
+  const pathA = g.selectAll("path.curve-a").data([fitStats.ma]);
+  pathA.join("path").attr("class", "curve-a").transition().duration(200).attr("d", area(fitStats.ma));
+  const pathB = g.selectAll("path.curve-b").data([fitStats.mb]);
+  pathB.join("path").attr("class", "curve-b").transition().duration(200).attr("d", area(fitStats.mb));
+
+  g.selectAll("text.curve-label").remove();
+  g.append("text").attr("class", "curve-label").attr("x", x(fitStats.ma)).attr("y", -2)
+    .attr("text-anchor", "middle").style("fill", "var(--accent)").style("font-size", "11px").text(label1);
+  g.append("text").attr("class", "curve-label").attr("x", x(fitStats.mb)).attr("y", -2)
+    .attr("text-anchor", "middle").style("fill", "var(--accent-2)").style("font-size", "11px").text(label2);
+}
+
+function renderSection2() {
+  const groupKey = groupSelect.value;
+  const scoreKey = scoreSelect.value;
+  const groups = d3.groups(STUDENTS_DATA, d => d[groupKey]).sort((a, b) => d3.ascending(a[0], b[0]));
+  const labels = groups.map(g => g[0]);
+  const [a, b] = groups.map(g => g[1].map(r => r[scoreKey]));
+
+  const fit = pooledTTest(a, b);
+  const d = cohensD(fit);
+  const absD = Math.abs(d);
+
+  drawOverlap(fit, labels[0], labels[1]);
+
+  document.getElementById("d-mean1").textContent = `${fit.ma.toFixed(2)} ("${labels[0]}", n=${fit.na})`;
+  document.getElementById("d-mean2").textContent = `${fit.mb.toFixed(2)} ("${labels[1]}", n=${fit.nb})`;
+  document.getElementById("d-sp").textContent = fit.sp.toFixed(3);
+  document.getElementById("d-value").textContent = d.toFixed(3);
+  document.getElementById("d-pvalue").textContent = pText(fit.p);
+
+  const lbl = dLabel(absD);
+  const badge = document.getElementById("d-badge");
+  badge.className = `d-badge ${lbl.cls}`;
+  badge.textContent = `Efecto ${lbl.text} (${lbl.ref})`;
+
+  const verdict = document.getElementById("d-verdict");
+  verdict.textContent = `p-value = ${pText(fit.p)} y Cohen's d = ${d.toFixed(3)} miden cosas distintas: el p-value dice qué tan improbable sería este resultado por azar (aquí, muy improbable), y d dice qué tan grande es la diferencia en sí (aquí, un efecto ${lbl.text}). Con muestras grandes, hasta un efecto chico produce un p-value diminuto.`;
+
+  const g_ = COL_NAMES[groupKey], s_ = COL_NAMES[scoreKey];
+  setCode("code-d", `import numpy as np
+
+a = df.loc[df["${g_}"] == "${labels[0]}", "${s_}"]
+b = df.loc[df["${g_}"] == "${labels[1]}", "${s_}"]
+
+sp = np.sqrt(((len(a)-1)*a.var(ddof=1) + (len(b)-1)*b.var(ddof=1)) / (len(a)+len(b)-2))
+d = (a.mean() - b.mean()) / sp
+print(f"Cohen's d = {d:.3f}")`);
+
+  document.getElementById("d-input").value = absD.toFixed(3);
+  document.getElementById("n-actual").textContent = Math.min(fit.na, fit.nb);
+  renderSection3();
+  renderSection4(groupKey, scoreKey, labels, a, b);
+}
+
+// ---------- Sección 3: calculadora de potencia ----------
+function renderSection3() {
+  const d = Math.max(0.01, parseFloat(document.getElementById("d-input").value) || 0.01);
+  const power = parseFloat(document.querySelector('input[name="power"]:checked').value);
+  const zAlpha2 = jStat.normal.inv(1 - ALPHA / 2, 0, 1);
+  const zBeta = jStat.normal.inv(power, 0, 1);
+  const n = 2 * ((zAlpha2 + zBeta) ** 2) / (d ** 2);
+  const nRounded = Math.ceil(n);
+
+  document.getElementById("n-needed").textContent = nRounded;
+
+  const actual = parseInt(document.getElementById("n-actual").textContent, 10) || 0;
+  const verdict = document.getElementById("power-verdict");
+  if (actual >= nRounded) {
+    verdict.className = "verdict good";
+    verdict.textContent = `Tu muestra real (n=${actual} en el grupo más chico) alcanza y sobra: es ${(actual / nRounded).toFixed(1)}× lo que hace falta para detectar d=${d.toFixed(2)} con ${(power * 100).toFixed(0)}% de potencia.`;
+  } else {
+    verdict.className = "verdict bad";
+    verdict.textContent = `Tu muestra real (n=${actual} en el grupo más chico) NO alcanza: hacen falta ${nRounded} por grupo para detectar d=${d.toFixed(2)} con ${(power * 100).toFixed(0)}% de potencia — con esta muestra, el riesgo de un error tipo II (no detectar un efecto real) es alto.`;
+  }
+
+  setCode("code-power", `from statsmodels.stats.power import TTestIndPower
+
+analysis = TTestIndPower()
+n_por_grupo = analysis.solve_power(effect_size=${d.toFixed(3)}, alpha=0.05, power=${power})
+print(f"n necesario por grupo: {n_por_grupo:.1f}")`);
+}
+
+// ---------- Sección 4: mismo efecto, menos muestra ----------
+function compareCard(container, title, fit, n) {
+  const div = document.createElement("div");
+  div.className = "compare-card";
+  const reject = fit.p < ALPHA;
+  div.innerHTML = `
+    <h3>${title} (n=${n} por grupo)</h3>
+    <div class="stat-row"><span>Media grupo 1</span><span>${fit.ma.toFixed(2)}</span></div>
+    <div class="stat-row"><span>Media grupo 2</span><span>${fit.mb.toFixed(2)}</span></div>
+    <div class="stat-row"><span>Diferencia</span><span>${Math.abs(fit.ma - fit.mb).toFixed(2)}</span></div>
+    <div class="stat-row"><span>Cohen's d</span><span>${cohensD(fit).toFixed(3)}</span></div>
+    <div class="stat-row"><span>p-value</span><span>${pText(fit.p)}</span></div>
+    <div class="d-badge ${reject ? "medium" : "small"}">${reject ? "Se rechaza H0" : "No se rechaza H0"}</div>
+  `;
+  container.appendChild(div);
+}
+
+function renderSection4(groupKey, scoreKey, labels, aFull, bFull) {
+  const grid = document.getElementById("compare-grid");
+  grid.innerHTML = "";
+  const nSmall = Math.min(10, aFull.length, bFull.length);
+  const aSmall = aFull.slice(0, nSmall);
+  const bSmall = bFull.slice(0, nSmall);
+  const fitSmall = pooledTTest(aSmall, bSmall);
+  const fitFull = pooledTTest(aFull, bFull);
+
+  compareCard(grid, `Muestra chica ("${labels[0]}" vs "${labels[1]}")`, fitSmall, nSmall);
+  compareCard(grid, `Grupo completo ("${labels[0]}" vs "${labels[1]}")`, fitFull, Math.min(fitFull.na, fitFull.nb));
+
+  const verdict = document.getElementById("compare-verdict");
+  const smallRejects = fitSmall.p < ALPHA, fullRejects = fitFull.p < ALPHA;
+  if (!smallRejects && fullRejects) {
+    verdict.className = "verdict bad";
+    verdict.textContent = `Con solo ${nSmall} estudiantes por grupo, la diferencia (d=${cohensD(fitSmall).toFixed(2)}) no alcanza a distinguirse del azar (p=${pText(fitSmall.p)}) — pero con el grupo completo, un efecto de tamaño parecido (d=${cohensD(fitFull).toFixed(2)}) sí se detecta con muchísima confianza (p${fitFull.p < 0.0001 ? " < 0.0001" : "=" + fitFull.p.toFixed(4)}). Ninguna conclusión cambió por arte de magia — lo único que cambió fue el tamaño de la muestra.`;
+  } else if (smallRejects && fullRejects) {
+    verdict.className = "verdict good";
+    verdict.textContent = `En este caso, incluso con solo ${nSmall} estudiantes por grupo la diferencia ya se detecta (p=${pText(fitSmall.p)}) — el efecto es lo bastante grande como para no depender tanto del tamaño de muestra. Prueba otra variable para ver el caso contrario.`;
+  } else {
+    verdict.className = "verdict";
+    verdict.textContent = `Con ${nSmall} estudiantes por grupo: p=${pText(fitSmall.p)}. Con el grupo completo: p=${pText(fitFull.p)}. Compara ambos contra α=0.05 para ver si la decisión sobre H0 cambia según el tamaño de muestra.`;
+  }
+}
+
+groupSelect.addEventListener("change", renderSection2);
+scoreSelect.addEventListener("change", renderSection2);
+document.getElementById("d-input").addEventListener("input", renderSection3);
+document.querySelectorAll('input[name="power"]').forEach(r => r.addEventListener("change", renderSection3));
+
+renderSection2();
+</script>
+
+</body>
+</html>

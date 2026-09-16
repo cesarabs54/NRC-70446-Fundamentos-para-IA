@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Radar de criterios — Semana 3</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-border: #26314a;
+    --text: #e7ecf7;
+    --text-dim: #9aa7c2;
+    --accent: #5eb1ff;
+    --accent-2: #ffb75e;
+    --good: #5edc9a;
+    --grid: #26314a;
+    --sklearn: #6fe3d6;
+    --tensorflow: #ffa94d;
+    --pytorch: #ff8577;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header { padding: 32px 20px 16px; max-width: 1040px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--text-dim); font-size: 13px; text-decoration: none; margin-bottom: 10px; }
+  .back-link:hover { color: var(--accent); }
+  header .kicker { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  header h1 { margin: 6px 0 8px; font-size: clamp(22px, 4vw, 32px); }
+  header p { color: var(--text-dim); max-width: 76ch; }
+  header p a { color: var(--accent); }
+  main { max-width: 1040px; margin: 0 auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+  section.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 20px clamp(16px, 4vw, 28px) 28px; }
+  section.card h2 { margin-top: 4px; font-size: 20px; }
+  section.card .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 260px; }
+  .field label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  select {
+    background: #0f1420; color: var(--text); border: 1px solid var(--panel-border);
+    border-radius: 8px; padding: 8px 10px; font-size: 14px;
+  }
+  .viz-wrap { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; margin-top: 14px; }
+  svg { flex-shrink: 0; max-width: 100%; height: auto; }
+  .radar-axis-label { fill: var(--text-dim); font-size: 11px; }
+  .radar-grid { fill: none; stroke: var(--panel-border); }
+  .legend { font-size: 13px; color: var(--text-dim); display: flex; flex-direction: column; gap: 8px; }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .legend .swatch { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .side { display: flex; flex-direction: column; gap: 16px; min-width: 260px; flex: 1; }
+  .match-row { display: flex; flex-direction: column; gap: 4px; }
+  .match-label { display: flex; justify-content: space-between; font-size: 13px; }
+  .match-label .pct { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .match-bar-track { height: 10px; border-radius: 6px; background: #0a0e17; border: 1px solid var(--panel-border); overflow: hidden; }
+  .match-bar-fill { height: 100%; border-radius: 6px; }
+  .justification { font-size: 13px; color: var(--text-dim); border-top: 1px dashed var(--panel-border); padding-top: 10px; }
+  .justification strong { color: var(--good); }
+  .note { font-size: 12px; color: var(--text-dim); font-style: italic; }
+  .code-wrap { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 18px; }
+  .code-card { flex: 1; min-width: 260px; border-radius: 10px; transition: box-shadow 0.2s ease; }
+  .code-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .code-card .best-badge { font-size: 11px; text-transform: none; letter-spacing: normal; color: var(--good); font-weight: 700; opacity: 0; }
+  .code-card.best .best-badge { opacity: 1; }
+  pre.fw-code {
+    background: #0b111c; border: 1px solid var(--panel-border); border-radius: 10px;
+    padding: 14px 16px; font-size: 12px; overflow-x: auto; margin: 0;
+  }
+  pre.fw-code.sklearn-code { border-left: 3px solid var(--sklearn); }
+  pre.fw-code.tensorflow-code { border-left: 3px solid var(--tensorflow); }
+  pre.fw-code.pytorch-code { border-left: 3px solid var(--pytorch); }
+  .code-card.best pre.fw-code { box-shadow: 0 0 0 1px var(--good); }
+  code { font-family: "SF Mono", Consolas, Menlo, monospace; }
+  footer { max-width: 1040px; margin: 0 auto; padding: 0 20px 60px; color: var(--text-dim); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">← Recurso interactivo Semana 3</a>
+  <div class="kicker">Módulo 3 · Comparación</div>
+  <h1>Radar de criterios: ¿qué framework conviene?</h1>
+  <p>
+    Los 6 criterios técnicos de la <a href="../../Semana_3/Semana_3_Foro/EIARV011_F3_Foro.md">pregunta orientadora del foro</a>
+    —preprocesamiento, GPU/rendimiento, facilidad de entrenamiento, interpretabilidad,
+    comunidad/documentación e integración para despliegue— puntuados de 1 a 5 para cada framework.
+    Elige un escenario para ver cuál se ajusta mejor.
+  </p>
+</header>
+
+<main>
+  <section class="card">
+    <h2>Comparación por escenario</h2>
+    <div class="controls">
+      <div class="field">
+        <label for="scenario-select">Escenario de aplicación</label>
+        <select id="scenario-select"></select>
+      </div>
+    </div>
+
+    <div class="viz-wrap">
+      <svg id="radar-chart" width="440" height="440" viewBox="0 0 440 440"></svg>
+      <div class="side">
+        <div class="legend">
+          <span><span class="swatch" style="background:#6fe3d6"></span>Scikit-learn</span>
+          <span><span class="swatch" style="background:#ffa94d"></span>TensorFlow/Keras</span>
+          <span><span class="swatch" style="background:#ff8577"></span>PyTorch</span>
+        </div>
+        <div id="match-bars"></div>
+        <div class="justification" id="justification"></div>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-card" id="card-sklearn">
+        <h3>Scikit-learn <span class="best-badge">✓ mejor ajuste</span></h3>
+        <pre class="fw-code sklearn-code"><code>from sklearn.linear_model import LinearRegression
+
+modelo = LinearRegression()
+modelo.fit(X, y)
+modelo.predict(X_nuevo)</code></pre>
+      </div>
+      <div class="code-card" id="card-tensorflow">
+        <h3>TensorFlow/Keras <span class="best-badge">✓ mejor ajuste</span></h3>
+        <pre class="fw-code tensorflow-code"><code>modelo = tf.keras.Sequential([
+    tf.keras.layers.Dense(1)
+])
+modelo.compile(optimizer="sgd", loss="mse")
+modelo.fit(X, y, epochs=50)</code></pre>
+      </div>
+      <div class="code-card" id="card-pytorch">
+        <h3>PyTorch <span class="best-badge">✓ mejor ajuste</span></h3>
+        <pre class="fw-code pytorch-code"><code>modelo = nn.Linear(1, 1)
+opt = torch.optim.SGD(modelo.parameters(), lr=0.01)
+
+for _ in range(50):
+    opt.zero_grad()
+    perdida = nn.MSELoss()(modelo(X), y)
+    perdida.backward()
+    opt.step()</code></pre>
+      </div>
+    </div>
+    <p class="note">Mínimo de código para definir y entrenar el mismo modelo simple en cada framework. La ficha resaltada es la del framework mejor puntuado para el escenario elegido arriba.</p>
+    <p class="note">Puntajes ilustrativos de 1 a 5, pensados para guiar la discusión en clase, no una medición exacta ni una benchmark oficial.</p>
+  </section>
+</main>
+
+<footer>
+  Recurso complementario al <a href="../../Semana_3/Semana_3_Foro/EIARV011_F3_Foro.md">foro de discusión de Semana 3</a>, no lo reemplaza.
+</footer>
+
+<script>
+const AXES = ["Preprocesamiento", "GPU / Rendimiento", "Facilidad de entrenamiento", "Interpretabilidad", "Comunidad / Documentación", "Despliegue"];
+const AXIS_KEYS = ["preprocesamiento", "gpu", "facilidad", "interpretabilidad", "comunidad", "despliegue"];
+
+const FRAMEWORKS = [
+  {
+    name: "Scikit-learn", color: "#6fe3d6",
+    scores: { preprocesamiento: 5, gpu: 2, facilidad: 5, interpretabilidad: 5, comunidad: 5, despliegue: 4 },
+  },
+  {
+    name: "TensorFlow/Keras", color: "#ffa94d",
+    scores: { preprocesamiento: 4, gpu: 5, facilidad: 4, interpretabilidad: 2, comunidad: 5, despliegue: 5 },
+  },
+  {
+    name: "PyTorch", color: "#ff8577",
+    scores: { preprocesamiento: 3, gpu: 5, facilidad: 2, interpretabilidad: 2, comunidad: 4, despliegue: 4 },
+  },
+];
+
+const SCENARIOS = [
+  {
+    label: "Modelo interpretable en un contexto regulado (banca, salud)",
+    weights: { preprocesamiento: 1, gpu: 1, facilidad: 1, interpretabilidad: 3, comunidad: 1, despliegue: 1 },
+    justification: "<strong>Scikit-learn</strong> ofrece modelos con coeficientes o reglas explicables directamente a un regulador o auditor; las redes profundas de TensorFlow y PyTorch son mucho más difíciles de justificar caso por caso.",
+  },
+  {
+    label: "Clasificar imágenes con GPU y desplegar en una app móvil",
+    weights: { preprocesamiento: 1, gpu: 3, facilidad: 1, interpretabilidad: 1, comunidad: 1, despliegue: 3 },
+    justification: "<strong>TensorFlow</strong> combina soporte GPU/TPU maduro con un camino directo a producción (TF Serving, TFLite para móviles, TF.js para el navegador), algo que scikit-learn no puede ofrecer para redes profundas.",
+  },
+  {
+    label: "Investigar una arquitectura nueva de red neuronal",
+    weights: { preprocesamiento: 1, gpu: 2, facilidad: 1, interpretabilidad: 1, comunidad: 2, despliegue: 1 },
+    justification: "<strong>PyTorch</strong> domina en investigación: su bucle de entrenamiento explícito (<code>zero_grad/backward/step</code>) da control total para modificar el entrenamiento paso a paso, algo clave al probar ideas nuevas que Keras oculta detrás de <code>fit()</code>.",
+  },
+  {
+    label: "Prototipo rápido con datos tabulares pequeños",
+    weights: { preprocesamiento: 2, gpu: 1, facilidad: 3, interpretabilidad: 1, comunidad: 1, despliegue: 1 },
+    justification: "<strong>Scikit-learn</strong> resuelve en pocas líneas problemas tabulares clásicos (regresión, clasificación con KNN, árboles) sin necesidad de diseñar una arquitectura de red ni configurar un entrenamiento por épocas.",
+  },
+];
+
+// ---- Populate scenario selector ----
+const select = d3.select("#scenario-select");
+select.selectAll("option")
+  .data(SCENARIOS)
+  .join("option")
+  .attr("value", (d, i) => i)
+  .text(d => d.label);
+
+// ---- Radar chart geometry ----
+const size = 440;
+const center = size / 2;
+const radius = 150;
+const levels = 5;
+const angleSlice = (2 * Math.PI) / AXES.length;
+
+const svg = d3.select("#radar-chart");
+const g = svg.append("g").attr("transform", `translate(${center},${center})`);
+
+const rScale = d3.scaleLinear().domain([0, levels]).range([0, radius]);
+
+// grid circles
+for (let lvl = 1; lvl <= levels; lvl++) {
+  g.append("circle").attr("class", "radar-grid").attr("r", rScale(lvl));
+}
+
+// axis lines + labels
+AXES.forEach((axisName, i) => {
+  const angle = angleSlice * i - Math.PI / 2;
+  const x2 = rScale(levels) * Math.cos(angle);
+  const y2 = rScale(levels) * Math.sin(angle);
+  g.append("line").attr("class", "radar-grid").attr("x1", 0).attr("y1", 0).attr("x2", x2).attr("y2", y2);
+
+  const lx = rScale(levels + 0.85) * Math.cos(angle);
+  const ly = rScale(levels + 0.85) * Math.sin(angle);
+  g.append("text")
+    .attr("class", "radar-axis-label")
+    .attr("x", lx).attr("y", ly)
+    .attr("text-anchor", "middle")
+    .attr("dominant-baseline", "middle")
+    .each(function () {
+      const words = axisName.split(" / ");
+      const el = d3.select(this);
+      words.forEach((w, wi) => {
+        el.append("tspan").attr("x", lx).attr("dy", wi === 0 ? 0 : 12).text(w);
+      });
+    });
+});
+
+const radarLine = d3.lineRadial()
+  .angle((d, i) => angleSlice * i)
+  .radius(d => rScale(d))
+  .curve(d3.curveLinearClosed);
+
+const frameworkPaths = FRAMEWORKS.map(fw => {
+  return g.append("path")
+    .attr("fill", fw.color).attr("fill-opacity", 0.12)
+    .attr("stroke", fw.color).attr("stroke-width", 2);
+});
+
+function scoresToArray(scores) { return AXIS_KEYS.map(k => scores[k]); }
+
+function renderRadar() {
+  FRAMEWORKS.forEach((fw, i) => {
+    frameworkPaths[i].datum(scoresToArray(fw.scores)).attr("d", radarLine);
+  });
+}
+
+function weightedMatch(scores, weights) {
+  let num = 0, den = 0;
+  AXIS_KEYS.forEach(k => { num += scores[k] * weights[k]; den += 5 * weights[k]; });
+  return Math.round((num / den) * 100);
+}
+
+function renderScenario(idx) {
+  const scenario = SCENARIOS[idx];
+  const matches = FRAMEWORKS.map(fw => ({ name: fw.name, color: fw.color, pct: weightedMatch(fw.scores, scenario.weights) }));
+  const best = Math.max(...matches.map(m => m.pct));
+
+  const container = d3.select("#match-bars");
+  container.selectAll("*").remove();
+  matches.forEach(m => {
+    const row = container.append("div").attr("class", "match-row");
+    row.append("div").attr("class", "match-label")
+      .html(`<span style="color:${m.color}">${m.name}</span><span class="pct" style="color:${m.color}">${m.pct}%</span>`);
+    const track = row.append("div").attr("class", "match-bar-track");
+    track.append("div").attr("class", "match-bar-fill")
+      .style("width", `${m.pct}%`)
+      .style("background", m.color)
+      .style("opacity", m.pct === best ? 1 : 0.55);
+  });
+
+  d3.select("#justification").html(scenario.justification);
+
+  const CARD_IDS = { "Scikit-learn": "card-sklearn", "TensorFlow/Keras": "card-tensorflow", "PyTorch": "card-pytorch" };
+  const bestName = matches.find(m => m.pct === best).name;
+  Object.entries(CARD_IDS).forEach(([name, id]) => {
+    d3.select(`#${id}`).classed("best", name === bestName);
+  });
+}
+
+select.on("change", function () { renderScenario(+this.value); });
+
+renderRadar();
+renderScenario(0);
+</script>
+
+</body>
+</html>
