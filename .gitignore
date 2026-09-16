@@ -27,3 +27,15 @@ Thumbs.db
 
 # Ignorar los archivos o carpetas que tengan la palabra "profesor"
 *profesor*
+
+# Claude Code local config
+.claude/
+
+# PyCharm support libraries
+262_10315_174-pycharm-support-libs/
+
+# Backup files created while cleaning datasets
+*.bak_semicolon
+
+# Temporary text dumps from docx extraction
+docx_dump.txt
