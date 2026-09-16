@@ -8,6 +8,8 @@
 
 Este documento **no tiene código**: la parte de programación (`pandas`, `scipy`) ya la resolviste o la resolverás en el *notebook*. Aquí lo que necesitas es entender **qué significa cada resultado que el código te va a entregar**, para poder redactarlo correctamente en el portafolio. Por eso cada concepto incluye también su **fórmula matemática**: no para calcularla a mano (`pandas`/`scipy` ya lo hacen), sino para que entiendas de dónde sale cada número y puedas explicarlo con propiedad en el portafolio.
 
+> 💡 Puedes explorar el [**recurso interactivo de la Semana 5**](../../Aplicacion_interactiva_profesor/Semana_5/index.html) (cuatro módulos: centro y dispersión, qué gráfico usar, bins/escala del eje, e hipótesis y prueba estadística) mientras lees esta guía, para ver en vivo cómo cambian los estadísticos con los mismos datos de `StudentsPerformance.csv`.
+
 ---
 
 ## Mapa de la guía: qué sección necesitas para cada paso del taller
