@@ -24,7 +24,7 @@ df = pd.read_csv("StudentsPerformance.csv")
 df.head()
 ```
 
-**Recurso interactivo de apoyo (opcional):** antes de empezar, explora el [**recurso interactivo de la Semana 7**](../Aplicacion_interactiva_profesor/Semana_7/index.html) — en particular los módulos "Correlación y mínimos cuadrados" y "Prueba de hipótesis sobre la pendiente", que reproducen en el navegador los Ejercicios 1 a 5. No reemplaza el desarrollo del taller, pero ayuda a entender los conceptos antes de aplicarlos en el *Notebook*.
+**Recurso interactivo de apoyo (opcional):** antes de empezar, explora el [**recurso interactivo de la Semana 7**](../Aplicacion_interactiva_profesor/Semana_7/index.html) (también en línea, sin clonar el repositorio: <https://cesarabs54.github.io/NRC-70446-Fundamentos-para-IA/Semana_7/index.html>) — en particular los módulos "Correlación y mínimos cuadrados" y "Prueba de hipótesis sobre la pendiente", que reproducen en el navegador los Ejercicios 1 a 5. No reemplaza el desarrollo del taller, pero ayuda a entender los conceptos antes de aplicarlos en el *Notebook*.
 
 ---
 
