@@ -100,7 +100,7 @@ Este tutorial demuestra cómo se utiliza Visual Studio Code y la extensión Micr
 
 ---
 
-## Recurso interactivo
+## 🌐 Recurso interactivo
 
 https://cesarabs54.github.io/NRC-70446-Fundamentos-para-IA/
 
