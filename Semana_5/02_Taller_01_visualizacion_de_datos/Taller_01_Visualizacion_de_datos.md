@@ -10,7 +10,7 @@
 
 Este taller es 100 % práctico: vas a construir, uno por uno, los tipos de gráfico más comunes con la librería `matplotlib`, usando siempre el mismo *dataset* para que puedas comparar resultados entre ejercicios. Si necesitas repasar qué es la media, la mediana o los cuartiles antes de graficarlos, consulta [`01_Estadistica_basica.md`](../01_%20Estadistica_basica/01_Estadistica_Basica.md), en la carpeta vecina.
 
-**Recurso interactivo de apoyo (opcional):** antes de empezar, explora el [**recurso interactivo de la Semana 5**](../../Aplicacion_interactiva_profesor/Semana_5/index.html) (también en línea, sin clonar el repositorio: <https://cesarabs54.github.io/NRC-70446-Fundamentos-para-IA/Semana_5/index.html>) — en particular el módulo "Qué gráfico usar" y el módulo "Mismos datos, impresiones distintas" (bins y escala del eje), que reproducen en el navegador las mismas preguntas de los Ejercicios 1 a 6. No reemplaza el desarrollo del taller, pero ayuda a entender los conceptos antes de aplicarlos en el *Notebook*.
+**Recurso interactivo de apoyo (opcional):** antes de empezar, explora el [**recurso interactivo de la Semana 5**](https://cesarabs54.github.io/Fundamentos-IA-aplicacion-interactiva/Semana_5/index.html) — en particular el módulo "Qué gráfico usar" y el módulo "Mismos datos, impresiones distintas" (bins y escala del eje), que reproducen en el navegador las mismas preguntas de los Ejercicios 1 a 6. No reemplaza el desarrollo del taller, pero ayuda a entender los conceptos antes de aplicarlos en el *Notebook*.
 
 **Cómo trabajar el taller:**
 

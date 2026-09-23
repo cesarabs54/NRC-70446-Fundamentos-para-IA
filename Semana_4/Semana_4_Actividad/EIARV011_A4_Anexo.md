@@ -5,7 +5,7 @@
 
 **Descripción:** Sigan las instrucciones de la actividad: 
 
-> 💡 Antes de resolver los puntos 3 a 6, pueden explorar el [**recurso interactivo de la Semana 4**](../../Aplicacion_interactiva_profesor/Semana_4/index.html) (también en línea, sin clonar el repositorio: <https://cesarabs54.github.io/NRC-70446-Fundamentos-para-IA/Semana_4/index.html>) — cuatro módulos: vectorización, estadísticos con NumPy, correlación/prueba t con SciPy, y Matplotlib vs. Seaborn —, que usa el mismo *dataset* de Netflix de este taller.
+> 💡 Antes de resolver los puntos 3 a 6, pueden explorar el [**recurso interactivo de la Semana 4**](https://cesarabs54.github.io/Fundamentos-IA-aplicacion-interactiva/Semana_4/index.html) — cuatro módulos: vectorización, estadísticos con NumPy, correlación/prueba t con SciPy, y Matplotlib vs. Seaborn —, que usa el mismo *dataset* de Netflix de este taller.
 
 **1) Reconocimiento de *frameworks* de IA en Python (conceptual)**
 

@@ -4,7 +4,7 @@ Esta hoja te explica, con ejemplos sencillos, las ideas que necesitas para la Se
 archivo `StudentsPerformance.csv` (el mismo de la Semana 6), con las notas de 1000 estudiantes en tres
 exámenes: matemáticas (`math score`), lectura (`reading score`) y escritura (`writing score`).
 
-> 💡 Puedes explorar el [**recurso interactivo de la Semana 7**](../Aplicacion_interactiva_profesor/Semana_7/index.html) (también en línea, sin clonar el repositorio: <https://cesarabs54.github.io/NRC-70446-Fundamentos-para-IA/Semana_7/index.html>) — cuatro módulos: correlación y mínimos cuadrados, ajuste y residuos, prueba de hipótesis sobre la pendiente, y cuándo usar el modelo / predicción — mientras lees esta guía, para ver en vivo cómo cambian los coeficientes con los mismos datos de `StudentsPerformance.csv`.
+> 💡 Puedes explorar el [**recurso interactivo de la Semana 7**](https://cesarabs54.github.io/Fundamentos-IA-aplicacion-interactiva/Semana_7/index.html) — cuatro módulos: correlación y mínimos cuadrados, ajuste y residuos, prueba de hipótesis sobre la pendiente, y cuándo usar el modelo / predicción — mientras lees esta guía, para ver en vivo cómo cambian los coeficientes con los mismos datos de `StudentsPerformance.csv`.
 
 ---
 

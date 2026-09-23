@@ -8,7 +8,7 @@
 
 Este documento **no tiene código**: la parte de programación (`pandas`, `scipy`) ya la resolviste o la resolverás en el *notebook*. Aquí lo que necesitas es entender **qué significa cada resultado que el código te va a entregar**, para poder redactarlo correctamente en el portafolio. Por eso cada concepto incluye también su **fórmula matemática**: no para calcularla a mano (`pandas`/`scipy` ya lo hacen), sino para que entiendas de dónde sale cada número y puedas explicarlo con propiedad en el portafolio.
 
-> 💡 Puedes explorar el [**recurso interactivo de la Semana 5**](../../Aplicacion_interactiva_profesor/Semana_5/index.html) (también en línea, sin clonar el repositorio: <https://cesarabs54.github.io/NRC-70446-Fundamentos-para-IA/Semana_5/index.html>) — cuatro módulos: centro y dispersión, qué gráfico usar, bins/escala del eje, e hipótesis y prueba estadística — mientras lees esta guía, para ver en vivo cómo cambian los estadísticos con los mismos datos de `StudentsPerformance.csv`.
+> 💡 Puedes explorar el [**recurso interactivo de la Semana 5**](https://cesarabs54.github.io/Fundamentos-IA-aplicacion-interactiva/Semana_5/index.html) — cuatro módulos: centro y dispersión, qué gráfico usar, bins/escala del eje, e hipótesis y prueba estadística — mientras lees esta guía, para ver en vivo cómo cambian los estadísticos con los mismos datos de `StudentsPerformance.csv`.
 
 ---
 

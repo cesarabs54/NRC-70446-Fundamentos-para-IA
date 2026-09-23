@@ -102,7 +102,7 @@ Este tutorial demuestra cómo se utiliza Visual Studio Code y la extensión Micr
 
 ## 🌐 Recurso interactivo
 
-https://cesarabs54.github.io/NRC-70446-Fundamentos-para-IA/
+https://cesarabs54.github.io/Fundamentos-IA-aplicacion-interactiva/
 
 ---
 ## 🐳 Uso con Docker (Python 3.11.9 amd64)
