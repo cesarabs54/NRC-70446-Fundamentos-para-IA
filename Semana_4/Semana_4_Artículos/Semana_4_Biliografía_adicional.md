@@ -24,11 +24,18 @@ Se presentan tres referencias académicas en español, directamente relacionadas
    
    Guía oficial del Gobierno de España (licencia abierta CC BY 4.0), enfocada en análisis exploratorio de datos (EDA) con Python. Resalta que la visualización permite identificar patrones no evidentes en los estadísticos descriptivos, por lo que complementa la sección de hallazgos sobre distribución de variables.
 
+4. **Introducción a Python para cálculo científico** (nivel avanzado)
+
+   Garcimartín-Montero, Á. (2022). *Introducción a Python para cálculo científico* [Material del curso, Máster en Métodos Computacionales en Ciencias]. Universidad de Navarra. https://hdl.handle.net/10171/63693
+
+   Material docente de posgrado (licencia CC BY 4.0, ISBN 978-84-8081-728-8) orientado a estudiantes de ciencias e ingeniería con conocimientos previos de programación. Profundiza en el uso avanzado de NumPy (álgebra lineal, vectorización), SciPy (integración y optimización numérica), SymPy (cálculo simbólico) y Matplotlib (visualización 2D/3D), por lo que amplía con mayor rigor técnico las librerías trabajadas en la actividad.
+
 
 ----------------------------------------------------------------------------------------
 
 Sources:
 
 [Analysis of the use of the Python programming language for statistical calculations - Redalyc](https://www.redalyc.org/journal/5732/573270857001/)
-[Programación computacional y análisis de datos en educación estadística - Dialnet](https://dialnet.unirioja.es/servlet/articulo?codigo=1234567)
+[Programación computacional y análisis de datos en educación estadística - Dialnet](https://dialnet.unirioja.es/servlet/articulo?codigo=7049130)
 [Guía práctica de introducción al Análisis Exploratorio de Datos en Python - datos.gob.es](https://datos.gob.es/sites/default/files/doc/file/guia_eda_python.pdf)
+[Introducción a Python para cálculo científico - DADUN, Universidad de Navarra](https://hdl.handle.net/10171/63693)
