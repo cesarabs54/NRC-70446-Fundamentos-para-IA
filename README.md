@@ -51,12 +51,18 @@
 | 7 | Estadística inferencial II: regresión lineal. | Argumenta la regresión lineal.                                                      | Semana_7  | Regresión lineal - conceptos básicos: https://view.genially.com/6a7bad4862b4694047cb4e4e Cuando utilizar modelo re regresión lineal: https://view.genially.com/6aba8cb760985c657d3bb214                                                               |
 | 8 | Estadística inferencial III: regresión logística. | Relaciona la regresión logística.                                                   | Semana_8  |                                                                |
 
+---
+
+## 🌐 Recurso interactivo
+
+https://cesarabs54.github.io/Fundamentos-IA-aplicacion-interactiva/
+
+---
 ## 📚 Bibliografía — Algunos recursos en español
 
 Recursos en español como sustitutos reales de la bibliografía original (mayormente en inglés) del curso, organizados según el tema que cubren.
 
 ---
-
 **Python Software Foundation. (2026).** *El tutorial de Python — documentación de Python 3*.
 https://docs.python.org/es/3/tutorial/
 > Cubre: sintaxis básica de Python. Documentación oficial, gratuita y mantenida.
@@ -97,12 +103,6 @@ En este tutorial, aprenderás a usar Python 3 en Visual Studio Code para crear, 
 [Data Science in VS Code tutorial](https://code.visualstudio.com/docs/datascience/data-science-tutorial)\
 https://code.visualstudio.com/docs/datascience/data-science-tutorial \
 Este tutorial demuestra cómo se utiliza Visual Studio Code y la extensión Microsoft Python junto con bibliotecas comunes de ciencia de datos para explorar un escenario básico de ciencia de datos. Específicamente, usando datos de pasajeros del Titanic, aprenderás a configurar un entorno de ciencia de datos, importar y limpiar datos, crear un modelo de aprendizaje automático para predecir la supervivencia en el Titanic y evaluar la precisión del modelo generado.
-
----
-
-## 🌐 Recurso interactivo
-
-https://cesarabs54.github.io/Fundamentos-IA-aplicacion-interactiva/
 
 ---
 ## 🐳 Uso con Docker (Python 3.11.9 amd64)
