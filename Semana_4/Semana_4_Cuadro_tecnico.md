@@ -12,7 +12,7 @@
 | Etapa | Librería | Procedimiento / funciones | Para qué sirve | Ejemplo en la actividad |
 |---|---|---|---|---|
 | Carga y exploración | Pandas | `read_csv`, `head()`, `shape`, `info()` | Conocer estructura, tipos y tamaño | `credits.csv`: 77 801 × 5. `titles.csv`: 5 850 × 15 (viene en ZIP: `compression="zip"`) |
-| Calidad de datos | Pandas | `isnull().sum()`, `duplicated()` | Detectar nulos y repetidos | `credits`: 9 772 nulos en `character` (son los directores), 0 duplicados. `titles`: 2 619 nulos en `age_certification`, 14 filas con `runtime == 0` |
+| Calidad de datos | Pandas | `isnull().sum()`, `duplicated()` | Detectar nulos y repetidos | `credits`: 9 772 nulos en `character` (4 550 son los directores, que nunca traen personaje, y 5 222 son actores sin personaje registrado), 0 duplicados. `titles`: 2 619 nulos en `age_certification`, 14 filas con `runtime == 0` |
 | Limpieza | Pandas | `fillna`, `dropna`, `astype("category")`, `groupby().transform()` | Imputar, eliminar o tipar con criterio | `character` → `"Sin especificar"`; `runtime == 0` → mediana por `type` (película/serie) |
 | Variables derivadas | Pandas | `groupby().nunique()`, `agg`, `unstack`, `ast.literal_eval` | Crear numéricas cuando el dataset no las trae | `credits` solo trae identificadores → se construyen `tamano_reparto` y `titulos_por_persona` |
 | Arreglos y estadísticos | NumPy | `np.array` / `to_numpy`, `mean`, `median`, `percentile` | Resumir una variable numérica | `tamano_reparto`: media 14.10, mediana 10, P95 = 43 (sesgo a la derecha) |
