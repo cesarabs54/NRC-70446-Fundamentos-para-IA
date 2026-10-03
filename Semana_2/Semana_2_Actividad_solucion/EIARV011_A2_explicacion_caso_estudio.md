@@ -1,4 +1,4 @@
-# Explicación breve de cada instrucción (`EIARV011_A2_analisis.ipynb`)
+# Explicación breve de cada instrucción (`EIARV011_A2_analisis_profesor.ipynb`)
 
 1. `import pandas as pd` → Importa Pandas para manejo de datos tabulares.  
 2. `import numpy as np` → Importa NumPy para operaciones numéricas.  

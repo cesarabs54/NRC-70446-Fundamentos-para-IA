@@ -5,7 +5,6 @@
 **Docente:** Ing. César Alfonso Bolado Silva
 **Elaborado por:** 
 **Actividad:** Semana 2 – Estudio de caso colaborativo
-**Fecha:** Julio de 2026
 
 ---
 

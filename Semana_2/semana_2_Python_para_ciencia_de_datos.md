@@ -227,20 +227,20 @@ df.groupby("programa")["nota_final"].mean()
 
 ## Entregable de la sesión
 
-**Dataset sugerido (proporcionado por el docente):** dataset Titanic, alojado en el repositorio oficial de pandas — estable, real y con nulos genuinos (no fabricados) en tres columnas con patrones distintos, ideal para justificar decisiones de limpieza distintas por columna.
+**Dataset sugerido (proporcionado por el docente):** `StudentsPerformance.csv`, el mismo de la actividad calificada de esta semana (carpeta `Semana_2_Actividad`) — real, tabular y con tipos mixtos (numéricas y categóricas), ideal para practicar carga, exploración y diagnóstico de calidad.
 
 ```python
-df = pd.read_csv("https://raw.githubusercontent.com/pandas-dev/pandas/master/doc/data/titanic.csv")
+df = pd.read_csv("StudentsPerformance.csv")
 ```
 
-891 filas × 12 columnas (`PassengerId`, `Survived`, `Pclass`, `Name`, `Sex`, `Age`, `SibSp`, `Parch`, `Ticket`, `Fare`, `Cabin`, `Embarked`). Nulos verificados: `Age` (177), `Cabin` (687), `Embarked` (2).
+1 000 filas × 8 columnas: tres notas numéricas de 0 a 100 (`math score`, `reading score`, `writing score`) y cinco categóricas (`gender`, `race/ethnicity`, `parental level of education`, `lunch`, `test preparation course`). Verificado: 0 nulos y 0 duplicados.
 
 El estudiante que prefiera usar un dataset propio puede hacerlo, siempre que cumpla el mínimo de 5 columnas y 30 filas.
 
 Notebook individual en Google Colab que:
 1. Cargue el dataset (el sugerido u otro real elegido por el estudiante, con al menos 5 columnas y 30 filas).
 2. Explore el dataset con `head()`, `shape`, `info()` y `describe()`.
-3. Detecte y trate los valores nulos, justificando en una celda de texto (Markdown) la decisión tomada para cada columna (eliminar vs. imputar, y por qué).
+3. Revise la calidad de los datos (valores nulos, duplicados y valores atípicos o fuera de rango) y justifique en una celda de texto (Markdown) la decisión tomada para cada hallazgo (eliminar, imputar o conservar, y por qué). Si el dataset no tiene nulos, como el sugerido, documente cómo lo comprobó.
 4. Cree al menos una columna nueva usando `apply()`.
 
 **Criterios de evaluación:**

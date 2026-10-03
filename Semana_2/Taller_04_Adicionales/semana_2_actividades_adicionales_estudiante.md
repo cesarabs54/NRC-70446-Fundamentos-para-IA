@@ -9,82 +9,12 @@ agregación y combinación de datos.
 
 ---
 
-## Actividad 1 — Explorador de datos guiado
-
-**Dataset:** Titanic (público, se carga directo por URL).
-
-```python
-import pandas as pd
-
-url = "https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv"
-df = pd.read_csv(url)
-
-print(df.shape)
-print(df.columns.tolist())
-print(df.head())
-print(df.info())
-print(df.describe())
-```
-
-**Consigna:**
-1. ¿Cuántas filas y columnas tiene el dataset?
-2. ¿Qué columnas tienen valores nulos y cuántos?
-3. ¿Cuál es el promedio de edad de los pasajeros? ¿Y la mediana? ¿Por qué difieren?
-4. Sin usar gráficos (aún no toca), describe con `value_counts()` cómo se distribuyen los
-   pasajeros por clase (`Pclass`) y por sexo (`Sex`).
-
----
-
-## Actividad 2 — Caza de errores
-
-El siguiente código tiene **5 errores**. Encuéntralos y corrígelos sin reescribir el bloque
-desde cero.
-
-```python
-df_titanic = pd.read.csv(url)
-edad_promedio = df_titanic["Age".mean()]
-menores = df_titanic[df_titanic.Age < 18]
-menores["es_menor"] = True
-sobrevivientes_por_clase = df_titanic.groupby("Pclass").sum("Survived")
-print(df_titanic.sort_values(by="Fare", ascending=True[0:5]))
-```
-
-Entrega el código corregido y, para cada error, una línea explicando qué estaba mal y por qué.
-
----
-
-## Actividad 3 — Reto de limpieza de datos
-
-Usando el mismo dataset de Titanic:
-
-```python
-# 1. Identifica y cuantifica los nulos
-nulos = df.isnull().sum()
-print(nulos[nulos > 0])
-
-# 2. Decide cómo imputar 'Age' y 'Embarked' — completa el código
-df["Age"] = df["Age"].fillna(___)        # ¿media, mediana u otro criterio?
-df["Embarked"] = df["Embarked"].fillna(___)
-
-# 3. Decide si 'Cabin' se debe conservar o eliminar (tiene muchos nulos)
-# tu código aquí
-
-# 4. Verifica y elimina duplicados
-print(df.duplicated().sum())
-df = df.drop_duplicates()
-
-# 5. Corrige los tipos de dato que consideres necesarios
-```
-
-**Pregunta obligatoria de sustentación:** justifica con la forma de la distribución (no con
-"porque así se hace normalmente") por qué elegiste esa estrategia de imputación para `Age`.
-
----
-
-## Actividad 4 — Groupby y agregaciones (caso de negocio)
+## Actividad 1 — Groupby y agregaciones (caso de negocio)
 
 ```python
 import numpy as np
+import pandas as pd
+
 np.random.seed(7)
 n = 500
 productos = ['Laptop','Mouse','Teclado','Monitor','Audifonos']
@@ -112,7 +42,7 @@ con `groupby` + `agg`.
 
 ---
 
-## Actividad 5 — Merge de múltiples fuentes
+## Actividad 2 — Merge de múltiples fuentes
 
 ```python
 clientes = pd.DataFrame({
@@ -132,7 +62,7 @@ print(analisis)
 
 ---
 
-## Actividad 6 — Mini-proyecto integrador
+## Actividad 3 — Mini-proyecto integrador
 
 Con el dataset de ventas simulado (o uno propio si prefieres), entrega un script `.py` o
 notebook que:
@@ -157,7 +87,7 @@ notebook que:
 
 ---
 
-## Actividad 7 (opcional) — Loop vs vectorización
+## Actividad 4 (opcional) — Loop vs vectorización
 
 ```python
 import time
@@ -188,7 +118,8 @@ Python puro.
 ## Quiz conceptual rápido (autoevaluación)
 
 1. ¿Cuál es la diferencia entre `df[df.col > 5]` y `df.loc[df.col > 5]`?
-2. ¿Por qué `df["col"]["Age"].mean()` produce un error distinto a `df["Age"].mean()`?
+2. ¿Por qué `ventas["total"]["unidades"].mean()` produce un error distinto a
+   `ventas["unidades"].mean()`?
 3. ¿Qué significa que un `merge` sea `how='left'` vs `how='inner'`, y cuándo cambiaría el
    número de filas resultante?
 4. ¿Por qué imputar con la media es riesgoso si la distribución tiene outliers?
@@ -199,6 +130,6 @@ Python puro.
 
 ## Datasets alternativos
 
-- Ventas simulado (código de la Actividad 4)
-- `https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv`
+- Ventas simulado (código de la Actividad 1)
+- `StudentsPerformance.csv` (el de la actividad calificada de esta semana)
 - Cualquier CSV propio de tu área de interés (opción válida para el mini-proyecto)

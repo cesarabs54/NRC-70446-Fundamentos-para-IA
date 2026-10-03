@@ -1,18 +1,16 @@
 # Semana 2 — Cuadro técnico consolidado
 
 **Tema:** Python para ciencia de datos con pandas: carga de datos, exploración (EDA), diagnóstico de calidad, limpieza básica, agregación y primeras visualizaciones.
-**Actividad calificada:** estudio de caso colaborativo «Consulta en un *Dataset*» (`EIARV011_A2`, 5.0 puntos: presentación 0.5 + análisis del dataset 1.5 + calidad de datos 1.5 + Python 1.5). Se entrega un PDF y el enlace público al notebook (Colab o Jupyter). La guía de la sesión pide además un notebook individual con el Titanic (ejecuta sin error, decisiones de limpieza documentadas, código legible); en el repositorio no hay rúbrica numérica para ese entregable.
+**Actividad calificada:** estudio de caso colaborativo «Consulta en un *Dataset*» (`EIARV011_A2`, 5.0 puntos: presentación 0.5 + análisis del dataset 1.5 + calidad de datos 1.5 + Python 1.5). Se entrega un PDF y el enlace público al notebook (Colab o Jupyter). La guía de la sesión pide además un notebook individual con `StudentsPerformance.csv` u otro dataset propio de al menos 5 columnas y 30 filas (ejecuta sin error, decisiones de limpieza documentadas, código legible); en el repositorio no hay rúbrica numérica para ese entregable.
 **Datasets de la semana:**
 
 | Archivo | Dónde se usa | Tamaño |
 |---|---|---|
 | `StudentsPerformance.csv` | Actividad A2 y Taller 01 | 1 000 × 8: tres notas de 0 a 100 y cinco categóricas. Sin nulos ni duplicados |
 | `credits.csv` | Taller 02 | 77 801 × 5 (5 489 títulos, 54 589 personas). Es el mismo archivo de la Semana 4 (idéntico byte a byte) |
-| `covid_19_data.csv` | Taller 03 (video) | 900 × 8: 10 entidades × 90 días (2020-01-22 a 2020-04-20). **Sintético** (lo dice el PDF del profesor) |
-| Titanic (URL) | Guía de la sesión y Taller 04 | 891 × 12 |
 | Ventas simuladas y DataFrame de 8 estudiantes | Taller 04 y Ejemplos | 500 filas y 8 filas, generados en la propia celda |
 
-> Todas las cifras de este documento se recalcularon ejecutando el código (Python 3.11.9, pandas 2.3.3 y, para comprobar compatibilidad, pandas 3.0.6; NumPy 2.4.6, Matplotlib 3.11.2, seaborn 0.13.2, plotly 7.1.0). Las dos URL del Titanic respondieron el 2 de octubre de 2026. Las marcadas con ✅ son las que ya aparecen en los notebooks y claves del profesor (`EIARV011_A2_analisis.ipynb`, `EIARV011_A2_informe_estudio_de_caso.md`, `Taller_01_EDA_solucion.ipynb`, `Taller_02_EDA_profesor.ipynb`, `parte_1-3_solucion.ipynb`, `parte_4_dataframe.ipynb`, `parte_5_visualizacion.ipynb` y `Taller_01_ejercicios_profesor.pdf`); las marcadas con ➕ son alternativas que se pueden aplicar y que **no** están en esos materiales. El Taller 04 solo tiene guía del estudiante (sin clave): sus cifras son recalculadas y no llevan marca.
+> Todas las cifras de este documento se recalcularon ejecutando el código (Python 3.11.9, pandas 2.3.3 y, para comprobar compatibilidad, pandas 3.0.6; NumPy 2.4.6, Matplotlib 3.11.2, seaborn 0.13.2). Las marcadas con ✅ son las que ya aparecen en los notebooks y claves del profesor (`EIARV011_A2_analisis_profesor.ipynb`, `EIARV011_A2_informe_estudio_de_caso.md`, `Taller_01_EDA_solucion.ipynb` y `Taller_02_EDA_profesor.ipynb`); las marcadas con ➕ son alternativas que se pueden aplicar y que **no** están en esos materiales. El Taller 04 solo tiene guía del estudiante (sin clave): sus cifras son recalculadas y no llevan marca.
 >
 > Esta semana no hay estadística inferencial (SciPy llega en las Semanas 4 y 5), así que la sección 3 reemplaza el «cuadro de pruebas» por un cuadro de funciones de pandas y NumPy.
 
@@ -53,8 +51,6 @@
 | ¿Hay relación entre dos numéricas? | Dispersión · `sns.scatterplot` | Lectura vs. escritura: nube diagonal estrecha (r = 0.955) | Las notas son enteras: muchos puntos se superponen; usar `alpha` | ➕ |
 | ¿Qué tan fuertes son todas las correlaciones juntas? | Mapa de calor · `sns.heatmap(df[notas].corr(), annot=True)` | Matriz 3 × 3 con valores de 0.803 a 0.955 | Con 3 variables una tabla alcanza | ➕ |
 | ¿Cómo se compara un promedio entre grupos? | Barras de `groupby().mean()` | Curso → `math`: 64.08 vs. 69.70. Almuerzo → `math`: 58.92 vs. 70.03 | El notebook imprime la tabla pero no la grafica | ➕ |
-| ¿Cómo evoluciona algo en el tiempo? (Taller 03) | Línea · `px.line` | México: de 27 a 4 365 confirmados (22-ene a 20-abr) | Exige `datetime` (`parse_dates`). Si hay varias filas por fecha (EE. UU. tiene 3 estados) sale **una sola traza** que retrocede en el tiempo 2 veces: usar `color=` o agregar antes | ✅ |
-| ¿Cómo se comparan categorías? (Taller 03) | Barras · `px.bar` | Máximo de confirmados por país | Con el `max` por fila el ranking engaña (salvedad 14) | ✅ |
 
 ---
 
@@ -76,7 +72,7 @@
 | ¿Dato típico y dispersión? | `describe()`, `mode()`, `std()` | Numéricas | Moda: 65 / 72 / 74. Coeficiente de variación: 0.229 / 0.211 / 0.223 (math / reading / writing) | ✅ / ➕ |
 | ¿Qué forma tiene? | `skew()`, `kurt()` | Media ≈ mediana no basta | Sesgo: −0.28, −0.26, −0.29. Curtosis (exceso): 0.27, −0.07, −0.03 → leve cola hacia notas bajas | ➕ |
 | ¿Hay relación lineal? | `corr()` (Pearson) | Dos numéricas, sin atípicos extremos | 0.955 (lectura–escritura), 0.818 (mate–lectura), 0.803 (mate–escritura). Sin la fila 59: 0.815 y 0.799 (mate con lectura y con escritura) | ✅ |
-| ¿Hay relación monótona? | `rank().corr()` (o `corr(method="spearman")`) | Sesgo, atípicos u ordinales. La opción `method="spearman"` **requiere SciPy** (salvedad 25) | 0.949, 0.804, 0.778 en los mismos tres pares | ➕ |
+| ¿Hay relación monótona? | `rank().corr()` (o `corr(method="spearman")`) | Sesgo, atípicos u ordinales. La opción `method="spearman"` **requiere SciPy** (salvedad 17) | 0.949, 0.804, 0.778 en los mismos tres pares | ➕ |
 | ¿Cuánto cambia una nota según el grupo? | `groupby().mean()`; `agg(["mean", "median", "std", "count"])` | Categórica vs. numérica | Curso: `math` +5.6, `reading` +7.4, `writing` +9.9 a favor de `completed`. Almuerzo: +11.1 / +7.0 / +7.8 a favor de `standard` | ✅ (mean) / ➕ |
 | ¿Es grande esa diferencia? | d de Cohen · `(m1 - m2) / s_pooled` | Diferencia de medias en unidades de desviación | Curso: 0.38 / 0.52 / 0.69. Almuerzo: 0.78 / 0.49 / 0.53. Género (mujeres − hombres): −0.34 / 0.50 / 0.63 (math / reading / writing) | ➕ |
 | ¿Cuánta variación explica una categórica? | η² · `SS_entre / SS_total` | Compara variables entre sí | Sobre `average score`: `lunch` 8.4 %, curso 6.6 %, nivel educativo 5.1 %, etnia 3.5 %, género 1.7 %. Sobre `math`: `lunch` 12.3 %, etnia 5.5 %, nivel 3.2 %, curso 3.2 %, género 2.8 % | ➕ |
@@ -89,13 +85,11 @@
 | Pregunta | Función | Cuándo usarla / supuestos | Ejemplo | Uso |
 |---|---|---|---|---|
 | ¿Cómo construyo una numérica a partir de filas? | `groupby().size()` | Cuando el dataset solo trae identificadores (`credits.csv`) | `cast_size`: actores por título | ✅ |
-| ¿Cómo leo fechas? | `read_csv(parse_dates=[...])`, `dt.month` | Sin esto la fecha es texto y no se ordena ni filtra | `covid_19_data.csv`: `datetime64` solo con `parse_dates` | ✅ |
-| ¿Cómo filtro y verifico? | `df[df[col] == v]`, `.unique()` | Después de filtrar, comprobar que quedó solo lo esperado | `mexico`: `['Mexico']` | ✅ |
-| ¿Cómo resumo por categoría? | `groupby().max()` / `sum()` / `mean()` + `reset_index()` | Elegir la agregación según el tipo de dato (acumulado vs. diario) | Ver sección 7 y salvedades 14 y 15 | ✅ |
-| ¿Cómo reorganizo? | `pivot_table(values=..., aggfunc=...)`, `.loc` | Indicar `values` si hay columnas de fecha | `aggfunc="sum"` sin `values` falla en pandas 2.3.3 y 3.0.6: `datetime64 does not support sum` | ✅ |
-| ¿Cómo imputo? | `fillna(valor)`, `transform("median")` | Mediana si hay sesgo; por grupo si la variable depende de otra; moda o «Sin dato» en texto | Titanic: `Age` con mediana por `Pclass` y `Sex` | ➕ |
+| ¿Cómo filtro y verifico? | `df[df[col] == v]`, `.unique()` | Después de filtrar, comprobar que quedó solo lo esperado | Ejemplos de clase: `df[df["ciudad"] != "Bogotá"]` también devuelve a Iván, cuya ciudad es `NaN` | — |
+| ¿Cómo resumo por categoría? | `groupby().mean()` / `sum()` / `agg()` + `reset_index()` | Elegir la agregación según el tipo de dato | Ejemplos B1 a B5: `groupby("programa")["nota_final"]` → Industrial 3.40, Sistemas 4.55, Software 3.30 (n = 3: el `NaN` se omite). Ventas: ticket promedio por región | — |
+| ¿Cómo imputo? | `fillna(valor)`, `transform("median")` | Mediana si hay sesgo; por grupo si la variable depende de otra; moda o «Sin dato» en texto | Ejemplos de clase: `nota_final` con la media (3.686), `ciudad` con un valor fijo, `semestre` con la mediana (5.0) | — |
 | ¿Cómo combino tablas? | `merge(on=..., how="left")` + `assert len(...)` | Verificar que no duplicó ni perdió filas | Ventas × clientes: 500 filas antes y después | — |
-| ¿Cómo mido tiempos? | `time.perf_counter()` | `time.time()` tiene resolución de 15.6 ms en Windows (salvedad 23) | Lazo 9.83 ms vs. vectorizado 0.089 ms | — |
+| ¿Cómo mido tiempos? | `time.perf_counter()` | `time.time()` tiene resolución de 15.6 ms en Windows (salvedad 15) | Lazo 9.83 ms vs. vectorizado 0.089 ms | — |
 
 ### 3.3 Guía rápida para elegir
 
@@ -108,7 +102,7 @@
 | Comparar grupos | `groupby().agg(...)`, boxplot por grupo, d de Cohen | `crosstab(normalize="index")` |
 | Tratar faltantes | Mediana (si hay sesgo), mediana por grupo, o indicador de «faltaba» | Moda o «Sin dato» |
 
-Regla práctica: antes de imputar, preguntarse si los faltantes son aleatorios. En el Titanic, 136 de las 177 edades faltantes son de tercera clase y la supervivencia de quienes no tienen edad es 29.4 % frente a 40.6 % de quienes sí la tienen: rellenar con una constante global borra esa información.
+Regla práctica: antes de imputar, preguntarse si los faltantes son aleatorios. En `credits.csv`, 4 550 de los 9 772 nulos de `character` son directores, que no tienen personaje: son faltantes estructurales, no un olvido. Rellenarlos con «Sin dato» mezclaría «no aplica» con «no se registró» (los otros 5 222 son actores).
 
 ---
 
@@ -153,65 +147,18 @@ Regla práctica: antes de imputar, preguntarse si los faltantes son aleatorios. 
 
 ---
 
-## 7. Taller 03 — Python y pandas con `covid_19_data.csv`
+## 7. Taller 04 (ventas simuladas) y ejemplos de clase
 
-| Ejercicio | Resultado recalculado | Lectura |
-|---|---|---|
-| 1.1 a 1.7 (Python básico) | `int` / `str`; suma 19, resta 11, producto 60, división 3.75, potencia 50 625, `//` 3, `%` 3; lista final `[500, 300, 210, 120, 45, 15]`; `casos[6]` → `IndexError`; riesgo 50 → bajo, 150 → medio, 400 → alto ✅ | Todo coincide con la clave |
-| 2.1 y 2.2 | (900, 8). `Province/State`: 720 no nulos → 180 nulos (México 90 + Francia 90). Sin `parse_dates` las fechas son texto ✅ | Los nulos son estructurales: esos países no reportan provincia |
-| 2.3 `describe()` | `Confirmed` media 1 536.58, máx 4 529 · `Deaths` media 32.54, máx 107 · `Recovered` media 659.37, máx 1 958 ✅ | Son acumulados por entidad-día: la media mezcla 10 curvas distintas |
-| 2.4 a 2.6 | 5 países: Mainland China 270 filas, US 270, Australia 180, Mexico 90, France 90. Última fecha 2020-04-20 (90 fechas) ✅ | China, EE. UU. y Australia tienen provincias |
-| 2.7 y 2.8 `max` por país | Francia 4 529 · México 4 365 · China 4 259 · EE. UU. 4 171 · Australia 3 835 ✅ | Es el máximo de **una fila**, no del país (salvedad 14) |
-| ➕ Total nacional (suma de provincias por fecha, luego `max`) | EE. UU. 8 402 · China 7 538 · Australia 5 087 · Francia 4 529 · México 4 365 | El orden se invierte |
-| 2.9 y 2.10 | México: de 27 (22-ene) a 4 365 (20-abr); +48.7 confirmados nuevos por día (entre 0 y 88) ✅ | Curva casi lineal |
-| 2.11 `pivot_table` con `sum` | Hubei 186 244 · California 197 911 · Texas 102 721 · Guangdong 104 174 ✅. Con `max`: Hubei 4 259 · California 4 171 · Texas 2 213 · Guangdong 2 261 ➕ | `sum` de acumulados = «casos-día», unas 44 a 47 veces el valor final (salvedad 15) |
-| 2.11 reto `.loc` | `resumen.loc["Mainland China"]` funciona; `resumen.loc["Mexico"]` → `KeyError` ✅ | `pivot_table` descarta los `NaN` del índice. Con `fillna({"Province/State": "(sin provincia)"})` México entra (4 365) ➕ |
-| 2.12 Muertes totales por fecha | De 11 (22-ene) a 648 (20-abr). El 2020-03-02 el total **baja** de 284 a 277 por Hubei (44 → 29) ✅ | Caída inyectada a propósito (lo dice el PDF) |
-| Reto integrador (EE. UU.) | Promedio de `Recovered` por mes: ene 75.13 · feb 330.68 · mar 751.98 · abr 1 082.28 ✅ | Promedia filas estado-día (salvedad 16). Con el total nacional por fecha: 225.4 · 992.0 · 2 255.9 · 3 246.8 ➕ |
-| Pregunta de cierre | Todo es **descriptivo**; el predictivo exigiría un modelo de regresión o de series de tiempo ✅ | Puente hacia las Semanas 7 y 8 |
-
-Plotly (comprobado): `px.bar` con `iloc[:20]` dibuja 5 barras (solo hay 5 países); `px.line` de EE. UU. con `hover_data` produce 1 traza de 270 puntos con 2 retrocesos de fecha; con `color="Province/State"` salen 3 trazas; con el total nacional, 1 traza de 90 puntos.
-
----
-
-## 8. Taller 04 y guía de la sesión (Titanic, ventas, ejemplos)
-
-### 8.1 Titanic (891 × 12)
+### 7.1 Ventas simuladas (semilla 7)
 
 | Actividad | Resultado recalculado | Lectura |
 |---|---|---|
-| 1. Exploración | 891 filas × 12 columnas. Nulos: `Age` 177 (19.9 %), `Cabin` 687 (77.1 %), `Embarked` 2 (0.2 %). `Age`: n = 714, media 29.70, mediana 28.0, std 14.53, mín 0.42, máx 80, sesgo 0.39. `Pclass`: 3.ª 491 (55.1 %), 1.ª 216 (24.2 %), 2.ª 184 (20.7 %). `Sex`: `male` 577 (64.8 %), `female` 314 (35.2 %). Sobrevivieron 342 (38.4 %) | La media supera a la mediana por una cola derecha leve |
-| 2. Caza de errores | Ver 8.2 | Solo 3 de los 5 errores lanzan excepción |
-| 3. Limpieza | `Age` por mediana de `Pclass` × `Sex` (1.ª: 35.0 mujeres / 40.0 hombres; 2.ª: 28.0 / 30.0; 3.ª: 21.5 / 25.0). `Embarked`: moda `S` (644 de 889); los 2 faltantes comparten tarifa 80.0, cabina B28 y 1.ª clase. `Cabin`: 77.1 % vacío → conviene un indicador `tiene_cabina` (supervivencia 66.7 % con cabina vs. 30.0 % sin ella). Duplicados: 0 | Tras la limpieza no quedan nulos (se elimina `Cabin`) |
-| Entregable de la sesión | `df.dropna()` deja 183 de 891 filas (20.5 %); `dropna(axis=1)` deja 9 de 12 columnas; `dropna(thresh=3)` no elimina ninguna | Evidencia concreta para «eliminar vs. imputar» |
-| Quiz 1 | `df[df.col > 5]` y `df.loc[df.col > 5]` devuelven lo mismo con una máscara booleana (670 filas); `.loc` además permite etiquetas y asignar | |
-| Quiz 2 | `df["col"]["Age"]` busca la etiqueta `"Age"` en la Serie `df["col"]` → `KeyError: 'Age'` | |
-| Quiz 3 | `how="left"` conserva todas las filas de la izquierda; si la derecha tiene claves repetidas, las filas **aumentan** (ejemplo de juguete: 4 filas con `left` y 3 con `inner`) | El `assert len(...)` de la Actividad 5 detecta ese caso (513 filas con 3 claves duplicadas) |
-| Quiz 4 | `Fare`: media 32.20 vs. mediana 14.45, sesgo 4.79 y 116 atípicos por IQR (> 65.63): la media se contamina con extremos | |
-| Quiz 5 | `groupby("Embarked")["Fare"].sum()` suma 28 533.95 frente a un total de 28 693.95: los 2 pasajeros con `Embarked` nulo (80 + 80) desaparecen. Con `dropna=False` se conservan | `count()` ignora nulos y `size()` no: `Age` por clase → 186 / 173 / 355 contra 216 / 184 / 491 |
+| 1. Producto más vendido por región | Centro: Laptop 62 940 000 · Norte: Mouse 69 040 000 · Oriente: Laptop 70 570 000 · Sur: Audifonos 49 255 000 | Es ruido: cada producto aparece con los 5 precios (salvedad 14) |
+| 1. Preguntas propias | Cliente con mayor gasto: 1 (20 320 000), luego 98 y 30. Ticket promedio por región: Oriente 2 141 016 · Norte 1 927 177 · Centro 1 863 661 · Sur 1 701 653 | Ejemplos de `groupby` + `agg` |
+| 2. `merge` | 500 filas antes y después; 0 nulos tras el `merge`. Corporativo: 237 ventas, suma 467 145 000, media 1 971 075.9. Retail: 263 ventas, suma 488 460 000, media 1 857 262.4. Total 955 605 000 | El `assert` pasa |
+| 4. Lazo vs. vectorizado | Mediana de 20 corridas: lazo 9.83 ms, vectorizado 0.089 ms → 111× (entre 85× y 131×) | Con `time.time()` en Windows falla (salvedad 15) |
 
-### 8.2 Actividad 2: los cinco errores y su comportamiento
-
-| # | Línea con error | Corrección | pandas 2.3.3 | pandas 3.0.6 |
-|---|---|---|---|---|
-| 1 | `pd.read.csv(url)` | `pd.read_csv(url)` | `AttributeError` | `AttributeError` |
-| 2 | `df_titanic["Age".mean()]` | `df_titanic["Age"].mean()` | `AttributeError: 'str' object has no attribute 'mean'` | Igual |
-| 3 | `menores["es_menor"] = True` | `menores = df[...].copy()` | `SettingWithCopyWarning` | Sin aviso; asigna a una copia y el original no cambia |
-| 4 | `groupby("Pclass").sum("Survived")` | `groupby("Pclass")["Survived"].sum()` → 136 / 87 / 119 | **Sin error**: `"Survived"` entra como `numeric_only` y suma todas las columnas numéricas | `ValueError: numeric_only accepts only Boolean values` |
-| 5 | `ascending=True[0:5]` | `.sort_values(by="Fare").head(5)` | `TypeError: 'bool' object is not subscriptable` | Igual |
-
-Los 5 más baratos pagaron 0.0 (hay 15 tarifas en cero). El snippet además usa `url`, que solo se define en la Actividad 1.
-
-### 8.3 Ventas simuladas (semilla 7)
-
-| Actividad | Resultado recalculado | Lectura |
-|---|---|---|
-| 4. Producto más vendido por región | Centro: Laptop 62 940 000 · Norte: Mouse 69 040 000 · Oriente: Laptop 70 570 000 · Sur: Audifonos 49 255 000 | Es ruido: cada producto aparece con los 5 precios (salvedad 22) |
-| 4. Preguntas propias | Cliente con mayor gasto: 1 (20 320 000), luego 98 y 30. Ticket promedio por región: Oriente 2 141 016 · Norte 1 927 177 · Centro 1 863 661 · Sur 1 701 653 | Ejemplos de `groupby` + `agg` |
-| 5. `merge` | 500 filas antes y después; 0 nulos tras el `merge`. Corporativo: 237 ventas, suma 467 145 000, media 1 971 075.9. Retail: 263 ventas, suma 488 460 000, media 1 857 262.4. Total 955 605 000 | El `assert` pasa |
-| 7. Lazo vs. vectorizado | Mediana de 20 corridas: lazo 9.83 ms, vectorizado 0.089 ms → 111× (entre 85× y 131×) | Con `time.time()` en Windows falla (salvedad 23) |
-
-### 8.4 Ejemplos de clase (DataFrame de 8 estudiantes)
+### 7.2 Ejemplos de clase (DataFrame de 8 estudiantes)
 
 | Ejemplo | Resultado verificado | Observación |
 |---|---|---|
@@ -219,7 +166,7 @@ Los 5 más baratos pagaron 0.0 (hay 15 tarifas en cero). El snippet además usa 
 | 3 filtros | Aprobaron: Ana, Luis, Iván, Pedro (3.0), Elena. Software y aprobaron: Ana. «No son de Bogotá»: Ana, Marta, **Iván** (ciudad `NaN`), Pedro, Elena | `NaN != "Bogotá"` es `True` |
 | 4 | `ciudad.value_counts()`: Cúcuta 3, Bogotá 3, Medellín 1 (7 de 8: ignora el `NaN`) | |
 | 5 | `dropna()` deja 5 de 8 filas. Media de `nota_final` 3.686; mediana de `semestre` 5.0 | Tres estrategias para tres columnas |
-| 6 `apply` | Sin imputar, `NaN >= 3.0` es `False` y Sofía queda «Reprobado»; imputando la media (3.69) queda «Aprobado» | Ambas son información inventada (salvedad 24) |
+| 6 `apply` | Sin imputar, `NaN >= 3.0` es `False` y Sofía queda «Reprobado»; imputando la media (3.69) queda «Aprobado» | Ambas son información inventada (salvedad 16) |
 | A1 y A2 (NumPy) | Media 21.17; 3 mayores de 21; en meses `[228 264 240 300 216 276]`; posiciones pares `[19 20 18]`; mayores de 20 `[22 25 23]` | |
 | A4 | Semestre ≥ 5 y reprobados: **vacío** (David, nota 2.5, tiene semestre `NaN`). No Bogotá y nota > 4.0: Ana, Iván, Elena | |
 | A5 | 5 categorías; tras `lower()` + `strip()` quedan 4 (`cúcuta`, `cucuta`, `bogotá`, `bogota`); con acentos normalizados quedan 2 (`cucuta` 3, `bogota` 2) | Respuesta a la «pregunta de cierre» |
@@ -227,11 +174,11 @@ Los 5 más baratos pagaron 0.0 (hay 15 tarifas en cero). El snippet además usa 
 
 ---
 
-## 9. Código listo para pegar
+## 8. Código listo para pegar
 
 Los bloques suponen los CSV junto al notebook, como en las guías. Todos se ejecutaron sin error con pandas 2.3.3 y 3.0.6.
 
-### 9.1 Actividad A2: EDA ampliado sobre `StudentsPerformance.csv`
+### 8.1 Actividad A2: EDA ampliado sobre `StudentsPerformance.csv`
 
 ```python
 import numpy as np
@@ -302,7 +249,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-### 9.2 Taller 02: películas vs. series en `credits.csv`
+### 8.2 Taller 02: películas vs. series en `credits.csv`
 
 ```python
 import pandas as pd
@@ -327,63 +274,7 @@ print("persona-título-rol repetidos:", df.duplicated(["person_id", "id", "role"
 
 Resultado: `Película` 3 541 títulos, media 16.72, mediana 12, máx 207; `Serie` 1 799 títulos, media 7.80, mediana 7, máx 48. 149 títulos sin actores. Nulos de `character`: 5 222 en ACTOR y 4 550 en DIRECTOR. 264 nombres con más de un `person_id`. 88 combinaciones repetidas.
 
-### 9.3 Taller 03: ranking nacional, pivote con acumulados y caída de Hubei
-
-```python
-import pandas as pd
-
-data = pd.read_csv("covid_19_data.csv", parse_dates=["ObservationDate", "Last Update"])
-
-# 1) Ranking nacional: sumar provincias por fecha y después tomar el máximo
-nacional = (data.groupby(["Country/Region", "ObservationDate"])["Confirmed"]
-            .sum().reset_index())
-print(nacional.groupby("Country/Region")["Confirmed"].max().sort_values(ascending=False))
-
-# 2) Pivote de acumulados: max (último valor), no sum; México y Francia entran al rellenar el NaN
-resumen = (data.fillna({"Province/State": "(sin provincia)"})
-           .pivot_table(index=["Country/Region", "Province/State"],
-                        values=["Confirmed", "Deaths", "Recovered"], aggfunc="max"))
-print(resumen.loc["Mexico"])
-
-# 3) Acumulado que baja
-hubei = data[data["Province/State"] == "Hubei"].sort_values("ObservationDate")
-print(hubei.loc[hubei["Deaths"].diff() < 0, ["ObservationDate", "Deaths"]])
-
-# 4) Nuevos por día
-nacional["nuevos"] = nacional.groupby("Country/Region")["Confirmed"].diff()
-print(nacional.groupby("Country/Region")["nuevos"].mean().round(1))
-```
-
-### 9.4 Taller 04: los cinco errores corregidos y limpieza del Titanic
-
-```python
-import pandas as pd
-
-url = "https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv"
-df_titanic = pd.read_csv(url)                                   # pd.read.csv → pd.read_csv
-
-# Actividad 2
-edad_promedio = df_titanic["Age"].mean()                        # ["Age".mean()] → ["Age"].mean()
-menores = df_titanic[df_titanic.Age < 18].copy()                # .copy() evita el SettingWithCopyWarning
-menores["es_menor"] = True
-por_clase = df_titanic.groupby("Pclass")["Survived"].sum()      # .sum("Survived") no selecciona la columna
-print(df_titanic.sort_values(by="Fare", ascending=True).head(5))  # [0:5] se aplicaba a True
-print(round(edad_promedio, 2), por_clase.to_dict())
-
-# Actividad 3: ¿los faltantes son aleatorios?
-print(df_titanic["Age"].isnull().groupby(df_titanic["Pclass"]).sum().to_dict())
-print(df_titanic.groupby(df_titanic["Age"].isnull())["Survived"].mean().round(3).to_dict())
-
-df = df_titanic.copy()
-df["edad_faltaba"] = df["Age"].isnull()
-df["Age"] = df["Age"].fillna(df.groupby(["Pclass", "Sex"])["Age"].transform("median"))
-df["Embarked"] = df["Embarked"].fillna(df["Embarked"].mode()[0])
-df["tiene_cabina"] = df["Cabin"].notnull()
-df = df.drop(columns="Cabin")
-print(df.isnull().sum().sum(), df.duplicated().sum())
-```
-
-### 9.5 Taller 04: ventas con precios coherentes y tiempos con `perf_counter`
+### 8.3 Taller 04: ventas con precios coherentes y tiempos con `perf_counter`
 
 ```python
 import time
@@ -424,14 +315,14 @@ Con NumPy 2.4.6, Laptop lidera las cuatro regiones (Sur 146 400 000, Centro 140 
 
 ---
 
-## 10. Salvedades que conviene conocer
+## 9. Salvedades que conviene conocer
 
 **Actividad calificada (informe de referencia, rúbrica y archivos)**
 
 1. **«`math score` es la única variable con valores atípicos».** El informe de referencia lo dice en la pregunta 2 (fila de `math score`), pero con la misma regla IQR salen 8 atípicos en `math score`, 6 en `reading score` (17, 23, 24, 24, 26, 28) y 5 en `writing score` (10, 15, 19, 22, 23). En total son 12 estudiantes distintos y 2 (filas 59 y 980) son atípicos en las tres notas. El notebook solo revisa `math score`, que es lo que pide el anexo («al menos 1 variable»); la frase del informe afirma más de lo que el código comprueba.
 2. **«Relación consistente y gradual» de `parental level of education`.** En el orden natural, `some high school` (65.11) queda por encima de `high school` (63.10), así que la secuencia no es monótona (el resto sí sube: 68.48, 69.57, 71.92, 73.60). La asociación global es débil: Spearman 0.187 y η² = 5.1 % del promedio.
 3. **Elección de las 5 variables.** El informe prioriza `test preparation course` sobre `lunch` por ser accionable (defendible) y llama «indirecta» a la medición de `lunch`. Por tamaño de efecto, `lunch` pesa más: η² del promedio 8.4 % frente a 6.6 %, y d de Cohen 0.63 frente a 0.55 (en `math`, 0.78 frente a 0.38). Conviene que la justificación diga «por accionable», no «por efecto».
-4. **Cifras de `writing score` sin respaldo en el notebook de la actividad.** El informe cita media 68.05, desviación 15.20 y mínimo 10, pero `EIARV011_A2_analisis.ipynb` solo hace `describe()` de `math` y `reading`. Los valores sí salen en `Taller_01_EDA_solucion.ipynb`.
+4. **Cifras de `writing score` sin respaldo en el notebook de la actividad.** El informe cita media 68.05, desviación 15.20 y mínimo 10, pero `EIARV011_A2_analisis_profesor.ipynb` solo hace `describe()` de `math` y `reading`. Los valores sí salen en `Taller_01_EDA_solucion.ipynb`.
 5. **Criterios de formato que el enunciado no fija.** La rúbrica puntúa el «número de páginas» según «el criterio solicitado» y el checklist exige Arial 11 e interlineado 1.5, pero ni `EIARV011_A2.md` ni el anexo indican páginas, tipo de letra ni interlineado.
 6. **Encabezado del informe.** Dice «NRC 94103», deja vacío «Elaborado por» y fecha «Julio de 2026»; este repositorio es el NRC 70446. Conviene revisarlo si se reparte.
 7. **Copias del dataset.** Las copias de `StudentsPerformance.csv` de la actividad, la solución, el Taller 01 y la Semana 6 son idénticas byte a byte. El `.xlsx`, el `.bak_semicolon` y la copia de una entrega usan el mismo contenido (verificado fila a fila), pero estas dos últimas separan con `;`: `read_csv` sin `sep=";"` devuelve **una sola columna** (1000, 1).
@@ -447,22 +338,10 @@ Con NumPy 2.4.6, Laptop lidera las cuatro regiones (Sur 146 400 000, Centro 140 
 11. **`character` nulo.** Los 9 772 nulos son 4 550 directores y 5 222 actores; no son «los directores» (así lo afirma el cuadro de la Semana 4).
 12. **No comparar con la Semana 4 sin mirar la definición.** El Taller 02 define `cast_size` solo con actores (5 340 títulos, media 13.72); la Semana 4 define `tamano_reparto` como `nunique(person_id)` por título con cualquier rol (5 489 títulos, media 14.10). Es el mismo CSV con otra variable.
 
-**Taller 03**
-
-13. **Los datos son sintéticos.** El PDF del profesor lo declara (generados con `np.random.seed(7)`), pero `Taller_01_ejercicios_estudiante.md` solo dice «la misma estructura que el dataset original de Johns Hopkins». Una pista: México tiene 27 confirmados el 22-ene-2020 y su primer caso confirmado fue el 28-feb-2020. Sirve para practicar pandas; no para concluir nada sobre países.
-14. **Ejercicios 2.7 y 2.8: el `max` por país es el máximo de una fila.** Para países con provincias es el máximo de la provincia más grande: el «4 171» de EE. UU. es California. El ranking de la clave pone a Francia primero y a EE. UU. cuarto; con el total nacional EE. UU. es primero (8 402) y Francia y México quedan últimos (4 529 y 4 365) porque no reportan provincias.
-15. **Ejercicio 2.11: sumar acumulados.** Los valores de `Confirmed` son acumulados; su `sum` en 90 días es «casos-día» (Hubei 186 244 frente a 4 259 al cierre). Lo correcto es `max` o filtrar la última fecha. La versión del PDF usa `numeric_only=True` y suma además `SNo` (4 095, 12 195, …), una columna sin sentido; el notebook evita eso con `values=[...]`. `resumen.loc["Mexico"]` da `KeyError` porque `pivot_table` descarta los `NaN` del índice.
-16. **Reto integrador.** El enunciado del PDF habla de «nuevos recuperados»; la guía del estudiante y el código usan recuperados **acumulados**. El promedio se calcula sobre filas estado-día (3 por fecha), no sobre el total nacional. El notebook asigna `us["mes"] = ...` sobre un recorte: pandas 2.3.3 emite `SettingWithCopyWarning` (el PDF sí usa `.copy()`).
-17. **Versión de pandas en las salidas guardadas.** Los notebooks `parte_*` y `parte_1-3_solucion` se ejecutaron con pandas 3.x (`str`, `datetime64[us]`); el PDF y pandas 2.3.3 muestran `object` y `datetime64[ns]`. Ambas son correctas.
-18. **Plotly en Docker.** `docker-requirements.txt` no incluye `plotly`, así que los ejercicios 2.9 a 2.12 dan `ModuleNotFoundError` en esa imagen (en Colab normalmente ya está disponible). Hay que añadir `plotly` o instalarlo con `pip install plotly`.
-
 **Guía de la sesión, Taller 04 y entorno**
 
-19. **`fillna(method="ffill")` (guía, §6.3).** Da `FutureWarning` en pandas 2.3.3 y `TypeError` en 3.0.6: usar `.ffill()`. La guía (§9) también dice que `groupby` y `merge` se retoman «en la Semana 3», pero la Semana 3 trata de frameworks; reaparecen desde la Semana 4.
-20. **Actividad 2 (ver 8.2).** Solo tres de los cinco errores lanzan excepción; el de `.sum("Survived")` puede pasar inadvertido en pandas 2.x, y el de `SettingWithCopy` es silencioso en 3.x. Quien corrija «hasta que no haya error» puede dejar errores sin ver.
-21. **Actividad 3: justificar por la forma de la distribución.** La forma de `Age` es casi simétrica (sesgo 0.39; media 29.70 y mediana 28.0): rellenar con una u otra deja la desviación en 13.00 y 13.02. La evidencia que realmente decide es que la edad depende de la clase (medianas 37 / 29 / 24) y que los faltantes no son aleatorios (136 de 177 en 3.ª clase; supervivencia 29.4 % frente a 40.6 %).
-22. **Actividades 4 y 5: datos simulados incoherentes.** `producto` y `precio_unitario` se sortean por separado: cada producto aparece con los 5 precios («Mouse» a 1 200 000), así que «el producto más vendido por región» es ruido. Además, `clientes` se genera sin semilla propia: re-ejecutar solo esa celda cambia `ciudad` y `segmento`. Con una semilla única (`default_rng(7)`) y un precio por producto, Laptop lidera las cuatro regiones.
-23. **Actividad 7: `time.time()` en Windows.** Con Python 3.11.9 su resolución es de 15.6 ms; en 49 de 50 mediciones vectorizadas dio exactamente 0.0, y `t_loop / t_vec` lanza `ZeroDivisionError` (en la prueba, 2 de 3 corridas). `time.perf_counter()` da 9.83 ms contra 0.089 ms (111×, entre 85× y 131×).
-24. **Ejemplos de clase con `NaN`.** Imputar la media (3.69) a Sofía la deja «Aprobado» y no imputar la deja «Reprobado»: ninguna es un dato real. En `semestre`, un `NaN` cae en el `else` («Avanzado») de una función con `if/elif/else`. El filtro «semestre ≥ 5 y reprobó» devuelve vacío porque David tiene semestre `NaN`. Y `lower()` + `strip()` no unifican «Cúcuta» y «cucuta» (hace falta `str.normalize("NFKD")` o `unicodedata`).
-25. **Spearman desde pandas.** `df.corr(method="spearman")` importa SciPy; sin SciPy da `ModuleNotFoundError` (en la imagen Docker llega con `scikit-learn`). `df.rank().corr()` da el mismo resultado sin esa dependencia.
-26. **Dos Titanic distintos.** La guía de la sesión usa `pandas-dev/pandas/master/doc/data/titanic.csv` (la rama `master` responde hoy) y el Taller 04 usa `datasciencedojo/datasets`. Los datos son idénticos salvo 222 nombres: la segunda escribe «Miss.» y «Master.» con punto. Ambos cargan 891 × 12 con los mismos nulos.
+13. **`fillna(method="ffill")` (guía, §6.3).** Da `FutureWarning` en pandas 2.3.3 y `TypeError` en 3.0.6: usar `.ffill()`. La guía (§9) también dice que `groupby` y `merge` se retoman «en la Semana 3», pero la Semana 3 trata de frameworks; reaparecen desde la Semana 4.
+14. **Actividades 1 y 2: datos simulados incoherentes.** `producto` y `precio_unitario` se sortean por separado: cada producto aparece con los 5 precios («Mouse» a 1 200 000), así que «el producto más vendido por región» es ruido. Además, `clientes` se genera sin semilla propia: re-ejecutar solo esa celda cambia `ciudad` y `segmento`. Con una semilla única (`default_rng(7)`) y un precio por producto, Laptop lidera las cuatro regiones.
+15. **Actividad 4: `time.time()` en Windows.** Con Python 3.11.9 su resolución es de 15.6 ms; en 49 de 50 mediciones vectorizadas dio exactamente 0.0, y `t_loop / t_vec` lanza `ZeroDivisionError` (en la prueba, 2 de 3 corridas). `time.perf_counter()` da 9.83 ms contra 0.089 ms (111×, entre 85× y 131×).
+16. **Ejemplos de clase con `NaN`.** Imputar la media (3.69) a Sofía la deja «Aprobado» y no imputar la deja «Reprobado»: ninguna es un dato real. En `semestre`, un `NaN` cae en el `else` («Avanzado») de una función con `if/elif/else`. El filtro «semestre ≥ 5 y reprobó» devuelve vacío porque David tiene semestre `NaN`. Y `lower()` + `strip()` no unifican «Cúcuta» y «cucuta» (hace falta `str.normalize("NFKD")` o `unicodedata`).
+17. **Spearman desde pandas.** `df.corr(method="spearman")` importa SciPy; sin SciPy da `ModuleNotFoundError` (en la imagen Docker llega con `scikit-learn`). `df.rank().corr()` da el mismo resultado sin esa dependencia.
